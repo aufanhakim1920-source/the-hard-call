@@ -3,10 +3,11 @@
 
 import { getStore } from "./store";
 
+const BASE = import.meta.env.BASE_URL;
 const FILES = {
-  sign: { src: "/sfx/ui-message-pop.mp3", vol: 0.45 },
-  handled: { src: "/sfx/ui-success-soft.mp3", vol: 0.35 },
-  tap: { src: "/sfx/switch-tap.mp3", vol: 0.22 },
+  sign: { src: `${BASE}sfx/ui-message-pop.mp3`, vol: 0.45 },
+  handled: { src: `${BASE}sfx/ui-success-soft.mp3`, vol: 0.35 },
+  tap: { src: `${BASE}sfx/switch-tap.mp3`, vol: 0.22 },
 } as const;
 
 export type SfxName = keyof typeof FILES;

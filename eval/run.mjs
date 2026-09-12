@@ -128,7 +128,7 @@ async function main() {
   console.log(`key: ${keySource === "environment" ? "environment" : path.basename(keySource)}`);
 
   const [{ default: handler }, { SIGN_KEYS }] = await Promise.all([
-    import("../netlify/functions/flags.mts"),
+    import("../supabase/functions/api/flags.ts"),
     import("../netlify/lib/signs.mts"),
   ]);
 

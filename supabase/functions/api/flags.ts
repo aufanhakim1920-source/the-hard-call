@@ -5,8 +5,9 @@
 // lessons (so the engine learns). Returns the speaker of the new line and
 // any NEW signs, each with a question the worker can ask next.
 
-import { askGemini, json, readJson } from "../lib/gemini.mts";
-import { SIGN_KEYS, addDays, signDef, taxonomyText } from "../lib/signs.mts";
+import { askGemini } from "../_shared/gemini.ts";
+import { json, preflight, readJson } from "../_shared/env.ts";
+import { SIGN_KEYS, addDays, signDef, taxonomyText } from "../_shared/signs.ts";
 
 interface Line {
   id: string;
@@ -85,17 +86,19 @@ ${lessons.length ? `\nLessons from this team's manager (these override your defa
 Return JSON only.`;
 }
 
-export default async function handler(req: Request): Promise<Response> {
-  if (req.method !== "POST") return json(405, { error: "POST only" });
+export async function handle(req: Request): Promise<Response> {
+  const pre = preflight(req);
+  if (pre) return pre;
+  if (req.method !== "POST") return json(req, 405, { error: "POST only" });
   let body: FlagsRequest;
   try {
     body = await readJson<FlagsRequest>(req);
   } catch (e) {
-    return json(400, { error: String(e) });
+    return json(req, 400, { error: String(e) });
   }
   const lines = (body.lines ?? []).slice(-14);
   const newLine = lines.find((l) => l.id === body.newLineId) ?? lines[lines.length - 1];
-  if (!newLine) return json(400, { error: "no lines" });
+  if (!newLine) return json(req, 400, { error: "no lines" });
   const existing = new Set(body.existingKeys ?? []);
   const today = /^\d{4}-\d{2}-\d{2}$/.test(body.todayISO ?? "") ? body.todayISO : new Date().toISOString().slice(0, 10);
 
@@ -139,8 +142,8 @@ Today's date: ${today}`;
         };
       });
 
-    return json(200, { speaker: data.speaker ?? "unknown", signs, model, ms });
+    return json(req, 200, { speaker: data.speaker ?? "unknown", signs, model, ms });
   } catch (e) {
-    return json(502, { error: String(e instanceof Error ? e.message : e) });
+    return json(req, 502, { error: String(e instanceof Error ? e.message : e) });
   }
 }

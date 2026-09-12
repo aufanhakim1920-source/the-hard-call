@@ -5,8 +5,9 @@
 // model is told to change the name, job, suburb and every number, and the
 // result is shown to a human before it can be used.
 
-import { askGemini, json, readJson } from "../lib/gemini.mts";
-import { SIGN_KEYS } from "../lib/signs.mts";
+import { askGemini } from "../_shared/gemini.ts";
+import { json, preflight, readJson } from "../_shared/env.ts";
+import { SIGN_KEYS } from "../_shared/signs.ts";
 
 interface ScenarioRequest {
   session: {
@@ -65,16 +66,18 @@ Fields:
 - whyThisOne: one sentence to the team on why this scenario is worth practising, referring to what went wrong or right.
 Return JSON only.`;
 
-export default async function handler(req: Request): Promise<Response> {
-  if (req.method !== "POST") return json(405, { error: "POST only" });
+export async function handle(req: Request): Promise<Response> {
+  const pre = preflight(req);
+  if (pre) return pre;
+  if (req.method !== "POST") return json(req, 405, { error: "POST only" });
   let body: ScenarioRequest;
   try {
     body = await readJson<ScenarioRequest>(req);
   } catch (e) {
-    return json(400, { error: String(e) });
+    return json(req, 400, { error: String(e) });
   }
   const s = body.session;
-  if (!s?.lines?.length) return json(400, { error: "empty session" });
+  if (!s?.lines?.length) return json(req, 400, { error: "empty session" });
   const user = `Real call (${s.customer.direction}) about a ${s.customer.product}.
 Transcript:
 ${s.lines.map((l) => `${l.speaker}: ${l.text}`).join("\n")}
@@ -84,13 +87,13 @@ ${body.report?.summary ? `Report card summary: ${body.report.summary}\nTip given
   try {
     const { data, model } = await askGemini<ModelScenario>({ system: SYSTEM, user, schema: SCHEMA, temperature: 0.7 });
     const level = Math.max(1, Math.min(3, Math.round(data.level))) as 1 | 2 | 3;
-    return json(200, {
+    return json(req, 200, {
       ...data,
       level,
       expectedSigns: (data.expectedSigns ?? []).filter((k) => SIGN_KEYS.includes(k)),
       model,
     });
   } catch (e) {
-    return json(502, { error: String(e instanceof Error ? e.message : e) });
+    return json(req, 502, { error: String(e instanceof Error ? e.message : e) });
   }
 }

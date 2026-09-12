@@ -1,9 +1,27 @@
 import type { FlagsResponse, Line, Report, Scenario, Session, Speaker } from "./types";
 
+// The engine runs as Supabase Edge Functions. The anon key is public by design
+// (it only identifies the project); the Gemini key never leaves the server.
+const API_BASE: string = ((import.meta.env.VITE_API_BASE as string | undefined) ?? "").replace(/\/$/, "");
+const ANON: string = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? "";
+
+function headers(): Record<string, string> {
+  const h: Record<string, string> = { "content-type": "application/json" };
+  if (ANON) {
+    h.apikey = ANON;
+    h.authorization = `Bearer ${ANON}`;
+  }
+  return h;
+}
+
+export function apiUrl(path: string): string {
+  return API_BASE ? `${API_BASE}/${path.replace(/^\/?api\//, "")}` : path;
+}
+
 async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: headers(),
     body: JSON.stringify(body),
   });
   const data = (await res.json().catch(() => ({}))) as T & { error?: string };
@@ -43,7 +61,7 @@ export function postScenario(session: Session, report?: ReportPayload): Promise<
 }
 
 export async function getHealth(): Promise<{ ok: boolean; gemini: boolean; model: string }> {
-  const res = await fetch("/api/health");
+  const res = await fetch(apiUrl("/api/health"), { headers: headers() });
   return res.json();
 }
 

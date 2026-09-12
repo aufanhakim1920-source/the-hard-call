@@ -1,11 +1,12 @@
 // One thin door to Gemini. Every function goes through here so the model,
 // the JSON contract and the fallback live in one place.
 //
-// Why Gemini: the flag engine runs on every sentence of a live call, so it
+// Why Gemini: the sign engine runs on every sentence of a live call, so it
 // has to answer in about a second. gemini-2.5-flash with thinking switched
-// off does that on the free tier; the eval script (eval/run.mjs) is how we
-// checked it is also accurate enough. Swap GEMINI_MODEL in the env to try
-// another model without touching code.
+// off does that on the free tier; eval/run.mjs is how we checked it is also
+// accurate enough. Set GEMINI_MODEL to try another model without touching code.
+
+import { getEnv } from "./env.ts";
 
 const DEFAULT_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
@@ -26,7 +27,7 @@ export interface GeminiResult<T> {
 }
 
 function apiKey(): string {
-  const key = process.env.GEMINI_API_KEY;
+  const key = getEnv("GEMINI_API_KEY");
   if (!key) throw new Error("GEMINI_API_KEY is not set on the server");
   return key;
 }
@@ -52,16 +53,17 @@ async function callOnce<T>(model: string, c: GeminiCall, thinkingOff: boolean): 
     const text = await res.text();
     throw new Error(`gemini ${model} ${res.status}: ${text.slice(0, 300)}`);
   }
-  const json = (await res.json()) as {
+  const data = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[];
   };
-  const text = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
   if (!text) throw new Error(`gemini ${model}: empty answer`);
   return JSON.parse(text) as T;
 }
 
 export async function askGemini<T>(c: GeminiCall): Promise<GeminiResult<T>> {
-  const models = c.model ? [c.model] : (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : DEFAULT_MODELS);
+  const envModel = getEnv("GEMINI_MODEL");
+  const models = c.model ? [c.model] : envModel ? [envModel] : DEFAULT_MODELS;
   let lastErr: unknown;
   for (const model of models) {
     for (const thinkingOff of [true, false]) {
@@ -71,27 +73,11 @@ export async function askGemini<T>(c: GeminiCall): Promise<GeminiResult<T>> {
         return { data, model, ms: Date.now() - t0 };
       } catch (err) {
         lastErr = err;
-        const msg = String(err);
         // thinkingBudget is rejected by some models; retry the same model without it.
-        if (thinkingOff && /thinking/i.test(msg)) continue;
+        if (thinkingOff && /thinking/i.test(String(err))) continue;
         break;
       }
     }
   }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
-}
-
-export function json(status: number, data: unknown): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "content-type": "application/json", "cache-control": "no-store" },
-  });
-}
-
-export async function readJson<T>(req: Request): Promise<T> {
-  try {
-    return (await req.json()) as T;
-  } catch {
-    throw new Error("body must be JSON");
-  }
 }

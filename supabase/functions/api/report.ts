@@ -4,7 +4,8 @@
 // missed, one tip for next time. Deterministic parts (counts, deadlines)
 // are computed here; the model only writes the judgement.
 
-import { askGemini, json, readJson } from "../lib/gemini.mts";
+import { askGemini } from "../_shared/gemini.ts";
+import { json, preflight, readJson } from "../_shared/env.ts";
 
 interface Line {
   id: string;
@@ -85,16 +86,18 @@ tip: ONE sentence, the single most useful change for next time, concrete.
 score: 0-100 for this call. 100 = every sign handled well and the customer left with a next step.
 Never write a diagnosis or a label about the customer. Return JSON only.`;
 
-export default async function handler(req: Request): Promise<Response> {
-  if (req.method !== "POST") return json(405, { error: "POST only" });
+export async function handle(req: Request): Promise<Response> {
+  const pre = preflight(req);
+  if (pre) return pre;
+  if (req.method !== "POST") return json(req, 405, { error: "POST only" });
   let body: ReportRequest;
   try {
     body = await readJson<ReportRequest>(req);
   } catch (e) {
-    return json(400, { error: String(e) });
+    return json(req, 400, { error: String(e) });
   }
   const s = body.session;
-  if (!s?.lines?.length) return json(400, { error: "empty session" });
+  if (!s?.lines?.length) return json(req, 400, { error: "empty session" });
 
   const t0 = s.startedAt;
   const transcript = s.lines
@@ -137,7 +140,7 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
       .map((g) => ({ key: g.key, label: g.dueLabel ?? "Due", date: g.dueDate!, title: g.title, customer: s.customer.name, callId: s.id }));
     const durationSec = Math.round(((s.endedAt ?? Date.now()) - t0) / 1000);
 
-    return json(200, {
+    return json(req, 200, {
       callId: s.id,
       summary: data.summary,
       items,
@@ -153,7 +156,7 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
       model,
     });
   } catch (e) {
-    return json(502, { error: String(e instanceof Error ? e.message : e) });
+    return json(req, 502, { error: String(e instanceof Error ? e.message : e) });
   }
 }
 

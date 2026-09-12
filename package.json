@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "eval": "node eval/run.mjs"
+    "eval": "node eval/run.mjs",
+    "functions:deploy": "supabase functions deploy --project-ref clqcpqxivqylnjqmfeuz"
   },
   "dependencies": {
     "@elevenlabs/client": "^1.25.0",
@@ -16,7 +17,6 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@netlify/functions": "^6.0.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

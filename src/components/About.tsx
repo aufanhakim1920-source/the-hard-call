@@ -16,7 +16,7 @@ export function About() {
   const [ev, setEv] = useState<EvalResults | null>(null);
   const [health, setHealth] = useState<{ ok: boolean; gemini: boolean; model: string } | null>(null);
   useEffect(() => {
-    fetch("/eval-results.json")
+    fetch(`${import.meta.env.BASE_URL}eval-results.json`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setEv(d))
       .catch(() => {});

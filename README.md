@@ -5,7 +5,7 @@
 Built in 48 hours for *Forward: AI in Business Hackathon* (DSCubed × RAID, University of Melbourne, 12–14 Sep 2026).
 **Track 3 — Solve a Business Problem**, entered alongside the **Built With ElevenLabs** track.
 
-> Live app: _(link goes here once deployed)_ · Video: _(link goes here)_
+> **Live app:** https://aufanhakim1920-source.github.io/the-hard-call/ · Video: _(link goes here)_
 
 ---
 
@@ -41,19 +41,19 @@ A bank (Bendigo and Adelaide) already uses AI to find hardship in calls — **af
 ## How it's built
 
 ```
-browser (React + Vite)                     Netlify Functions (Node)            models
-─────────────────────                      ─────────────────────────            ──────
-Web Speech API ──► finished sentence ──►   /api/flags   (sign engine)   ──►   Gemini 2.5 Flash
-   mask card/account numbers first         /api/report  (report card)  ──►   Gemini 2.5 Flash
-ElevenLabs voice agent (practice) ──►      /api/scenario (de-identified ──►   Gemini 2.5 Flash
-   both transcripts feed the same engine                practice customer)
-localStorage: reports · deadlines · lessons · practice customers   (never a transcript)
+browser (React + Vite, on GitHub Pages)    Supabase Edge Function `api` (Deno)   models
+───────────────────────────────────────    ───────────────────────────────────   ──────
+Web Speech API ──► finished sentence ──►   /api/flags    (sign engine)    ──►   Gemini 2.5 Flash
+   mask card/account numbers first         /api/report   (report card)   ──►   Gemini 2.5 Flash
+ElevenLabs voice agent (practice) ──►      /api/scenario (de-identified   ──►   Gemini 2.5 Flash
+   both transcripts feed the same engine                 practice customer)
+localStorage today, Supabase tables next: reports · deadlines · lessons · practice customers (never a transcript)
 ```
 
-- **`netlify/lib/signs.mts`** — the sign taxonomy: 2 legal signs (hardship request → 21 days, NCC s72; complaint → 30 days, RG 271) and 9 tips (job loss, health, bereavement, separation, safety, gambling, disaster, stress, scam). Deadlines are computed in code, never by the model.
-- **`netlify/functions/flags.mts`** — one call per finished sentence: last 14 lines in, speaker + new signs out. Dedup by key on both sides, so a sign fires once. Manager lessons are appended to the prompt.
-- **`netlify/functions/report.mts`** — judges each sign as handled / partly / missed from the transcript, not from the tick.
-- **`netlify/functions/scenario.mts`** — turns a call into a practice customer with name, job, suburb and every number changed.
+- **`supabase/functions/_shared/signs.ts`** — the sign taxonomy: 2 legal signs (hardship request → 21 days, NCC s72; complaint → 30 days, RG 271) and 9 tips (job loss, health, bereavement, separation, safety, gambling, disaster, stress, scam). Deadlines are computed in code, never by the model.
+- **`supabase/functions/api/flags.ts`** — one call per finished sentence: last 14 lines in, speaker + new signs out. Dedup by key on both sides, so a sign fires once. Manager lessons are appended to the prompt.
+- **`supabase/functions/api/report.ts`** — judges each sign as handled / partly / missed from the transcript, not from the tick.
+- **`supabase/functions/api/scenario.ts`** — turns a call into a practice customer with name, job, suburb and every number changed.
 - **`src/lib/practice.ts`** — the ElevenLabs agent is public with overrides enabled; the browser starts it with just its id and hands it the scenario as a prompt override. No key in the browser.
 
 ### Why these models
@@ -77,12 +77,13 @@ The sign engine runs on **every sentence of a live call**, so it must answer in 
 
 ```bash
 npm install
-cp .env.example .env        # add GEMINI_API_KEY; VITE_ELEVENLABS_AGENT_ID for practice mode
-npx netlify dev             # app + functions at http://localhost:8888
-npm run eval                # score the sign engine
+cp .env.example .env        # public VITE_* values are in the example; GEMINI_API_KEY only for the eval
+npm run dev                 # http://localhost:5173 — talks to the deployed Supabase functions
+npm run eval                # score the sign engine locally (needs GEMINI_API_KEY in .env)
+npm run functions:deploy    # redeploy the edge function (needs a Supabase access token)
 ```
 
-Deploys on Netlify: `main` is production; every pull request gets its own preview URL.
+Hosting: the site is static on **GitHub Pages** (built by `.github/workflows/pages.yml` on every push to `main`); the engine runs as a **Supabase Edge Function**, where the Gemini key lives as a secret. No key is ever in the repo or the browser.
 
 ## Team
 
