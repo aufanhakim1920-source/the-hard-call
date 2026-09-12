@@ -777,3 +777,52 @@ rather than a confident "0 missed".
 
 ⭐ **If two things are meant to be compared, measure how they differ in the
 first second — not whether the difference is present somewhere on the page.**
+
+## A guard cannot un-freeze a transition, only choose when it starts
+
+Third instance tonight, and the one that finally generalises. The answer-time
+bars grew from `scaleX(0)` behind a `requestAnimationFrame`, with a
+`setTimeout` as the rescue. Measured with the transition paused and seeked:
+**0 px of a 200 px bar at t=0.** And the rescue was no rescue — the timer only
+*starts* the same transition, so a tab that cannot paint would have held
+"answered instantly" on all four lanes **indefinitely**, not for 900 ms.
+
+⭐ **A quantity that animates up from zero has no safe guard.** Whatever is
+painted first is what a frozen tab holds, and a guard only decides when that
+first paint happens. The fix is never a better guard; it is to make the value
+true on the first frame and let the row *arrive* with a transform instead.
+
+The deeper reason the sweep was expendable here: **the distance already said
+the duration in space. The sweep said it again in time, and time is the half
+that can lie.**
+
+## Gold as the only signal made the worst call look like the best
+
+When a call goes entirely one way the split bar is a single segment. So the
+coached card drew 860 px of gold tint, and the silent card drew 860 px of flat
+gold. At a glance both read as *one long gold bar* — and since gold is the
+positive accent everywhere else in this product, the flat slab read as the
+**fuller** of the two. Backwards, on the screen the entire pitch rests on.
+
+The missed segment is now hazard bars cut out of the solid: 2 px of the card's
+own ground every 6 px at 45°. Texture rather than hue, so it survives
+greyscale, colour blindness and print; and under reduce-transparency the
+answered tint goes solid while the stripes stay, so the two never converge.
+
+⭐ **One accent colour cannot carry two verdicts.** The moment a chart can be
+100% of a single category, length stops distinguishing anything and fill has
+to. This is the fourth time on this project that meaning resting on colour
+alone has failed — and the first time it failed while every individual colour
+still passed its contrast check.
+
+## A head and the first card beneath it are one object
+
+The phone sheet's head announced the newest sign *by time*. The stack orders
+open-legal first, then open tips, then handled. On the demo call the legal
+sign is third of four in time — so the head named a tip while the gold legal
+card sat directly underneath it.
+
+⭐ **Two orderings of the same list is the worst version of both.** The head
+now takes the stack's order. The sheet's auto-lift still keys on the genuinely
+newest sign, because *that* is a question about what just happened rather than
+about what matters most.
