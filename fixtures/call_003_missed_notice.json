@@ -1,0 +1,29 @@
+{
+  "call_id": "call_003",
+  "scenario": "oral_notice_missed_by_staff",
+  "notes": "The demo call. Customer gives a clear oral hardship notice at ~52s. The staff member never recognises it, pivots straight to an informal payment arrangement, never mentions the hardship process, and closes with 'I'll put a note on the file' — which starts no clock and creates no record. This is the NAB/AFSH failure pattern in miniature. Detector MUST fire at the notice; the report card must mark the misses.",
+  "duration_ms": 158700,
+  "turns": [
+    { "speaker": "staff", "start_ms": 0, "end_ms": 4800, "text": "Meridian Home Loans, Jordan speaking. Name and property address please?" },
+    { "speaker": "customer", "start_ms": 5200, "end_ms": 11600, "text": "Mei Lam. It's 27 Ardwick Street, Sunshine West." },
+    { "speaker": "staff", "start_ms": 12000, "end_ms": 16100, "text": "Got it. I can see there's an arrears balance on the account. Are you calling about that?" },
+    { "speaker": "customer", "start_ms": 16500, "end_ms": 21300, "text": "Yes. I've missed the last two and I don't think I'm going to make the next one either." },
+    { "speaker": "staff", "start_ms": 21700, "end_ms": 25900, "text": "Okay. What's the plan to bring the account back up to date?" },
+    { "speaker": "customer", "start_ms": 26300, "end_ms": 39800, "text": "That's the thing, I don't really have one. I had surgery in July and I'm signed off work until at least February. I'm on the income protection but it's about sixty per cent of what I was on." },
+    { "speaker": "staff", "start_ms": 40200, "end_ms": 44600, "text": "Right. And is there anyone else contributing to the household?" },
+    { "speaker": "customer", "start_ms": 45000, "end_ms": 64200, "text": "No, it's just me. Look, I've done the numbers a dozen times. On sixty per cent I cannot cover the repayment. Not next month, not the month after. It's going to be like this until I'm cleared to go back, and that's four or five months away at best." },
+    { "speaker": "staff", "start_ms": 64600, "end_ms": 71200, "text": "Okay. What I can do is set up an arrangement where you pay what you can each month and we'll review it." },
+    { "speaker": "customer", "start_ms": 71600, "end_ms": 76400, "text": "What does that mean, though? Am I still behind? Does it still count against me?" },
+    { "speaker": "staff", "start_ms": 76800, "end_ms": 86300, "text": "The arrears stay on the account, yes, but as long as you're paying something each month it shows you're engaging with us." },
+    { "speaker": "customer", "start_ms": 86700, "end_ms": 94100, "text": "And the letters? I got one last week that mentioned legal action. Does that stop?" },
+    { "speaker": "staff", "start_ms": 94500, "end_ms": 102800, "text": "I can't guarantee that. The letters are automated from the system. I'd just call us if you get another one." },
+    { "speaker": "customer", "start_ms": 103200, "end_ms": 110600, "text": "Right. So is there anything else, like — I don't know, is there a process for this? A friend of mine said her bank did something when her husband got sick." },
+    { "speaker": "staff", "start_ms": 111000, "end_ms": 119400, "text": "There are options but they'd depend on your circumstances. For now the arrangement is the quickest thing to get in place." },
+    { "speaker": "customer", "start_ms": 119800, "end_ms": 124300, "text": "Okay. How much do I need to pay for the arrangement?" },
+    { "speaker": "staff", "start_ms": 124700, "end_ms": 132900, "text": "Whatever you can manage. Say four hundred a month? Then we'd look at it again in three months." },
+    { "speaker": "customer", "start_ms": 133300, "end_ms": 139800, "text": "I can probably do four hundred. I don't know what happens after three months though." },
+    { "speaker": "staff", "start_ms": 140200, "end_ms": 150100, "text": "We'll cross that bridge then. I'll put a note on the file that we've spoken and that you're on an informal arrangement." },
+    { "speaker": "customer", "start_ms": 150500, "end_ms": 154200, "text": "Alright. Thanks for your help." },
+    { "speaker": "staff", "start_ms": 154600, "end_ms": 158700, "text": "No problem. Anything else I can help with today?" }
+  ]
+}

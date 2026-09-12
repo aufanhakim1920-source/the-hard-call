@@ -1,0 +1,112 @@
+{
+  "_comment": "Example of what the detector actually emits, for all three fixtures. This is the payload the live coaching UI renders and the report card consumes. A flag has two parts: it is RAISED when an obligation is triggered, and RESOLVED when there is evidence in the transcript that it was met. Acknowledging a flag in the UI does not resolve it — only evidence does.",
+  "schema_version": "0.1",
+
+  "resolution_status": {
+    "satisfied": "Evidence in the transcript shows the obligation was met. resolution.evidence points at the turn.",
+    "missed": "The call ended and no turn satisfies the obligation.",
+    "unverified": "The obligation cannot be settled from the call audio alone — it is discharged after the call (a letter, a system action). Neither pass nor fail; it needs a system-side check."
+  },
+
+  "calls": {
+    "call_001": {
+      "flags": [
+        {
+          "flag_id": "f_001_01",
+          "call_id": "call_001",
+          "rule_id": "NCC_72_ORAL_NOTICE",
+          "raised_at": { "speaker": "customer", "start_ms": 51200 },
+          "obligation": "Assess the hardship notice and notify the customer of the decision",
+          "deadline_days": 21,
+          "deadline_from": "notice_received",
+          "authority": "National Credit Code s 72(4)",
+          "confidence": 0.91,
+          "staff_prompt": "Hardship notice received. 21-day clock started. Tell the customer the hardship process exists and lodge it.",
+          "resolution": {
+            "status": "satisfied",
+            "evidence": { "speaker": "staff", "start_ms": 86600 },
+            "reason": "Staff named the hardship notice, stated it was being lodged on the call, and set the 21-day expectation at 105800."
+          }
+        },
+        {
+          "flag_id": "f_001_02",
+          "call_id": "call_001",
+          "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+          "raised_at": { "speaker": "customer", "start_ms": 51200 },
+          "obligation": "Inform the customer that hardship provisions exist under the National Credit Code",
+          "deadline_days": null,
+          "deadline_from": null,
+          "authority": "ABA industry guideline — Banks' financial difficulty programs",
+          "confidence": 0.91,
+          "staff_prompt": "Tell the customer hardship provisions exist. Most customers do not know.",
+          "resolution": {
+            "status": "satisfied",
+            "evidence": { "speaker": "staff", "start_ms": 86600 },
+            "reason": "Explicitly explained, unprompted."
+          }
+        },
+        {
+          "flag_id": "f_001_03",
+          "call_id": "call_001",
+          "rule_id": "NCC_72_WRITTEN_NOTICE_30D",
+          "raised_at": { "speaker": "staff", "start_ms": 142700 },
+          "obligation": "If a variation deferring or reducing obligations for more than 90 days is agreed, send written notice of the contract changes",
+          "deadline_days": 30,
+          "deadline_from": "variation_agreed",
+          "authority": "National Credit Code s 72 / s 73",
+          "confidence": 0.64,
+          "staff_prompt": "If a variation over 90 days is agreed, written notice is due within 30 days.",
+          "resolution": {
+            "status": "unverified",
+            "evidence": null,
+            "reason": "Discharged after the call by a system action, not by anything said on it. No in-call evidence can settle this. Needs a system-side check."
+          }
+        }
+      ]
+    },
+
+    "call_002": {
+      "flags": [],
+      "_comment": "Correct output is an empty array. The customer uses hardship vocabulary ('struggling', 'couldn't afford') but states a specific recovery date and confirms future repayments are manageable, so no obligation is triggered. Emitting any flag here is a false positive."
+    },
+
+    "call_003": {
+      "flags": [
+        {
+          "flag_id": "f_003_01",
+          "call_id": "call_003",
+          "rule_id": "NCC_72_ORAL_NOTICE",
+          "raised_at": { "speaker": "customer", "start_ms": 45000 },
+          "obligation": "Assess the hardship notice and notify the customer of the decision",
+          "deadline_days": 21,
+          "deadline_from": "notice_received",
+          "authority": "National Credit Code s 72(4)",
+          "confidence": 0.94,
+          "staff_prompt": "Hardship notice received. 21-day clock started. Tell the customer the hardship process exists and lodge it.",
+          "resolution": {
+            "status": "missed",
+            "evidence": null,
+            "reason": "No turn lodges a hardship notice or references the process. An informal arrangement was offered instead at 64600, which starts no statutory clock and creates no decision on record."
+          }
+        },
+        {
+          "flag_id": "f_003_02",
+          "call_id": "call_003",
+          "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+          "raised_at": { "speaker": "customer", "start_ms": 103200 },
+          "obligation": "Inform the customer that hardship provisions exist under the National Credit Code",
+          "deadline_days": null,
+          "deadline_from": null,
+          "authority": "ABA industry guideline — Banks' financial difficulty programs",
+          "confidence": 0.88,
+          "staff_prompt": "The customer has directly asked whether a process exists. Name the hardship provisions.",
+          "resolution": {
+            "status": "missed",
+            "evidence": null,
+            "reason": "Customer asked directly. Staff answered 'there are options but they'd depend on your circumstances' at 111000 and returned to the informal arrangement without naming the provisions."
+          }
+        }
+      ]
+    }
+  }
+}

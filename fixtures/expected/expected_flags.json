@@ -1,0 +1,56 @@
+{
+  "_comment": "Ground truth for the detector. Each call lists the flags that must be raised and the ones that must not. tolerance_ms is how far off the trigger timestamp may be and still count as correct.",
+  "tolerance_ms": 3000,
+
+  "call_001": {
+    "must_flag": [
+      {
+        "rule_id": "NCC_72_ORAL_NOTICE",
+        "trigger_turn_start_ms": 51200,
+        "why": "'I can't make the repayment. Not this month and honestly not for a while' — stated inability, medium term. Reinforced at 74700 with 'four, five months'.",
+        "obligation": "Assess hardship notice and notify the decision",
+        "deadline_days": 21,
+        "authority": "National Credit Code s 72(4)"
+      }
+    ],
+    "must_not_flag": [],
+    "staff_handling": "correct",
+    "expected_report_card": "Recognised the notice, named the hardship process, set the 21-day expectation, paused collections, offered financial counselling. Use as the reference 'good call'."
+  },
+
+  "call_002": {
+    "must_flag": [],
+    "must_not_flag": [
+      {
+        "rule_id": "NCC_72_ORAL_NOTICE",
+        "why": "Customer says 'struggling' and 'couldn't afford' but states a specific near-term recovery date and confirms future repayments are manageable. Temporary difficulty, not inability. Firing here is a false positive and the single most important failure to avoid."
+      }
+    ],
+    "staff_handling": "correct",
+    "expected_report_card": "Correctly probed whether the change was structural, confirmed future affordability, logged contact. No hardship obligations triggered."
+  },
+
+  "call_003": {
+    "must_flag": [
+      {
+        "rule_id": "NCC_72_ORAL_NOTICE",
+        "trigger_turn_start_ms": 45000,
+        "why": "'I cannot cover the repayment. Not next month, not the month after... four or five months' — unambiguous stated inability over the medium term.",
+        "obligation": "Assess hardship notice and notify the decision",
+        "deadline_days": 21,
+        "authority": "National Credit Code s 72(4)"
+      },
+      {
+        "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+        "trigger_turn_start_ms": 103200,
+        "why": "Customer directly asks whether a process exists. Staff answers vaguely and steers back to the informal arrangement without naming the hardship provisions.",
+        "obligation": "Tell the customer hardship provisions exist under the National Credit Code",
+        "deadline_days": null,
+        "authority": "ABA industry guideline — Banks' financial difficulty programs"
+      }
+    ],
+    "must_not_flag": [],
+    "staff_handling": "failed",
+    "expected_report_card": "Missed the oral hardship notice. Substituted an informal arrangement for a statutory assessment, so no 21-day clock started and no decision is owed on record. Did not inform the customer of hardship provisions when directly asked. Could not confirm collections activity would stop. Closed with a file note, which creates no obligation and no audit trail — the same substitution pattern behind the 2025 NAB/AFSH penalty."
+  }
+}

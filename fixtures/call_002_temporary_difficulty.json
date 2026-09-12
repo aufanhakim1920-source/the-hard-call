@@ -1,0 +1,21 @@
+{
+  "call_id": "call_002",
+  "scenario": "temporary_difficulty_not_a_hardship_notice",
+  "notes": "Negative case. Customer uses the exact informal vocabulary the ABA trains staff to listen for — 'struggling', 'couldn't afford' — but states a near-term recovery with a specific date. Legally this is NOT a hardship notice under s 72: no inability to meet obligations, just a timing problem. Detector MUST NOT raise an NCC_72_ORAL_NOTICE flag. A keyword matcher will fail this fixture.",
+  "duration_ms": 96300,
+  "turns": [
+    { "speaker": "staff", "start_ms": 0, "end_ms": 5400, "text": "Meridian Home Loans, this is Tomas. Can I start with your name and the address on the loan?" },
+    { "speaker": "customer", "start_ms": 5800, "end_ms": 11200, "text": "Sarah Okonkwo, and it's 8 Ellerslie Road, Northcote." },
+    { "speaker": "staff", "start_ms": 11600, "end_ms": 15300, "text": "Thanks Sarah. I can see the account. What's going on today?" },
+    { "speaker": "customer", "start_ms": 15700, "end_ms": 26800, "text": "I missed the repayment on the third and I got the text about it. I wanted to call before it turned into something. It's honestly been a struggle this month, I couldn't afford the full amount when it came out." },
+    { "speaker": "staff", "start_ms": 27200, "end_ms": 30900, "text": "Okay. Has something changed with your situation?" },
+    { "speaker": "customer", "start_ms": 31300, "end_ms": 45600, "text": "Sort of, but not in a bad way. I changed jobs in August and the new place pays monthly instead of fortnightly, so I've had this awkward five-week gap with nothing coming in. The first full pay lands on the twentieth." },
+    { "speaker": "staff", "start_ms": 46000, "end_ms": 50200, "text": "Right, so it's a timing mismatch rather than a drop in income." },
+    { "speaker": "customer", "start_ms": 50600, "end_ms": 61400, "text": "Exactly. The new job actually pays more. It's just this one month that's tight. Once the twentieth comes through I'll be square and I can cover the missed one as well." },
+    { "speaker": "staff", "start_ms": 61800, "end_ms": 67300, "text": "And you're comfortable that from next month the normal repayment is manageable?" },
+    { "speaker": "customer", "start_ms": 67700, "end_ms": 74100, "text": "Yeah, no dramas. It'll all be in order within the month. I just didn't want it sitting there unexplained." },
+    { "speaker": "staff", "start_ms": 74500, "end_ms": 85800, "text": "That's fine, and thanks for calling ahead. I'll note the account that you've been in contact and that you're catching it up after the twentieth, so nothing further goes out to you in the meantime." },
+    { "speaker": "customer", "start_ms": 86200, "end_ms": 89400, "text": "Great. Do I need to do anything else?" },
+    { "speaker": "staff", "start_ms": 89800, "end_ms": 96300, "text": "No, just make the catch-up payment when the pay lands. If anything changes before then, call us back." }
+  ]
+}
