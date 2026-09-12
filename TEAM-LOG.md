@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 03:25 | aufanhakim1920-source | project | [four wrong numbers and one false claim in the file a judge reads first](../../commit/7d216663bed5b79c6f26e7ffbe5e6f915c49845a) | README.md, DECISIONS.md, DEMO-SCRIPT.md +1 | +51 / -27 |
 | 13 Sept, 03:18 | aufanhakim1920-source | other | [a privacy claim belongs on the screen, not in the pitch](../../commit/6d37ea89291e22506232038120b27c8a4a2ee9ca) | DECISIONS.md | +23 / -0 |
 | 13 Sept, 03:18 | aufanhakim1920-source | practice | [the loop works end to end, and a failure in it now says what happened](../../commit/24a67731ddad62f0cbd20aef223792c17bae8a26) | Practice.tsx, ReportCard.tsx, report-visuals.css +2 | +261 / -15 |
 | 13 Sept, 02:59 | aufanhakim1920-source | other | [the live engine verified, and the one timing risk in the demo](../../commit/64641b28a930647a39ea000ace49b6e70d9eb86f) | DECISIONS.md | +30 / -0 |
