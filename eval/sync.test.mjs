@@ -8,18 +8,23 @@ function setup(storageFails = false) {
   setItem: (k,v) => { if (storageFails) throw Error('private'); storage.set(k,v); },
  };
  const store = loadTS('src/lib/store.ts', {react: {}, './types':{uid:()=> 'id'}, './reportScore':{hasVerifiedReportScore:()=>true}}, {localStorage});
- let user = null, time = 0, failed = false, hold = null;
- const reads = [], writes = [], intervals = [], timers = new Map(); let nextTimer = 0;
+ let user = null, time = 0, failed = false, deleteFailed = false, hold = null;
+ const reads = [], writes = [], deletes = [], cloud = { reports: [], deadlines: [], lessons: [], scenarios: [] }, intervals = [], timers = new Map(); let nextTimer = 0;
  const win = { setInterval:(f)=>{intervals.push(f);return intervals.length;}, clearTimeout:(id)=>timers.delete(id), setTimeout:(f)=>{timers.set(++nextTimer,f);return nextTimer;} };
  const db = { from:(table)=>({
-  select:()=>({eq:async (column,id)=>{reads.push({table,column,id});if(hold) await hold; return failed?{data:null,error:{message:'offline'}}:{data:[],error:null};}}),
+  select:()=>({eq:async (column,id)=>{reads.push({table,column,id});if(hold) await hold; return failed?{data:null,error:{message:'offline'}}:{data:cloud[table],error:null};}}),
   upsert:async(rows)=>{writes.push({table,rows});return {error:null};},
+  delete:()=>({eq:(column,uid)=>({eq:async(idColumn,id)=>{
+    deletes.push({table,column,uid,idColumn,id});
+    if(deleteFailed) return {error:{message:'delete unavailable'}};
+    cloud[table]=cloud[table].filter(row=>row.id!==id);return {error:null};
+  }})}),
  })};
  const sync = loadTS('src/lib/sync.ts', {
   './auth':{getAuth:()=>({user})}, './store':store, './supabase':{supabase:db}, './reportScore':{hasVerifiedReportScore:()=>false},
  }, {window:win,Date:class extends Date {static now(){return time;}},console:{warn:()=>{}}}, 'export { pull, push };');
  const login = (id) => {user=id?{id}:null; store.setStoreOwner(id);};
- return {store,sync,reads,writes,intervals,timers,login,setFailure:(v)=>failed=v,advance:()=>time+=5001,setHold:(v)=>hold=v};
+ return {store,sync,reads,writes,deletes,cloud,intervals,timers,login,localStorage,setDeleteFailure:(v)=>deleteFailed=v,setFailure:(v)=>failed=v,advance:()=>time+=5001,setHold:(v)=>hold=v};
 }
 
 test('account caches stay separate and legacy local records are not silently uploaded', async()=>{
@@ -60,4 +65,39 @@ test('startup is idempotent and pending uploads are cancelled on account change'
  const h=setup();h.login('A');h.sync.startSync();h.sync.startSync();assert.equal(h.intervals.length,1);
  await h.sync.pull();h.store.actions.addLesson({text:'A',kind:'wording'});assert.equal(h.timers.size,1);
  h.login('B');assert.equal(h.timers.size,0);assert.equal(h.store.getStore().lessons.length,0);
+});
+
+
+test('offline deletion is hidden on pull and sent only for its owning account',async()=>{
+ const h=setup();h.login('A');h.store.actions.addLesson({text:'Remove me',kind:'wording'});
+ h.store.actions.removeLesson('id');
+ h.cloud.lessons=[{id:'id',kind:'wording',text:'Remove me',used_on:0,created_at:new Date(0).toISOString()}];
+ await h.sync.pull();assert.equal(h.store.getStore().lessons.length,0);
+ await h.sync.push(h.store.getStore());
+ assert.equal(h.deletes.length,1);assert.equal(h.deletes[0].uid,'A');assert.equal(h.deletes[0].idColumn,'id');
+ assert.equal(h.store.getStore().pendingDeletes.lessons.length,0);
+ assert.equal(h.cloud.lessons.length,0);
+});
+
+test('failed deletes remain queued and retry after backoff',async()=>{
+ const h=setup();h.login('A');await h.sync.pull();
+ h.store.actions.addLesson({text:'Delete',kind:'wording'});h.store.actions.removeLesson('id');
+ h.setDeleteFailure(true);await h.sync.push(h.store.getStore());
+ assert.equal(h.store.getStore().pendingDeletes.lessons.length,1);
+ await h.sync.push(h.store.getStore());assert.equal(h.deletes.length,1);
+ h.setDeleteFailure(false);h.advance();await h.sync.push(h.store.getStore());
+ assert.equal(h.deletes.length,2);assert.equal(h.store.getStore().pendingDeletes.lessons.length,0);
+});
+
+test('generated scenario delete persists across reload and is isolated from other users',()=>{
+ const h=setup();h.login('A');h.store.actions.addScenario({id:'scenario-1',source:'generated'});
+ h.store.actions.removeScenario('scenario-1');
+ const restored=loadTS('src/lib/store.ts',{react:{},'./types':{uid:()=> 'id'},'./reportScore':{hasVerifiedReportScore:()=>true}},{localStorage:h.localStorage});
+ restored.setStoreOwner('B');assert.equal(restored.getStore().pendingDeletes,undefined);
+ restored.setStoreOwner('A');assert.equal(restored.getStore().pendingDeletes.scenarios[0],'scenario-1');
+});
+
+test('clearing device data does not turn an empty cache into a remote wipe',async()=>{
+ const h=setup();h.login('A');await h.sync.pull();h.store.actions.wipe();
+ await h.sync.push(h.store.getStore());assert.equal(h.deletes.length,0);
 });

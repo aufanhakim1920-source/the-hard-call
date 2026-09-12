@@ -149,6 +149,7 @@ export interface Settings {
 }
 
 export interface Store {
+  pendingDeletes?: { lessons: string[]; scenarios: string[] };
   reports: Report[];
   deadlines: Deadline[];
   lessons: Lesson[];

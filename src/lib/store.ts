@@ -128,7 +128,11 @@ export const actions = {
     update((s) => ({ ...s, lessons: [{ ...l, id: uid("ls"), t: Date.now(), usedOn: 0 }, ...s.lessons] }));
   },
   removeLesson(id: string) {
-    update((s) => ({ ...s, lessons: s.lessons.filter((l) => l.id !== id) }));
+    update((s) => ({ ...s, lessons: s.lessons.filter((l) => l.id !== id),
+      pendingDeletes: owner && s.lessons.some((l) => l.id === id)
+        ? { lessons: [...new Set([...(s.pendingDeletes?.lessons ?? []), id])], scenarios: s.pendingDeletes?.scenarios ?? [] }
+        : s.pendingDeletes,
+    }));
   },
   addScenario(sc: Scenario) {
     update((s) => ({ ...s, scenarios: [sc, ...s.scenarios] }));
@@ -137,7 +141,11 @@ export const actions = {
     update((s) => ({ ...s, scenarios: s.scenarios.map((x) => (x.id === id ? { ...x, approved: true } : x)) }));
   },
   removeScenario(id: string) {
-    update((s) => ({ ...s, scenarios: s.scenarios.filter((x) => x.id !== id) }));
+    update((s) => ({ ...s, scenarios: s.scenarios.filter((x) => x.id !== id),
+      pendingDeletes: owner && s.scenarios.some((sc) => sc.id === id && sc.source === "generated")
+        ? { lessons: s.pendingDeletes?.lessons ?? [], scenarios: [...new Set([...(s.pendingDeletes?.scenarios ?? []), id])] }
+        : s.pendingDeletes,
+    }));
   },
   wipe() {
     commit(EMPTY);

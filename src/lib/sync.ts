@@ -138,6 +138,8 @@ let pendingEpoch: number | null = null;
 let retryAfter = 0;
 let observedEpoch = getStoreScope().epoch;
 let started = false;
+let pushingEpoch: number | null = null;
+let pushRetryAfter = 0;
 function current(uid: string, epoch: number) {
   const scope = getStoreScope();
   return getAuth().user?.id === uid && scope.owner === uid && scope.epoch === epoch;
@@ -160,7 +162,9 @@ export function onSync(l: (s: SyncState) => void): () => void {
 async function push(store: Store) {
   const auth = getAuth();
   const scope = getStoreScope();
-  if (!supabase || !auth.user || !current(auth.user.id, scope.epoch) || pulledFor !== auth.user.id) return;
+  if (!supabase || !auth.user || !current(auth.user.id, scope.epoch) || pulledFor !== auth.user.id ||
+      pushingEpoch === scope.epoch || Date.now() < pushRetryAfter) return;
+  pushingEpoch = scope.epoch;
   setSync("saving");
   try {
     const uid = auth.user.id;
@@ -175,12 +179,31 @@ async function push(store: Store) {
     const bad = results.find((r) => r?.error);
     if (bad?.error) throw new Error(bad.error.message);
     if (!current(uid, scope.epoch)) return;
-    lastPushedFor = uid;
+    // Explicit user deletions only: never infer deletion from an empty cache.
+    const pending = store.pendingDeletes;
+    for (const table of ["lessons", "scenarios"] as const) {
+      for (const id of pending?.[table] ?? []) {
+        if (!current(uid, scope.epoch)) return;
+        const result = await supabase.from(table).delete().eq("user_id", uid).eq("id", id);
+        if (result.error) throw new Error(result.error.message);
+        if (!current(uid, scope.epoch)) return;
+        update((cur) => ({ ...cur, pendingDeletes: {
+          lessons: (cur.pendingDeletes?.lessons ?? []).filter((x) => table !== "lessons" || x !== id),
+          scenarios: (cur.pendingDeletes?.scenarios ?? []).filter((x) => table !== "scenarios" || x !== id),
+        } }));
+      }
+    }
+    pushRetryAfter = 0;
+    lastPushedFor = getStore() === store ? uid : "";
     setSync("saved");
   } catch (e) {
     if (!current(auth.user.id, scope.epoch)) return;
     console.warn("sync push failed", e);
+    lastPushedFor = "";
+    pushRetryAfter = Date.now() + 5000;
     setSync("error");
+  } finally {
+    if (pushingEpoch === scope.epoch) pushingEpoch = null;
   }
 }
 
@@ -210,8 +233,8 @@ async function pull(): Promise<boolean> {
       const sIds = have(cur.scenarios.map((x) => x.id));
       const reports = [...cur.reports, ...((r.data ?? []) as Row[]).filter((x) => !rIds.has(String(x.id))).map(reportFrom)].sort((a, b) => b.at - a.at);
       const deadlines = [...cur.deadlines, ...((d.data ?? []) as Row[]).filter((x) => !dIds.has(String(x.id))).map(deadlineFrom)].sort((a, b) => a.date.localeCompare(b.date));
-      const lessons = [...cur.lessons, ...((l.data ?? []) as Row[]).filter((x) => !lIds.has(String(x.id))).map(lessonFrom)].sort((a, b) => b.t - a.t);
-      const scenarios = [...cur.scenarios, ...((s.data ?? []) as Row[]).filter((x) => !sIds.has(String(x.id))).map(scenarioFrom)];
+      const lessons = [...cur.lessons, ...((l.data ?? []) as Row[]).filter((x) => !lIds.has(String(x.id)) && !cur.pendingDeletes?.lessons.includes(String(x.id))).map(lessonFrom)].sort((a, b) => b.t - a.t);
+      const scenarios = [...cur.scenarios, ...((s.data ?? []) as Row[]).filter((x) => !sIds.has(String(x.id)) && !cur.pendingDeletes?.scenarios.includes(String(x.id))).map(scenarioFrom)];
       return { ...cur, reports, deadlines, lessons, scenarios };
     });
     pulledFor = uid;
@@ -242,6 +265,7 @@ export function startSync() {
     pulledFor = "";
     lastPushedFor = "";
     retryAfter = 0;
+    pushRetryAfter = 0;
     setSync(scope.owner ? "idle" : "off");
   };
   setSync(getStoreScope().owner ? "idle" : "off");
@@ -250,6 +274,7 @@ export function startSync() {
     const uid = getAuth().user?.id;
     const epoch = getStoreScope().epoch;
     if (!uid || !current(uid, epoch) || pulledFor !== uid) return;
+    lastPushedFor = "";
     window.clearTimeout(timer);
     timer = window.setTimeout(() => {
       if (current(uid, epoch)) void push(getStore());
@@ -263,6 +288,8 @@ export function startSync() {
       void pull().then((loaded) => {
         if (loaded && current(uid, epoch) && lastPushedFor !== uid) void push(getStore());
       });
+    } else if (uid && current(uid, epoch) && lastPushedFor !== uid) {
+      void push(getStore());
     }
   }, 1000);
 }
