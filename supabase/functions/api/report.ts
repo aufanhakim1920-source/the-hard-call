@@ -4,6 +4,7 @@
 // missed, one tip for next time. Deterministic parts (counts, deadlines)
 // are computed here; the model only writes the judgement.
 
+import { adaptReportInput } from "../_shared/reportInput.ts";
 import { buildReportItems } from "../_shared/reportItems.ts";
 import { askGemini } from "../_shared/gemini.ts";
 import { json, preflight, readJson } from "../_shared/env.ts";
@@ -99,13 +100,28 @@ export async function handle(req: Request): Promise<Response> {
   if (pre) return pre;
   if (req.method !== "POST") return json(req, 405, { error: "POST only" });
   let body: ReportRequest;
+  let s: Session;
+  let canonical = false;
   try {
     body = await readJson<ReportRequest>(req);
+    if (!body || typeof body !== "object") throw new Error("Expected a report request object.");
+    canonical = "transcript" in body;
+    if (canonical && "session" in body) throw new Error("Send transcript or session, not both.");
+    s = canonical ? adaptReportInput(body) : body.session;
   } catch (e) {
     return json(req, 400, { error: String(e) });
   }
-  const s = body.session;
+
   if (!s?.lines?.length) return json(req, 400, { error: "empty session" });
+
+  // An explicit empty detector result is not a request to detect obligations again.
+  if (canonical && s.signs.length === 0) return json(req, 200, {
+    callId: s.id, summary: "No obligation flags were supplied for this call. Handling of flagged obligations was not scored.",
+    items: [], missedByAI: [], tip: "No obligation-specific coaching is available from this result.",
+    score: 0, scoreUnverified: true, caught: 0, handled: 0, partly: 0,
+    unverified: 0, missed: 0, deadlines: [],
+    durationSec: Math.round(((s.endedAt ?? 0) - s.startedAt) / 1000), model: "not-used",
+  });
 
   const t0 = s.startedAt;
   const transcript = s.lines
@@ -128,7 +144,7 @@ ${signs || "(none)"}
 ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario was built to test: ${s.scenarioExpected.join(", ")}` : ""}`;
 
   try {
-    const { data, model } = await askGemini<ModelReport>({ system: SYSTEM, user, schema: SCHEMA, temperature: 0.2 });
+    const { data, model } = await askGemini<ModelReport>({ system: SYSTEM + (canonical ? "\nThe supplied flags are the detector output. Assess only those flags; do not detect additional obligations. Return missedByAI as an empty array." : ""), user, schema: SCHEMA, temperature: 0.2 });
     const items = buildReportItems(s.signs, s.lines, data.items, t0);
     const caught = s.signs.length;
     const handled = items.filter((i) => i.verdict === "handled").length;
@@ -144,7 +160,7 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
       callId: s.id,
       summary: data.summary,
       items,
-      missedByAI: (data.missedByAI ?? []).slice(0, 2),
+      missedByAI: canonical ? [] : (data.missedByAI ?? []).slice(0, 2),
       tip: data.tip,
       score: Number.isFinite(data.score) ? Math.round(Math.max(0, Math.min(100, data.score))) : 0,
       scoreUnverified: unverified > 0 || !items.length || !Number.isFinite(data.score),
