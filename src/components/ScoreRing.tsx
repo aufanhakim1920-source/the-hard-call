@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
+import { motionOff } from "../lib/a11y";
 import "./report-visuals.css";
 
 // A canvas radial tick ring (Instruments §1a, value-bound): 96 ticks, the lit
@@ -59,7 +60,9 @@ export function ScoreRing({ score, size = 132, label = "score", unverified = fal
       n.textContent = unverified ? "—" : String(Math.round(target * p));
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // motionOff() is the OS setting OR the app's own switch; a hidden tab gets
+    // no frames at all. In both cases draw the finished ring, never the empty one.
+    if (motionOff() || document.hidden) {
       draw(1);
       return;
     }
@@ -73,7 +76,13 @@ export function ScoreRing({ score, size = 132, label = "score", unverified = fal
     };
     draw(0);
     raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    // The score is the first number a judge reads. If the frames never come,
+    // it must not sit at 0 out of 100 — that is a wrong answer, not a slow one.
+    const safety = window.setTimeout(() => draw(1), DURATION + 150);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(safety);
+    };
   }, [target, size, unverified]);
 
   return (

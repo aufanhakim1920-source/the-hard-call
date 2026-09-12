@@ -225,8 +225,10 @@
 
 /* A verdict the transcript could not support: dimmer than missed, never gold. */
 .rv-bar-row.unverified .rv-bar-verdict {
-  color: var(--text-muted, #9aa3ad);
+  /* --grey, not --text-3: measured, ink at 62% on cream composites to 4.42:1
+     and fails AA for text, while --grey is 5.01 on cream and 6.47 on ink. */
+  color: var(--grey);
 }
 .rv-bar-fill.unverified {
-  background: rgba(154, 163, 173, 0.1);
+  background: var(--gold-dim);
 }
