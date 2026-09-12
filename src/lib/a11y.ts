@@ -1,35 +1,58 @@
-// Accessibility mode.
+// Accessibility settings.
 //
-// The pattern is the one that worked on Peak & Pan and Biomate: an aria-live
-// region so real screen readers get TEXT (not a synthesised voice they are
-// already replacing), speech as a separate opt-in, a manual reduce-motion
-// switch that does not depend on the OS setting, and every accessible name
-// carrying the DATA rather than the colour.
+// The set is copied from what established products actually ship, not invented:
+//   text size in steps          BBC "My display", GOV.UK guidance
+//   line spacing                WCAG 1.4.12 Text Spacing
+//   a hyperlegible typeface     Atkinson Hyperlegible (Braille Institute)
+//   light / dark ground         every OS; glare and low vision cut both ways
+//   reduce transparency         macOS Accessibility → Display
+//   bigger targets              WCAG 2.5.8, Android/iOS touch guidance
+//   thicker focus ring          Windows "focus rectangle" thickness
+//   less motion                 prefers-reduced-motion, plus a manual switch
+//   announce / read aloud       VoiceOver + TalkBack behaviour, opt-in here
 //
-// The one thing specific to this app: the worker is on a live phone call.
-// Speaking a sign aloud can be heard by the customer through a headset, so
-// "speak the sign" is off by default and says so.
+// Two rules specific to this app:
+//   1. The worker is on a live call, so "read aloud" is OFF by default — a
+//      headset leaks it to the customer.
+//   2. A sign must never depend on colour alone: the legal one is a filled
+//      ticket with a hatch, the tips are outlined. That is not a setting.
 
 import { useSyncExternalStore } from "react";
 
+export type TextSize = 0 | 1 | 2 | 3;
+
 export interface A11y {
-  bigText: boolean;
+  textSize: TextSize;
+  lineSpacing: boolean;
+  hyperFont: boolean;
+  theme: "dark" | "light";
   highContrast: boolean;
   reduceMotion: boolean;
-  announce: boolean; // screen-reader announcements (free, on by default)
-  speak: boolean; // spoken aloud (off by default — the customer may hear it)
+  reduceTransparency: boolean;
+  bigTargets: boolean;
+  thickFocus: boolean;
   underlineLinks: boolean;
+  announce: boolean;
+  speak: boolean;
 }
 
 const KEY = "the-hard-call:a11y";
 const DEFAULTS: A11y = {
-  bigText: false,
+  textSize: 0,
+  lineSpacing: false,
+  hyperFont: false,
+  theme: "dark",
   highContrast: false,
   reduceMotion: false,
+  reduceTransparency: false,
+  bigTargets: false,
+  thickFocus: false,
+  underlineLinks: false,
   announce: true,
   speak: false,
-  underlineLinks: false,
 };
+
+export const TEXT_SIZE_LABELS = ["Default", "Large", "Larger", "Largest"];
 
 let state: A11y = load();
 const listeners = new Set<() => void>();
@@ -37,7 +60,11 @@ const listeners = new Set<() => void>();
 function load(): A11y {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...DEFAULTS, ...(JSON.parse(raw) as Partial<A11y>) } : DEFAULTS;
+    if (!raw) return DEFAULTS;
+    const parsed = JSON.parse(raw) as Partial<A11y> & { bigText?: boolean };
+    // Migrate the first version's single "bigText" switch.
+    if (parsed.bigText && parsed.textSize === undefined) parsed.textSize = 2;
+    return { ...DEFAULTS, ...parsed };
   } catch {
     return DEFAULTS;
   }
@@ -48,29 +75,38 @@ function commit(next: A11y) {
   try {
     localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
-    /* private mode — keep it in memory */
+    /* private mode — memory only */
   }
   apply();
   listeners.forEach((l) => l());
 }
 
-/** Put the switches on <html> so CSS can respond without prop-drilling. */
+/** Everything lands on <html> so CSS answers without prop-drilling. */
 export function apply() {
   const r = document.documentElement;
-  r.classList.toggle("big-text", state.bigText);
+  r.dataset.text = String(state.textSize);
+  r.dataset.theme = state.theme;
+  r.classList.toggle("line-spacing", state.lineSpacing);
+  r.classList.toggle("hyper-font", state.hyperFont);
   r.classList.toggle("high-contrast", state.highContrast);
   r.classList.toggle("reduce-motion", state.reduceMotion);
+  r.classList.toggle("reduce-transparency", state.reduceTransparency);
+  r.classList.toggle("big-targets", state.bigTargets);
+  r.classList.toggle("thick-focus", state.thickFocus);
   r.classList.toggle("underline-links", state.underlineLinks);
+  // Let the browser paint form controls and scrollbars to match.
+  r.style.colorScheme = state.theme;
 }
 
 export function getA11y(): A11y {
   return state;
 }
-
 export function setA11y(patch: Partial<A11y>) {
   commit({ ...state, ...patch });
 }
-
+export function resetA11y() {
+  commit({ ...DEFAULTS });
+}
 export function useA11y(): A11y {
   return useSyncExternalStore(
     (l) => {
@@ -79,6 +115,11 @@ export function useA11y(): A11y {
     },
     () => state,
   );
+}
+
+/** How many switches are away from their default — shown on the chip. */
+export function changedCount(): number {
+  return (Object.keys(DEFAULTS) as (keyof A11y)[]).filter((k) => state[k] !== DEFAULTS[k]).length;
 }
 
 // ---- the announcer -------------------------------------------------------
@@ -91,15 +132,11 @@ export function registerLiveRegions(polite: HTMLElement | null, urgent: HTMLElem
   urgentEl = urgent;
 }
 
-/**
- * Say something once. `urgent` interrupts the screen reader — reserve it for a
- * legal sign, where a missed second is a missed deadline.
- */
+/** Say something once. `urgent` interrupts — reserve it for a legal sign. */
 export function announce(text: string, urgent = false) {
   if (!state.announce || !text) return;
   const el = urgent ? urgentEl : politeEl;
   if (el) {
-    // Clearing first makes a repeated string announce again.
     el.textContent = "";
     window.setTimeout(() => {
       if (el) el.textContent = text;
@@ -113,7 +150,7 @@ export function announce(text: string, urgent = false) {
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     } catch {
-      /* no voices on this machine */
+      /* no voices here */
     }
   }
 }
