@@ -473,7 +473,10 @@ select.field option {
 }
 @media (max-width: 980px) {
   .call-body {
-    grid-template-columns: 1fr;
+    /* minmax(0,...) not 1fr: a bare 1fr track is minmax(auto,1fr) and refuses
+       to shrink below its widest child, which pushed the whole call 6px wider
+       than the phone and gave the page a sideways scroll. */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1415,7 +1418,7 @@ select.field option {
     width: 100%;
   }
   .call-body {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .words {
     border-right: 0;
@@ -1502,11 +1505,63 @@ select.field option {
   .setup select.field {
     grid-column: 1 / -1;
   }
-  .call-head .spacer {
+  /* The phone call header is TWO rows, not three.
+     row 1: [demo replay] Sarah M. .......... 04:00
+     row 2: home loan - bank rang them ... [End call]
+     Before this, the name, the meta and the controls each took a row and the
+     first word of the call started 263px down an 812px screen. */
+  .call-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    row-gap: 6px;
+    column-gap: 10px;
+    padding: 12px 14px;
+  }
+  .call-head .who {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-content: center;
+    row-gap: 4px;
+  }
+  .call-head .who .sub {
+    flex-basis: 100%;
+  }
+  .call-head .spacer,
+  .call-head .meter {
     display: none;
   }
   .call-head .clock {
-    margin-left: auto;
+    grid-column: 2;
+    grid-row: 1;
+    margin-left: 0;
+  }
+  .call-head > .btn {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+  /* Before the call starts the three setup fields own the full width. */
+  .call-head:has(.setup) .setup {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .call-head:has(.setup) .clock {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+  }
+  /* One column, so the section marker is obvious. Dropping it lets the state
+     line say its whole sentence instead of ending in a mid-word ellipsis. */
+  .words-head .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .words-head {
+    padding: 10px 14px 6px;
   }
 }
 
@@ -1594,9 +1649,6 @@ select.field option {
   gap: 8px;
 }
 @media (max-width: 760px) {
-  .acct-chip .acct-label {
-    max-width: 80px;
-  }
   .acct-panel {
     position: fixed;
     left: 14px;
@@ -1606,6 +1658,10 @@ select.field option {
   }
 }
 
+/* The phone top bar is exactly TWO rows: the controls, then the tabs.
+   Measured before this rule: three rows, 116px, with the sound button alone
+   on a row of its own and "Saved here only" truncated to "Saved here o…".
+   Every control keeps its accessible name — only the visible words go. */
 @media (max-width: 760px) {
   .topbar {
     height: auto;
@@ -1613,21 +1669,48 @@ select.field option {
     padding: 8px 14px 0;
     overflow: visible;
     row-gap: 0;
+    gap: 8px;
   }
   .topbar .tabs {
     order: 10;
-    width: 100%;
     overflow-x: auto;
     scrollbar-width: none;
     margin: 4px -14px 0;
     padding: 0 14px;
     width: calc(100% + 28px);
+    scroll-padding-inline: 14px;
   }
   .topbar .tabs::-webkit-scrollbar {
     display: none;
   }
+  /* A cut-off tab must read as scrollable. The fade sits on the side that
+     actually has hidden tabs — never on both when there is nothing there. */
+  .topbar .tabs[data-edge="right"] {
+    mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent);
+  }
+  .topbar .tabs[data-edge="left"] {
+    mask-image: linear-gradient(90deg, transparent, #000 34px);
+  }
+  .topbar .tabs[data-edge="both"] {
+    mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent);
+  }
   .topbar .acct {
     margin-left: auto;
+  }
+  /* Icons carry these on a phone; the label stays for screen readers. */
+  .topbar .a11y-chip-label,
+  .topbar .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* With the two word-labels gone there is room for this one to say its
+     whole sentence — a bare dot next to another bare dot says nothing. */
+  .acct-chip .acct-label {
+    max-width: 132px;
   }
   .tab-ink {
     bottom: 0;
