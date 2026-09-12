@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 18:55 | aufanhakim1920-source | design | [accessibility mode — bigger text, higher contrast, less motion, spoken and screen-reader announcements, skip link; clearer sign-in wording](../../commit/fe74a4a5354e67555cec160680013ec855d4da13) | App.tsx, Accessibility.tsx, Account.tsx +5 | +451 / -7 |
 | 12 Sept, 18:54 | TronJuan | engine | [Update gemini.ts](../../commit/ec838386a99ea6c63f3e2ac55a3defbb436cac6a) | gemini.ts | +1 / -1 |
 | 12 Sept, 18:51 | aufanhakim1920-source | project | [npm run team — what the others changed, before you write a line](../../commit/0875fb191c56169b854d4647cf4846b14b201682) | CONTRIBUTING.md, package.json, team-sync.mjs | +108 / -1 |
 | 12 Sept, 18:08 | Shawn Lee | report | [add timestamped evidence and unverified verdicts](../../commit/0b04c2a35b1a8ab38a669ea1235952cfdaee93e5) | REPORT_HANDOFF.md, report.test.mjs, ReportCard.tsx +3 | +180 / -20 |
