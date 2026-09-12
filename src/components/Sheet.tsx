@@ -35,6 +35,9 @@ export function Sheet({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [h, setH] = useState(0); // sheet height
+  // Whether a frame has been painted yet, and the only thing it gates is the
+  // transition. See the comment on the style below.
+  const [painted, setPainted] = useState(false);
   const drag = useRef<{ y0: number; t0: number; base: number; last: number; lastT: number; active: boolean } | null>(null);
   const [y, setY] = useState<number | null>(null); // translateY while dragging
   const [animating, setAnimating] = useState(false);
@@ -48,7 +51,56 @@ export function Sheet({
     return () => ro.disconnect();
   }, []);
 
-  const rest = useCallback((d: Detent) => (d === "full" ? 0 : Math.max(0, h - PEEK_PX)), [h]);
+  // How much room the sheet is allowed at all.
+  //
+  // The sheet is z-30 and the call header is a sticky z-31 that outranks it —
+  // deliberately, so the sheet can never cover "End call". At full, though, the
+  // sheet's own top landed UNDER that header: measured on a 375x812 phone, 41
+  // of the head's 72px were hidden and elementFromPoint at the head's centre
+  // returned the header, so the only control that collapses the sheet was not
+  // clickable where it looks clickable. It happened the instant a legal sign
+  // fired, because that is when the sheet lifts itself to full.
+  //
+  // The sheet is CAPPED rather than pushed down. Pushing it moves its bottom
+  // below the viewport by the same amount — 161px of the scroll area went off
+  // the bottom of the screen and could not be reached at all.
+  //
+  // Both numbers come from OUTSIDE the sheet — the window and the header — so
+  // nothing here is measured from the thing it then sizes.
+  const [cap, setCap] = useState(0);
+  useLayoutEffect(() => {
+    const read = () => {
+      const above = document.querySelector(".call-head");
+      const top = above ? above.getBoundingClientRect().bottom : 0;
+      setCap(Math.max(240, Math.round(window.innerHeight - top)));
+    };
+    read();
+    const above = document.querySelector(".call-head");
+    const ro = new ResizeObserver(read);
+    if (above) ro.observe(above);
+    window.addEventListener("resize", read);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", read);
+    };
+  }, []);
+
+  // The cap applied in the SAME render, not one ResizeObserver callback later.
+  // An observer needs a frame, and a tab that is not painting never gives it
+  // one: measured, the sheet kept the uncapped 666px height and rested at
+  // translateY(518) inside a 538px box, which put its top at 792 of an 812px
+  // screen — the whole sheet off the bottom. Everything below reads the
+  // clamped height, so the resting place is right on the first commit.
+  const box = cap > 0 ? Math.min(h || cap, cap) : h;
+
+  // After the paint, never before it: a layout effect would run in the same
+  // commit that first moves the sheet, and the transition would own that move.
+  // The render this schedules changes no transform, so it starts nothing.
+  useEffect(() => {
+    if (box > 0 && !painted) setPainted(true);
+  }, [box, painted]);
+
+  const rest = useCallback((d: Detent) => (d === "full" ? 0 : Math.max(0, box - PEEK_PX)), [box]);
 
   const settle = useCallback(
     (d: Detent) => {
@@ -73,9 +125,9 @@ export function Sheet({
     if (!d?.active) return;
     const dy = e.clientY - d.y0;
     let next = d.base + dy;
-    if (next < 0) next = rubber(next, h); // pulled past the top
-    const max = Math.max(0, h - PEEK_PX);
-    if (next > max) next = max + rubber(next - max, h);
+    if (next < 0) next = rubber(next, box); // pulled past the top
+    const max = Math.max(0, box - PEEK_PX);
+    if (next > max) next = max + rubber(next - max, box);
     d.last = e.clientY;
     d.lastT = performance.now();
     setY(next);
@@ -89,7 +141,7 @@ export function Sheet({
     const current = y ?? rest(detent);
     const projected = current + project(v);
     const full = 0;
-    const peek = Math.max(0, h - PEEK_PX);
+    const peek = Math.max(0, box - PEEK_PX);
     const nearest: Detent = Math.abs(projected - full) < Math.abs(projected - peek) ? "full" : "peek";
     settle(nearest);
   };
@@ -108,8 +160,24 @@ export function Sheet({
       ref={ref}
       className={`sheet ${detent}${y !== null ? " dragging" : ""}`}
       style={{
+        maxHeight: cap ? `${cap}px` : undefined,
         transform: `translateY(${ty}px)`,
-        transition: y !== null ? "none" : `transform 420ms ${IOS}`,
+        // The sheet mounts already placed, with NO transition on the first
+        // commit.
+        //
+        // Its height is measured after the first render, so the resting offset
+        // went 0 -> 518px one commit later — a CHANGE, which the 420ms
+        // transition then owned. A transition that never advances holds its
+        // first value, so on a throttled load the sheet sat at translateY(0):
+        // measured, top 243 instead of 664, covering the transcript, Listen and
+        // the type row. On a phone that is the entire call screen gone, and
+        // reduce-motion does not save it because even 1ms needs one frame.
+        //
+        // A transition never runs on an element's FIRST style, only on a later
+        // change — so the fix is to make the placed position the first style
+        // the element ever has. Dragging still bypasses it, and every real
+        // detent change after that animates normally.
+        transition: y !== null || !painted ? "none" : `transform 420ms ${IOS}`,
       }}
       data-animating={animating || undefined}
     >
