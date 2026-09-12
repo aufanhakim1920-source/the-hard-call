@@ -13,6 +13,43 @@ import { ReportLedger } from "./ReportLedger";
 import { Toast } from "./Toast";
 import { ResponseTimes } from "./ResponseTimes";
 import { ScoreRing } from "./ScoreRing";
+import "./report-visuals.css";
+
+/**
+ * How the call ran, and how the card was built — said once, above every number.
+ *
+ * A silent call and a coached one produce an identical card, so without this
+ * line a low score reads as a worker ignoring prompts rather than as the
+ * measurement of the gap it actually is. The whole demo argument is the same
+ * call run twice, side by side; the cards have to be tellable apart.
+ *
+ * ⚠ `coaching === false`, never `!coaching`. Absent means the mode was never
+ * recorded — an older card, or one pulled from a table with no column for it —
+ * and "not recorded" is not "the assistant was off". Absent says nothing.
+ */
+function RunNote({ report }: { report: Report }) {
+  const silent = report.coaching === false;
+  const coached = report.coaching === true;
+  if (!silent && !coached && !report.degraded) return null;
+  return (
+    <div className="rv-run">
+      {silent && (
+        <p className="rv-run-line key">
+          The assistant ran silent on this call: it listened, judged and started the clocks, but said nothing while
+          you were on the phone. A low number here measures what a call misses without it.
+        </p>
+      )}
+      {coached && <p className="rv-run-line">The assistant coached this call — every sign appeared the moment it was raised.</p>}
+      {report.degraded && (
+        <p className="rv-run-line key">
+          No write-up was produced:{" "}
+          {report.degradedReason === "quota" ? "the free daily limit on the model was reached" : "the model could not be reached"}.
+          Everything below was recorded during the call itself, and no score is given.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function evidenceTime(ms: number) {
   const seconds = Math.floor(ms / 1000);
@@ -101,7 +138,16 @@ export function ReportCard({
     const lines = [
       `CallFlag — report card, ${fmtWhen(report.at)}`,
       `${report.customer} · ${report.mode} · score ${report.scoreUnverified ? "not verified" : report.score}`,
-      report.summary,
+      // A pasted card is read without the screen, so the mode has to travel
+      // with it. Absent is left out rather than guessed.
+      ...(report.coaching === false
+        ? ["The assistant ran silent on this call — nothing was shown or announced during it."]
+        : report.coaching === true
+          ? ["The assistant coached this call."]
+          : []),
+      ...(report.degraded
+        ? [`No write-up: ${report.degradedReason === "quota" ? "the model's daily limit was reached" : "the model could not be reached"}.`]
+        : [report.summary]),
       ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
       ...report.deadlines.map((d) => `${d.label} ${fmtDate(d.date)} — ${d.title}`),
       `Tip: ${report.tip}`,
@@ -134,13 +180,19 @@ export function ReportCard({
         <ScoreRing score={report.score} unverified={report.scoreUnverified} size={phone ? 92 : 132} />
       </div>
 
+      <RunNote report={report} />
+
       <ReportLedger report={report} previous={previous} />
 
       <ResponseTimes session={session} report={report} />
 
       <CallTimeline session={session} report={report} />
 
-      <p className="summary">{report.summary}</p>
+      {/* A degraded card's "summary" is not a write-up — it is the outage
+          notice, which the run note now carries at the top. Printing it again
+          here, in serif at 19px and below three charts, said the same thing
+          twice and said it late. */}
+      {!report.degraded && <p className="summary">{report.summary}</p>}
       {!!report.unverified && (
         <p className="muted small">
           {report.unverified === 1

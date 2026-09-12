@@ -46,6 +46,33 @@
   font-weight: 400;
   color: var(--cream);
 }
+/* How the call ran, above every number on the card. A hairline and a gap do
+   the separating — no rule down the side, no tint, nothing that would spend
+   the accent on something that is not a sign. The line that changes how the
+   numbers read is set in cream; the one that only confirms the normal case
+   stays grey. Grey on ink is 6.47:1 and on cream 5.01:1, both above AA. */
+.rv-run {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin: 0 0 20px;
+}
+.rv-run-line {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--grey);
+}
+.rv-run-line.key {
+  color: var(--cream);
+}
+:root[data-text="2"] .rv-run-line,
+:root[data-text="3"] .rv-run-line {
+  font-size: 16px;
+}
+
 .rv-empty {
   margin: 0;
   padding: 12px 4px;
@@ -53,6 +80,52 @@
   border-bottom: 1px solid var(--line);
   font-size: 13px;
   color: var(--grey);
+}
+
+/* ---------- clearing the call history (Deadlines tab) ----------
+   Lives in this file rather than the main stylesheet only because that sheet is
+   held elsewhere. The question opens IN PLACE, under the control that asked it,
+   rather than in a native confirm() box: the space is made first and the words
+   arrive in it, which is the same open the rest of the build uses.
+   `minmax(0, Nfr)` and not a bare `Nfr` — a bare fr track is what the css gate
+   exists to catch. */
+.clear-data {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.clear-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+}
+.clear-ask {
+  display: grid;
+  grid-template-rows: minmax(0, 0fr);
+  transition: grid-template-rows 340ms var(--ease-out);
+}
+.clear-data.armed .clear-ask {
+  grid-template-rows: minmax(0, 1fr);
+}
+.clear-ask > div {
+  overflow: hidden; /* REQUIRED — the row is what animates, not the content */
+}
+.clear-say {
+  max-width: 60ch;
+  margin: 12px 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cream);
+}
+.clear-done {
+  margin: 0;
+  font-size: 14px;
+  color: var(--grey);
+}
+.clear-done:focus-visible {
+  outline: none;
 }
 
 /* ---------- the ledger: one part-to-whole, not four percentages ---------- */

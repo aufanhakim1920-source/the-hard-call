@@ -60,7 +60,11 @@ export function ReportLedger({ report, previous }: { report: Report; previous: R
     <section className="rv-ledger">
       <div className="rv-corners">
         <span>Signs raised</span>
-        <span>{report.coaching === false ? "assistant was silent" : `${report.mode} call`}</span>
+        {/* The run mode used to live here, in a 10px corner label, and the
+            ternary read a MISSING mode as a coached one. It is said once now,
+            in plain words above this chart. The corner is a chart reference,
+            not a place to hide the fact that changes how the chart reads. */}
+        <span>{report.mode} call</span>
       </div>
 
       <div className="rv-ledger-top">
