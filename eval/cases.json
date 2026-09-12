@@ -12,10 +12,8 @@
       "speaker": "customer",
       "text": "Yeah look, I'm a bit behind at the moment, things are pretty tight."
     },
-    "expect": [
-      "hardship-request"
-    ],
-    "note": "The classic 'a bit behind' with no ask and no reason. NCC s72 needs no magic words."
+    "expect": [],
+    "note": "Informal register ('a bit behind', 'pretty tight') with no duration and no statement of inability. Per docs/hardship-flag-rules.md this register is the signal to START LISTENING, then ask 'inability, or delay?' — it is not the trigger on its own. Was expected to fire; the engine was right not to."
   },
   {
     "id": "c02",
@@ -30,10 +28,8 @@
       "speaker": "customer",
       "text": "Any chance we can push the payment back a couple of weeks? I get paid on the twentieth."
     },
-    "expect": [
-      "hardship-request"
-    ],
-    "note": "Asking for more time is a hardship notice even with no reason given."
+    "expect": [],
+    "note": "A named near-term recovery: a specific payday, a fortnight. This is the non-trigger the rules doc spells out and the same shape as fixtures call_002, where firing is called the single most important failure to avoid. Was expected to fire; expecting it contradicted the ground truth."
   },
   {
     "id": "c03",
@@ -49,10 +45,9 @@
       "text": "Yeah, my hours got cut at work so this month's going to be tight. Can it wait till the next one?"
     },
     "expect": [
-      "hardship-request",
       "job-loss"
     ],
-    "note": "Reduced hours is an income change, and 'can it wait' is the request."
+    "note": "Reduced hours is an income change, so job-loss stands. 'This month' plus 'can it wait till the next one' is a single payment with an implied recovery, not an inability over the medium term."
   },
   {
     "id": "c04",
@@ -143,10 +138,9 @@
       "text": "Dad passed away three weeks ago and the funeral's cleaned me out. I'm going to miss this one too."
     },
     "expect": [
-      "hardship-request",
       "bereavement"
     ],
-    "note": "A death plus an expected missed payment."
+    "note": "A death plus 'I'm going to miss this one too' — a cause and a single payment. The rules doc needs a period; a cause on its own starts no clock. Bereavement is the right flag here."
   },
   {
     "id": "c09",
@@ -162,10 +156,9 @@
       "text": "The floods took the whole ground floor, we're staying at my sister's. There's no way I can pay this month."
     },
     "expect": [
-      "hardship-request",
       "disaster"
     ],
-    "note": "Displaced by flood plus inability to pay."
+    "note": "Displacement by flood is a disaster flag. 'No way I can pay this month' is one payment, and no period or recovery is stated either way, so it is not yet a notice. ARGUABLE: a flood is not a near-term recovery, and the next turn usually settles it. Raise with Laural before the freeze."
   },
   {
     "id": "c10",
@@ -207,10 +200,8 @@
       "speaker": "customer",
       "text": "Could I just pay half this month and catch the rest up next month?"
     },
-    "expect": [
-      "hardship-request"
-    ],
-    "note": "A partial payment request is a change to repayments."
+    "expect": [],
+    "note": "'Pay half this month and catch the rest up next month' states the recovery inside the same sentence. A near-term timing gap, not an inability. Was expected to fire."
   },
   {
     "id": "c12",
@@ -609,10 +600,9 @@
       "text": "I put it all on the pokies, mate. There's nothing left this fortnight."
     },
     "expect": [
-      "hardship-request",
       "gambling"
     ],
-    "note": "Pokies plus nothing left for the missed payment."
+    "note": "Gambling is the right flag. 'Nothing left this fortnight' is one fortnight — a single payment with no period, so no notice yet. ARGUABLE for the same reason as c09."
   },
   {
     "id": "c35",
@@ -727,15 +717,86 @@
     "note": "Income change but explicitly not asking for relief. Tests hardship over-firing on the word 'laid off'."
   },
   {
-  "id": "c41",
-  "direction": "outbound",
-  "context": [
-    { "speaker": "worker", "text": "Hi, it's the bank calling about the payment that didn't go through last week — is now an okay time to chat?" }
-  ],
-  "line": { "speaker": "customer", "text": "Oh yeah, sorry about that. Don't worry about it, I'll be fine in a month." },
-  "expect": [
-    "hardship-request"
-  ],
-  "note": "No explicit ask and no stated reason, but 'I'll be fine in a month' implies they are not fine now — team decision: this counts as a hardship notice under NCC s72, which needs no magic words. Currently a known gap: the deployed engine (gemini-flash-latest) does not fire on this phrasing, so this case is expected to fail until the hardship-request cue is widened to catch soft, deflecting admissions like this one."
-}
+    "id": "c41",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank calling about the payment that didn't go through last week — is now an okay time to chat?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Oh yeah, sorry about that. Don't worry about it, I'll be fine in a month."
+    },
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "No explicit ask and no stated reason, but 'I'll be fine in a month' implies they are not fine now — team decision: this counts as a hardship notice under NCC s72, which needs no magic words. Currently a known gap: the deployed engine (gemini-flash-latest) does not fire on this phrasing, so this case is expected to fail until the hardship-request cue is widened to catch soft, deflecting admissions like this one."
+  },
+  {
+    "id": "c42",
+    "direction": "inbound",
+    "existingKeys": [
+      "hardship-request"
+    ],
+    "context": [
+      {
+        "speaker": "customer",
+        "text": "I can't cover the repayment. Not next month, not the month after — realistically four or five months."
+      },
+      {
+        "speaker": "worker",
+        "text": "Okay. I'll put a note on the file and we can look at it again in a few weeks."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Is there something official I'm meant to apply for, or is a note all there is?"
+    },
+    "expect": [
+      "inform-hardship-provisions"
+    ],
+    "note": "fixtures call_003 at 103200ms: the customer asks outright whether a process exists and the worker substitutes an informal arrangement. The ABA duty to say hardship provisions exist is live and unmet. This key sat at support 0 in results.json because run.mjs hardcoded existingKeys to [], so its precondition could not be written down."
+  },
+  {
+    "id": "c43",
+    "direction": "inbound",
+    "existingKeys": [],
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Thanks for calling, how can I help today?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Just checking — is there something official I could apply for if money got tight later on?"
+    },
+    "expect": [],
+    "note": "The same question with no notice on record. The ABA duty attaches to a raised hardship notice, so nothing fires here. Guards the order gate from the other side: a question about the process is not itself a notice."
+  },
+  {
+    "id": "c44",
+    "direction": "inbound",
+    "existingKeys": [
+      "hardship-request"
+    ],
+    "context": [
+      {
+        "speaker": "customer",
+        "text": "I can't make the repayments and I won't be able to for months."
+      },
+      {
+        "speaker": "worker",
+        "text": "That sounds like financial hardship. We have a hardship assistance process and I can lodge an application with you now."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Okay, yes please, let's do that."
+    },
+    "expect": [],
+    "note": "The worker has already named the hardship process and offered to lodge it, so the duty is discharged and the tip must not fire. Without a case like this the engine could score well by always firing it once a notice exists."
+  }
 ]

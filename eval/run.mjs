@@ -135,8 +135,14 @@ async function main() {
   const allCases = JSON.parse(fs.readFileSync(path.join(HERE, "cases.json"), "utf8"));
   const cases = allCases.slice(0, args.limit);
   for (const c of cases) {
-    for (const k of c.expect) {
-      if (!SIGN_KEYS.includes(k)) console.log(`WARNING ${c.id}: expect key "${k}" is not in signs.ts`);
+    for (const k of [...c.expect, ...(c.existingKeys ?? [])]) {
+      if (!SIGN_KEYS.includes(k)) console.log(`WARNING ${c.id}: key "${k}" is not in signs.ts`);
+    }
+    // The engine drops the ABA tip unless a notice is on record, so a case that
+    // expects it without one can never pass — say so rather than scoring a zero.
+    if (c.expect.includes("inform-hardship-provisions") &&
+        !c.expect.includes("hardship-request") && !(c.existingKeys ?? []).includes("hardship-request")) {
+      console.log(`WARNING ${c.id}: expects inform-hardship-provisions with no hardship-request on record`);
     }
   }
 
@@ -152,8 +158,12 @@ async function main() {
     const body = {
       lines,
       newLineId: newLine.id,
-      existingKeys: [],
-      lessons: [],
+      // A case may name signs already on screen. inform-hardship-provisions
+      // cannot be scored without this: its whole rule is that the duty exists
+      // only once a notice has been raised, and with this hardcoded to [] its
+      // precondition was unexpressible, which is why it sat at support 0.
+      existingKeys: c.existingKeys ?? [],
+      lessons: c.lessons ?? [],
       todayISO,
       direction: c.direction,
     };
