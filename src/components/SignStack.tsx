@@ -49,7 +49,11 @@ export function SignStack({
           </div>
         )}
         {list.map((s) => (
-          <article key={s.id} className={`sign ${s.kind}${s.handled ? " done" : ""}`} aria-live="polite">
+          <article
+          key={s.id}
+          className={`sign ${s.kind}${s.handled ? " done" : ""}`}
+          aria-label={`${s.kind === "legal" ? "Legal sign" : "Tip"}. ${s.title}. ${s.dueDate ? `${s.dueLabel ?? "Reply due"} ${s.dueDate}, ${s.dueDays} days. ` : ""}Ask next: ${s.askNext}. ${s.handled ? "Handled." : "Not handled yet."}`}
+        >
             <div className="head">
               <Icon kind={s.kind} />
               <div className="title">{s.title}</div>

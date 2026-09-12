@@ -3,6 +3,7 @@
 // practice agent) feeds the same addLine, so the AI sees them identically.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { announce } from "./a11y";
 import { postFlags, postReport } from "./api";
 import { maskSensitive } from "./mask";
 import { play } from "./sfx";
@@ -54,7 +55,14 @@ export function useCallEngine(opts: EngineOptions) {
           const linesNext = cur.lines.map((l) =>
             l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown" ? { ...l, speaker: res.speaker } : l,
           );
-          if (fresh.length) play("sign");
+          if (fresh.length) {
+            play("sign");
+            for (const g of fresh) {
+              // A legal sign starts a clock, so it interrupts; a tip waits its turn.
+              const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
+              announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
+            }
+          }
           return { ...cur, lines: linesNext, signs: [...cur.signs, ...fresh] };
         });
         return;

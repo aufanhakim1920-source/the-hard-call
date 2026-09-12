@@ -27,7 +27,7 @@ export function AccountChip() {
         ? (auth.email ?? "account")
         : auth.status === "guest"
           ? "Guest"
-          : "This device only";
+          : "Saved here only";
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,12 +81,12 @@ export function AccountChip() {
             </>
           ) : (
             <>
-              <div className="label">{auth.status === "guest" ? "Guest" : "This device only"}</div>
+              <div className="label">{auth.status === "guest" ? "Guest" : "Saved here only"}</div>
               <p className="small muted" style={{ margin: "4px 0 10px" }}>
                 {auth.status === "guest"
                   ? "Your work is saved to the database under a guest profile. Add an email to keep it on other devices."
                   : auth.enabled
-                    ? "Guest profiles are switched off on this project, so everything stays in this browser until you create an account."
+                    ? "Your work is saved in this browser and nowhere else. Create an account and it follows you to any device — and your teammates' reports stay separate from yours."
                     : "No database on this build; everything stays in this browser."}
                 {have ? ` So far: ${have}.` : ""}
               </p>
