@@ -163,8 +163,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   // keyboard: H = handle newest, E = end, T = type
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+      // A bare letter must not reach the call while the person is somewhere
+      // else. Typing was already covered; a floating panel was not. Settings is
+      // deliberately non-modal — the worker may be on a live call — so focus can
+      // sit on its Reset button with the call still listening on window.
+      // Measured: Tab into the open panel, press "e", and the call ended
+      // ("Writing report…") with the panel still open over it.
+      if (el?.isContentEditable || el?.closest('[role="dialog"], [role="listbox"], .sel-pop')) return;
       // H marks the newest sign handled — with nothing on screen there is
       // nothing to mark, and a silent keystroke that changes hidden state is
       // worse than a key that does nothing.

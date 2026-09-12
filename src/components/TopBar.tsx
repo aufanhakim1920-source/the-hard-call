@@ -4,6 +4,7 @@ import { actions, useStore } from "../lib/store";
 import { play } from "../lib/sfx";
 import { AccountChip } from "./Account";
 import { AccessibilityPanel } from "./Accessibility";
+import "./topbar.css";
 
 export type View = "live" | "calls" | "practice" | "deadlines" | "lessons" | "about";
 
@@ -88,7 +89,12 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
       el.removeEventListener("scroll", mark);
       ro.disconnect();
     };
-  }, [tabs.length]);
+    // The observer catches the strip changing WIDTH; it does not catch the strip
+    // changing CONTENT. A count badge appearing on Lessons, or Calls going from
+    // 9 to 10, widens scrollWidth inside an unchanged box — and the fade would
+    // still be describing the tabs from two calls ago. Same dependencies as the
+    // ink, for the same reason.
+  }, [tabs.length, openDeadlines, store.lessons.length, store.reports.length]);
   return (
     <header className="topbar" ref={barRef}>
       <div className="wordmark">
@@ -96,7 +102,14 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
         CallFlag
       </div>
       <nav className="tabs" aria-label="Sections" ref={navRef}>
-        <span className="tab-ink" style={{ transform: `translateX(${ink.left}px)`, width: ink.width }} aria-hidden="true" />
+        {/* Not rendered until it has been measured. The ink's width is
+            transitioned over 340ms, and a transition frozen in a throttled tab
+            holds the FIRST value — measured on a backgrounded load, width 0,
+            which left the underline missing and "which section am I in" carried
+            by the tab's colour alone. Mounting it already placed skips that: a
+            transition never runs on an element's first style, so it appears
+            where it belongs and only later MOVES animate. */}
+        {ink.width > 0 && <span className="tab-ink" style={{ transform: `translateX(${ink.left}px)`, width: ink.width }} aria-hidden="true" />}
         {tabs.map((t) => (
           <button
             key={t.id}
