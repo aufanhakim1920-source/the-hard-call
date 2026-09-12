@@ -5,7 +5,7 @@ import { hasVerifiedReportScore } from "./reportScore";
 // localStorage stays the cache, so the app works offline and before sign-in.
 
 import { getAuth } from "./auth";
-import { getStore, subscribe, update } from "./store";
+import { getStore, getStoreScope, subscribe, update } from "./store";
 import { supabase } from "./supabase";
 import type { Deadline, Lesson, Report, Scenario, Store } from "./types";
 
@@ -134,6 +134,14 @@ function scenarioFrom(x: Row): Scenario {
 let timer = 0;
 let lastPushedFor = "";
 let pulledFor = "";
+let pendingEpoch: number | null = null;
+let retryAfter = 0;
+let observedEpoch = getStoreScope().epoch;
+let started = false;
+function current(uid: string, epoch: number) {
+  const scope = getStoreScope();
+  return getAuth().user?.id === uid && scope.owner === uid && scope.epoch === epoch;
+}
 export type SyncState = "off" | "idle" | "saving" | "saved" | "error";
 let syncState: SyncState = "off";
 const syncListeners = new Set<(s: SyncState) => void>();
@@ -151,7 +159,8 @@ export function onSync(l: (s: SyncState) => void): () => void {
 
 async function push(store: Store) {
   const auth = getAuth();
-  if (!supabase || !auth.user) return;
+  const scope = getStoreScope();
+  if (!supabase || !auth.user || !current(auth.user.id, scope.epoch) || pulledFor !== auth.user.id) return;
   setSync("saving");
   try {
     const uid = auth.user.id;
@@ -165,25 +174,34 @@ async function push(store: Store) {
     const results = await Promise.all(jobs);
     const bad = results.find((r) => r?.error);
     if (bad?.error) throw new Error(bad.error.message);
+    if (!current(uid, scope.epoch)) return;
     lastPushedFor = uid;
     setSync("saved");
   } catch (e) {
+    if (!current(auth.user.id, scope.epoch)) return;
     console.warn("sync push failed", e);
     setSync("error");
   }
 }
 
-async function pull() {
+async function pull(): Promise<boolean> {
   const auth = getAuth();
-  if (!supabase || !auth.user || pulledFor === auth.user.id) return;
-  pulledFor = auth.user.id;
+  const scope = getStoreScope();
+  if (!supabase || !auth.user || !current(auth.user.id, scope.epoch) ||
+      pulledFor === auth.user.id || pendingEpoch === scope.epoch || Date.now() < retryAfter) return false;
+  const uid = auth.user.id;
+  pendingEpoch = scope.epoch;
+  setSync("saving");
   try {
     const [r, d, l, s] = await Promise.all([
-      supabase.from("reports").select("*"),
-      supabase.from("deadlines").select("*"),
-      supabase.from("lessons").select("*"),
-      supabase.from("scenarios").select("*"),
+      supabase.from("reports").select("*").eq("user_id", uid),
+      supabase.from("deadlines").select("*").eq("user_id", uid),
+      supabase.from("lessons").select("*").eq("user_id", uid),
+      supabase.from("scenarios").select("*").eq("user_id", uid),
     ]);
+    if (!current(uid, scope.epoch)) return false;
+    const failed = [r, d, l, s].find((result) => result.error);
+    if (failed?.error) throw new Error(failed.error.message);
     update((cur) => {
       const have = (ids: string[]) => new Set(ids);
       const rIds = have(cur.reports.map((x) => x.callId));
@@ -196,33 +214,57 @@ async function pull() {
       const scenarios = [...cur.scenarios, ...((s.data ?? []) as Row[]).filter((x) => !sIds.has(String(x.id))).map(scenarioFrom)];
       return { ...cur, reports, deadlines, lessons, scenarios };
     });
+    pulledFor = uid;
+    retryAfter = 0;
     setSync("saved");
+    return true;
   } catch (e) {
-    console.warn("sync pull failed", e);
-    setSync("error");
+    if (current(uid, scope.epoch)) {
+      console.warn("sync pull failed", e);
+      retryAfter = Date.now() + 5000;
+      setSync("error");
+    }
+    return false;
+  } finally {
+    if (pendingEpoch === scope.epoch) pendingEpoch = null;
   }
 }
 
 /** Call once at app start. Safe when Supabase is not configured. */
 export function startSync() {
-  if (!supabase) return;
-  setSync("idle");
-  subscribe(() => {
-    const auth = getAuth();
-    if (!auth.user) return;
+  if (!supabase || started) return;
+  started = true;
+  const accountChanged = () => {
+    const scope = getStoreScope();
+    if (observedEpoch === scope.epoch) return;
+    observedEpoch = scope.epoch;
     window.clearTimeout(timer);
-    timer = window.setTimeout(() => void push(getStore()), 800);
+    pulledFor = "";
+    lastPushedFor = "";
+    retryAfter = 0;
+    setSync(scope.owner ? "idle" : "off");
+  };
+  setSync(getStoreScope().owner ? "idle" : "off");
+  subscribe(() => {
+    accountChanged();
+    const uid = getAuth().user?.id;
+    const epoch = getStoreScope().epoch;
+    if (!uid || !current(uid, epoch) || pulledFor !== uid) return;
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      if (current(uid, epoch)) void push(getStore());
+    }, 800);
   });
-  // Whenever the user changes (guest made, account signed in), pull then push.
-  const poll = window.setInterval(() => {
-    const auth = getAuth();
-    if (auth.user && pulledFor !== auth.user.id) {
-      void pull().then(() => {
-        if (lastPushedFor !== auth.user!.id) void push(getStore());
+  window.setInterval(() => {
+    accountChanged();
+    const uid = getAuth().user?.id;
+    const epoch = getStoreScope().epoch;
+    if (uid && current(uid, epoch) && pulledFor !== uid) {
+      void pull().then((loaded) => {
+        if (loaded && current(uid, epoch) && lastPushedFor !== uid) void push(getStore());
       });
     }
   }, 1000);
-  void poll;
 }
 
 export function counts(store: Store): string {

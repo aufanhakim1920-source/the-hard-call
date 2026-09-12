@@ -7,6 +7,10 @@ import type { Lesson, Report, Scenario, Store } from "./types";
 import { uid } from "./types";
 
 const KEY = "the-hard-call:v1";
+let owner: string | null = null;
+let epoch = 0;
+const memory = new Map<string, Store>();
+const storageKey = () => owner === null ? KEY : `${KEY}:user:${encodeURIComponent(owner)}`;
 
 const EMPTY: Store = {
   reports: [],
@@ -21,7 +25,9 @@ const listeners = new Set<() => void>();
 
 function load(): Store {
   try {
-    const raw = localStorage.getItem(KEY);
+    const cached = memory.get(storageKey());
+    if (cached) return cached;
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return EMPTY;
     const parsed = JSON.parse(raw) as Partial<Store>;
     return {
@@ -40,13 +46,28 @@ function load(): Store {
 
 function commit(next: Store) {
   state = next;
+  memory.set(storageKey(), next);
   try {
-    localStorage.setItem(KEY, JSON.stringify(next));
+    localStorage.setItem(storageKey(), JSON.stringify(next));
   } catch {
     /* private mode or full — keep running in memory */
   }
   listeners.forEach((l) => l());
 }
+
+
+// Unscoped legacy data stays on this device; never silently assign it to whoever
+// signs in next. Anonymous-user upgrades keep their user ID and their partition.
+export function setStoreOwner(next: string | null) {
+  if (owner === next) return;
+  memory.set(storageKey(), state);
+  owner = next;
+  epoch += 1;
+  state = load();
+  listeners.forEach((listener) => listener());
+}
+
+export function getStoreScope() { return { owner, epoch }; }
 
 export function getStore(): Store {
   return state;
