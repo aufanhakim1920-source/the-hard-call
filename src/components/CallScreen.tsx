@@ -1,0 +1,294 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { fmtClock } from "../lib/dates";
+import { DEMO_SCRIPT } from "../lib/demoScript";
+import { useCallEngine } from "../lib/engine";
+import { usePractice } from "../lib/practice";
+import { play } from "../lib/sfx";
+import { useSpeech } from "../lib/speech";
+import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
+import { levelLabel } from "../lib/scenarios";
+import { SignStack } from "./SignStack";
+import { Transcript } from "./Transcript";
+
+export interface CallProps {
+  mode: Mode;
+  customer: Customer;
+  scenario?: Scenario;
+  onEnd: (report: Report, session: Session) => void;
+  onDemo?: () => void;
+  onAssistant: (s: AssistantState) => void;
+}
+
+export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, onDemo, onAssistant }: CallProps) {
+  const [customer, setCustomer] = useState<Customer>(initialCustomer);
+  const engine = useCallEngine({
+    mode,
+    customer,
+    scenarioId: scenario?.id,
+    scenarioExpected: scenario?.expectedSigns,
+  });
+  const { session, interim, setInterim, assistant, addLine, markHandled, endCall, elapsed, newestOpen } = engine;
+  useEffect(() => onAssistant(assistant), [assistant, onAssistant]);
+
+  const speech = useSpeech({
+    onFinal: (t) => addLine(t, "unknown"),
+    onInterim: setInterim,
+  });
+  const practice = usePractice({ onLine: (sp, t) => addLine(t, sp) });
+
+  const [typed, setTyped] = useState("");
+  const [typedAs, setTypedAs] = useState<Speaker>("customer");
+  const [ending, setEnding] = useState(false);
+  const [endErr, setEndErr] = useState<string | null>(null);
+  const [flashId, setFlashId] = useState<string>();
+  const [demoDone, setDemoDone] = useState(false);
+  const [speed, setSpeed] = useState<1 | 2>(1);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
+  const typeRef = useRef<HTMLInputElement>(null);
+
+  // Demo mode: the script plays through the real engine.
+  useEffect(() => {
+    if (mode !== "demo") return;
+    let cancelled = false;
+    const timers: number[] = [];
+    let at = 600;
+    DEMO_SCRIPT.forEach((l, i) => {
+      at += (l.gap * 1000) / speedRef.current;
+      timers.push(
+        window.setTimeout(() => {
+          if (cancelled) return;
+          addLine(l.text, l.speaker);
+          if (i === DEMO_SCRIPT.length - 1) setDemoDone(true);
+        }, at),
+      );
+    });
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
+  const jump = useCallback((lineId: string) => {
+    const el = document.getElementById("line-" + lineId);
+    el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    setFlashId(lineId);
+    window.setTimeout(() => setFlashId(undefined), 1200);
+  }, []);
+
+  const finish = useCallback(async () => {
+    if (ending) return;
+    setEnding(true);
+    setEndErr(null);
+    play("tap");
+    if (speech.listening) speech.stop();
+    if (practice.status === "connected" || practice.status === "connecting") await practice.stop();
+    try {
+      const report = await endCall();
+      onEnd(report, { ...session, endedAt: Date.now() });
+    } catch (e) {
+      setEndErr(e instanceof Error ? e.message : String(e));
+      setEnding(false);
+    }
+  }, [ending, speech, practice, endCall, onEnd, session]);
+
+  // keyboard: H = handle newest, E = end, T = type
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "h" || e.key === "H") {
+        if (newestOpen) markHandled(newestOpen.id, true);
+      } else if (e.key === "e" || e.key === "E") {
+        if (session.lines.length) void finish();
+      } else if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        typeRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [newestOpen, markHandled, finish, session.lines.length]);
+
+  const submitTyped = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!typed.trim()) return;
+    addLine(typed, typedAs);
+    setTyped("");
+    setTypedAs((s) => (s === "customer" ? "worker" : "customer"));
+    play("tap");
+  };
+
+  const started = session.lines.length > 0;
+  const canEdit = !started && mode === "live";
+
+  return (
+    <div className="call">
+      <header className="call-head">
+        {canEdit ? (
+          <div className="setup">
+            <span className="label">Call with</span>
+            <input className="field" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} aria-label="Customer name" />
+            <input className="field" value={customer.product} onChange={(e) => setCustomer({ ...customer, product: e.target.value })} aria-label="Product" />
+            <select className="field" value={customer.direction} onChange={(e) => setCustomer({ ...customer, direction: e.target.value as Customer["direction"] })} aria-label="Direction">
+              <option value="outbound">Bank rang them</option>
+              <option value="inbound">They rang the bank</option>
+            </select>
+          </div>
+        ) : (
+          <div className="who">
+            <span className={"chip " + (mode === "practice" ? "gold" : mode === "demo" ? "" : "live")}>
+              {mode === "practice" ? "practice" : mode === "demo" ? "demo replay" : "live"}
+            </span>
+            <h1>{customer.name}</h1>
+            <span className="sub">
+              {customer.product} · {customer.direction === "outbound" ? "bank rang them" : "they rang the bank"}
+              {scenario ? ` · ${levelLabel(scenario.level)}` : ""}
+            </span>
+          </div>
+        )}
+        <div className="spacer" />
+        {mode === "live" && (
+          <div className={"meter" + (speech.listening ? " on" : "")} aria-hidden="true">
+            {[0.5, 0.8, 1, 0.7, 0.45].map((k, i) => (
+              <i key={i} style={{ transform: `scaleY(${Math.max(0.12, Math.min(1, speech.level * k * 1.6))})` }} />
+            ))}
+          </div>
+        )}
+        <div className="clock" aria-label="Call length">
+          {fmtClock(elapsed)}
+        </div>
+        <button className="btn gold" onClick={() => void finish()} disabled={!started || ending}>
+          {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
+        </button>
+      </header>
+
+      {mode === "practice" && scenario && (
+        <div className="practice-strip">
+          <div className={"orb " + practice.mode} style={{ ["--v" as string]: 0.3 + practice.volume * 0.9 }} aria-hidden="true" />
+          <div className="txt">
+            <b>
+              {practice.status === "idle" && "Ready when you are."}
+              {practice.status === "connecting" && "Dialling…"}
+              {practice.status === "connected" && (practice.mode === "speaking" ? `${scenario.name.split(" ")[0]} is talking` : "Your turn")}
+              {practice.status === "ended" && "Call ended."}
+              {practice.status === "error" && "Couldn't connect."}
+            </b>
+            <span>
+              {practice.status === "idle" && `${scenario.name}, ${scenario.age}, ${scenario.job}. The real problem is hidden — ask well.`}
+              {practice.status === "connected" && "Talk like it's a real call. The signs on the right are live."}
+              {practice.status === "error" && (practice.error ?? "")}
+              {practice.status === "ended" && "End the call to see your report card."}
+            </span>
+          </div>
+          <div className="spacer" />
+          {practice.status === "idle" || practice.status === "error" ? (
+            <button className="btn gold" onClick={() => void practice.start(scenario)} disabled={!practice.configured}>
+              {practice.configured ? "Start practice call" : "Practice voice not configured"}
+            </button>
+          ) : practice.status === "connected" || practice.status === "connecting" ? (
+            <button className="btn" onClick={() => void practice.stop()}>
+              Hang up
+            </button>
+          ) : null}
+        </div>
+      )}
+
+      <div className="call-body">
+        <section className="words">
+          <div className="words-head">
+            <span className="label">Live words</span>
+            <span className="small muted">
+              {mode === "live" && (speech.listening ? "listening" : "microphone off")}
+              {mode === "demo" && (demoDone ? "script finished — end the call for the report card" : "playing the demo script through the real engine")}
+              {mode === "practice" && (practice.status === "connected" ? "both sides transcribed live" : "")}
+            </span>
+          </div>
+          <Transcript
+            lines={session.lines}
+            signs={session.signs}
+            interim={interim}
+            startedAt={session.startedAt}
+            mode={mode}
+            flashId={flashId}
+            emptyHint={
+              mode === "live" ? (
+                <>
+                  <b>Put the call on speaker and press Listen.</b>
+                  The words appear here as they are said. Or type what the customer says. Nothing is stored — only the signs.
+                </>
+              ) : mode === "practice" ? (
+                <>
+                  <b>Start the practice call above.</b>
+                  {scenario?.whyThisOne}
+                </>
+              ) : (
+                <>
+                  <b>Rolling…</b>Tom from the bank is ringing Sarah about a missed payment.
+                </>
+              )
+            }
+          />
+          <div className="inputs">
+            {mode === "live" && (
+              <>
+                <button
+                  className={"btn" + (speech.listening ? " listening" : "")}
+                  onClick={() => (speech.listening ? speech.stop() : speech.start())}
+                  title={speech.supported ? "Uses this browser's speech engine (Chrome or Edge)" : "No speech engine in this browser"}
+                >
+                  <span className="rec-dot" />
+                  {speech.listening ? "Listening" : "Listen"}
+                </button>
+                <form className="type" onSubmit={submitTyped}>
+                  <select className="field" value={typedAs} onChange={(e) => setTypedAs(e.target.value as Speaker)} aria-label="Who said it">
+                    <option value="customer">Customer</option>
+                    <option value="worker">Worker</option>
+                  </select>
+                  <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
+                </form>
+                {onDemo && !started && (
+                  <button className="btn ghost" onClick={onDemo}>
+                    ▶ Replay the demo call
+                  </button>
+                )}
+                {speech.error && <span className="warn">{speech.error}</span>}
+              </>
+            )}
+            {mode === "demo" && (
+              <>
+                <span className="hint">
+                  Speed
+                </span>
+                <button className={"btn sm" + (speed === 1 ? " gold" : "")} onClick={() => setSpeed(1)}>
+                  1×
+                </button>
+                <button className={"btn sm" + (speed === 2 ? " gold" : "")} onClick={() => setSpeed(2)}>
+                  2×
+                </button>
+                <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
+              </>
+            )}
+            {mode === "practice" && (
+              <span className="hint">
+                Say what you would really say. <kbd>H</kbd> marks the newest sign handled · <kbd>E</kbd> ends the call
+              </span>
+            )}
+            {endErr && <span className="warn">Report failed: {endErr}</span>}
+          </div>
+        </section>
+        <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} />
+      </div>
+
+      <footer className="privacy-line">
+        <span>Only signs are kept. Words are never stored.</span>
+        <span>Card and account numbers are masked before they leave this browser.</span>
+        <span className="spacer" />
+        <span className="hint">
+          <kbd>H</kbd> handle newest · <kbd>E</kbd> end call · <kbd>T</kbd> type
+        </span>
+      </footer>
+    </div>
+  );
+}

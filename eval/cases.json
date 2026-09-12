@@ -1,0 +1,729 @@
+[
+  {
+    "id": "c01",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank calling about the repayment that was due on Monday. Is now an okay time?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Yeah look, I'm a bit behind at the moment, things are pretty tight."
+    },
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "The classic 'a bit behind' with no ask and no reason. NCC s72 needs no magic words."
+  },
+  {
+    "id": "c02",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Thanks for calling, how can I help today?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Any chance we can push the payment back a couple of weeks? I get paid on the twentieth."
+    },
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "Asking for more time is a hardship notice even with no reason given."
+  },
+  {
+    "id": "c03",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "We noticed the direct debit didn't go through last week, just checking in."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Yeah, my hours got cut at work so this month's going to be tight. Can it wait till the next one?"
+    },
+    "expect": [
+      "hardship-request",
+      "job-loss"
+    ],
+    "note": "Reduced hours is an income change, and 'can it wait' is the request."
+  },
+  {
+    "id": "c04",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "You're through to the loans team, what can I do for you?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Is there any way to pause it for a bit? I just can't do it right now."
+    },
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "'Pause it' with no reason. The word hardship never appears."
+  },
+  {
+    "id": "c05",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank about the car loan. There's a payment overdue, wanted to see what's going on."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Mate, I got made redundant last month. I haven't got it, simple as that."
+    },
+    "expect": [
+      "hardship-request",
+      "job-loss"
+    ],
+    "note": "Redundancy plus a flat statement of inability to pay."
+  },
+  {
+    "id": "c06",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I've been in and out of hospital since June and I can't keep up with the repayments."
+    },
+    "expect": [
+      "hardship-request",
+      "health"
+    ],
+    "note": "Health plus inability. The title must not name a condition."
+  },
+  {
+    "id": "c07",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Thanks for holding. What's the call about today?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "My husband's moved out and the loan's in both our names. I can't cover the whole thing on my own."
+    },
+    "expect": [
+      "hardship-request",
+      "separation"
+    ],
+    "note": "Partner leaving, joint loan now handled by one person, and can't cover it."
+  },
+  {
+    "id": "c08",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "I'm calling about the home loan, the last payment was missed."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Dad passed away three weeks ago and the funeral's cleaned me out. I'm going to miss this one too."
+    },
+    "expect": [
+      "hardship-request",
+      "bereavement"
+    ],
+    "note": "A death plus an expected missed payment."
+  },
+  {
+    "id": "c09",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "You've reached the bank, how can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "The floods took the whole ground floor, we're staying at my sister's. There's no way I can pay this month."
+    },
+    "expect": [
+      "hardship-request",
+      "disaster"
+    ],
+    "note": "Displaced by flood plus inability to pay."
+  },
+  {
+    "id": "c10",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank about your credit card, the minimum wasn't paid."
+      },
+      {
+        "speaker": "customer",
+        "text": "Yeah, I know."
+      },
+      {
+        "speaker": "worker",
+        "text": "Is there something going on we should know about?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I honestly don't know what to do anymore. I can't cope with all this and I can't pay it."
+    },
+    "expect": [
+      "hardship-request",
+      "stress"
+    ],
+    "note": "'I can't cope' is the stress cue word for word, plus inability to pay."
+  },
+  {
+    "id": "c11",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "What can I help with?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Could I just pay half this month and catch the rest up next month?"
+    },
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "A partial payment request is a change to repayments."
+  },
+  {
+    "id": "c12",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Just calling about the personal loan repayment that bounced on Friday."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I'm going to need a bit more time. Is there something we can work out?"
+    },
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "Open-ended request for more time, no reason offered."
+  },
+  {
+    "id": "c13",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help today?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "My casual contract finished up, so there's nothing coming in till I find something. I can't make the next payment."
+    },
+    "expect": [
+      "hardship-request",
+      "job-loss"
+    ],
+    "note": "Contract ended plus inability."
+  },
+  {
+    "id": "c14",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank. The repayment for the fifteenth didn't come through."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I've had to stop work to look after my mum, she's not well. Money's stretched, I can't do the full amount."
+    },
+    "expect": [
+      "hardship-request",
+      "health",
+      "job-loss"
+    ],
+    "note": "Caring for someone unwell counts as health; can't pay in full is the hardship. Stopping work to care is not job-loss in the taxonomy sense."
+  },
+  {
+    "id": "c15",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Thanks for calling. I emailed you the form on Tuesday, did that come through?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Sorry, I'm a bit behind on my emails. Which one was it?"
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: 'a bit behind' about emails, not money."
+  },
+  {
+    "id": "c16",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help today?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Can I update my address? We just moved house."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: plain admin request. 'Moved house' is not displacement."
+  },
+  {
+    "id": "c17",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank about the payment due Tuesday. It hasn't come through yet."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Yep, I'll pay it Friday. I just want to confirm the BSB before I send it."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: a late payer who is paying, not asking for relief."
+  },
+  {
+    "id": "c18",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "What can I do for you?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "My brother lost his job last week so I'm sorting some stuff for him. But I'm fine, just need a new card."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: the job loss belongs to someone else and the customer says they are fine."
+  },
+  {
+    "id": "c19",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "customer",
+        "text": "Hello?"
+      }
+    ],
+    "line": {
+      "speaker": "worker",
+      "text": "Hi, it's the bank about Monday's payment. If you're in hardship there are options, but first, is now a good time?"
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: a WORKER line that says the word hardship. Must not fire, and speaker must come back as worker."
+  },
+  {
+    "id": "c20",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "What's left on the loan? I might throw a bit extra at it this month."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: paying extra is the opposite of hardship."
+  },
+  {
+    "id": "c21",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Thanks for calling, what's the question?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "When does the next repayment come out? Just want to make sure the money's sitting there."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: checking a date, money is there."
+  },
+  {
+    "id": "c22",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I lost my card at the footy on Saturday. Can you cancel it and send a new one?"
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: 'lost' with no job or money meaning."
+  },
+  {
+    "id": "c23",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank. The direct debit on the fifth was returned."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Yeah, my pay went in a day late that week. It's there now, put it through again tomorrow."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: a one-off timing miss, the cash is there, no request for relief."
+  },
+  {
+    "id": "c24",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "The storm knocked our power out for a few hours last night. Anyway, I want to check a transaction from yesterday."
+    },
+    "expect": [],
+    "note": "HARD NEGATIVE: 'storm' with no damage and no displacement."
+  },
+  {
+    "id": "c25",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Thanks for calling. What's going on?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I've rung three times about this fee and nobody's called me back. It's a joke, honestly."
+    },
+    "expect": [
+      "complaint"
+    ],
+    "note": "Dissatisfaction with a fee and a delay, no word 'complaint'. RG 271 counts it."
+  },
+  {
+    "id": "c26",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I'm not happy. You charged me a late fee and the payment went through on time."
+    },
+    "expect": [
+      "complaint"
+    ],
+    "note": "Mild dissatisfaction with a fee. Not a hardship: they paid on time."
+  },
+  {
+    "id": "c27",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "I'll pop a letter in the mail confirming that."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "No, please don't send anything to the house. Just email me. Nothing in the post, please."
+    },
+    "expect": [
+      "safety"
+    ],
+    "note": "Mail-not-to-the-house is the safety cue verbatim. Nothing else should fire."
+  },
+  {
+    "id": "c28",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "What can I help with?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "My partner handles all the money and I'm not really allowed to see the account. I need to know what's in it."
+    },
+    "expect": [
+      "safety"
+    ],
+    "note": "Control by another person over money."
+  },
+  {
+    "id": "c29",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I need to move some money somewhere he can't see it. Can you do that quietly?"
+    },
+    "expect": [
+      "safety"
+    ],
+    "note": "Hiding money from a partner. No split is stated, so separation should not fire."
+  },
+  {
+    "id": "c30",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Okay, so you'd like to make a transfer today?"
+      },
+      {
+        "speaker": "customer",
+        "text": "Yes, hang on."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "He's telling me to say it's urgent and it has to go today. Sorry, what did you need from me?"
+    },
+    "expect": [
+      "scam"
+    ],
+    "note": "Someone else coaching the customer on the call, plus urgency to move money."
+  },
+  {
+    "id": "c31",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "A bloke from your fraud team rang and said I have to move my savings into a safe account today."
+    },
+    "expect": [
+      "scam"
+    ],
+    "note": "A 'bank officer' who rang them and a 'safe account'."
+  },
+  {
+    "id": "c32",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "What can I help you with?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I need to buy some gift cards to pay the tax office. They said the bank could help me sort it."
+    },
+    "expect": [
+      "scam"
+    ],
+    "note": "Gift cards for a 'tax' debt."
+  },
+  {
+    "id": "c33",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Can you block anything to do with betting on my card? I've lost a fair bit on the apps lately."
+    },
+    "expect": [
+      "gambling"
+    ],
+    "note": "Asking to block gambling transactions. No repayment problem is stated."
+  },
+  {
+    "id": "c34",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank about the loan repayment that was missed last week."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I put it all on the pokies, mate. There's nothing left this fortnight."
+    },
+    "expect": [
+      "hardship-request",
+      "gambling"
+    ],
+    "note": "Pokies plus nothing left for the missed payment."
+  },
+  {
+    "id": "c35",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Okay, so I'll just need your date of birth to bring up the account."
+      },
+      {
+        "speaker": "customer",
+        "text": "Um."
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "Sorry, sorry, I just can't think straight. Everything's piling up and I can't deal with it."
+    },
+    "expect": [
+      "stress"
+    ],
+    "note": "Overwhelm with no money ask at all. Hardship should not fire on this line."
+  },
+  {
+    "id": "c36",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "We got burnt out in the fires last week, the house is gone. I'm calling about the insurance payout going into the account."
+    },
+    "expect": [
+      "disaster"
+    ],
+    "note": "Bushfire, displaced, but the call is about a payout coming in, not relief going out."
+  },
+  {
+    "id": "c37",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "What can I help with?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I'm going in for surgery next week. I just want to make sure the repayment still comes out automatically."
+    },
+    "expect": [
+      "health"
+    ],
+    "note": "Health mention with the payment explicitly fine."
+  },
+  {
+    "id": "c38",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help today?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "My mum passed away last week. I'm the executor. What do I need to send you to close her account?"
+    },
+    "expect": [
+      "bereavement"
+    ],
+    "note": "A death and an admin request. No hardship, no separation."
+  },
+  {
+    "id": "c39",
+    "direction": "inbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "How can I help?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "We've split up, so I'll be the one paying the car loan from now on. Can you update the contact details?"
+    },
+    "expect": [
+      "separation"
+    ],
+    "note": "Relationship change, joint loan now one person, no money problem stated."
+  },
+  {
+    "id": "c40",
+    "direction": "outbound",
+    "context": [
+      {
+        "speaker": "worker",
+        "text": "Hi, it's the bank, just a courtesy call about the account. Anything changed we should know about?"
+      }
+    ],
+    "line": {
+      "speaker": "customer",
+      "text": "I got laid off yesterday, but I've got a decent redundancy payout so I'm fine for now. Just letting you know."
+    },
+    "expect": [
+      "job-loss"
+    ],
+    "note": "Income change but explicitly not asking for relief. Tests hardship over-firing on the word 'laid off'."
+  }
+]
