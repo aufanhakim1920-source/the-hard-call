@@ -1,5 +1,8 @@
 # CallFlag
 
+**Why it is built this way, including what we tried and rejected:** [docs/DECISIONS.md](docs/DECISIONS.md)
+
+
 **Client alerts for banking staff.** Live signs for a bank's hardship calls, with the question to ask next. Then the calls you got wrong become your practice.
 
 > The product is **CallFlag**. The repo, the folder, the package and the deployed URL stay `the-hard-call` —
