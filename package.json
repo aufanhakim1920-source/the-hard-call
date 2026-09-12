@@ -12,7 +12,8 @@
     "functions:deploy": "supabase functions deploy --project-ref clqcpqxivqylnjqmfeuz",
     "api": "node --env-file=.env dev/api-server.mjs",
     "team": "node scripts/team-sync.mjs",
-    "eval:fixtures": "node eval/fixtures.mjs"
+    "eval:fixtures": "node eval/fixtures.mjs",
+    "gate": "node scripts/gate-css.mjs"
   },
   "dependencies": {
     "@elevenlabs/client": "^1.25.0",

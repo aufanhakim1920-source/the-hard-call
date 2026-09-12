@@ -24,6 +24,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Fails the deploy on a grid track that cannot shrink — the phone
+      # sideways-scroll bug. One line to fix; the error names the line.
+      - run: npm run gate
       - run: npm run build
         env:
           # Public values only. The Gemini key lives in Supabase, never here.
