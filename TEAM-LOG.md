@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 22:17 | aufanhakim1920-source | engine | [a spare Gemini key takes over when the first one is refused](../../commit/70c8ad69b24d4ed88053c823da6acf7b3d487680) | gemini.ts, health.ts | +69 / -22 |
 | 12 Sept, 21:26 | TronJuan | engine | [Update cases.json](../../commit/ca2cab7a9602ac832a5971ceac7026a158785729) | cases.json | +1 / -1 |
 | 12 Sept, 21:21 | TronJuan | engine | [Update cases.json](../../commit/c92fd3cd0192cce65bbde6c0d75fe12fab942fb8) | cases.json | +13 / -1 |
 | 12 Sept, 20:14 | aufanhakim1920-source | accounts + design | [the page no longer scrolls sideways at any width, and the guest refusal is asked once](../../commit/ab5cffdacabbb919a2b32c83e452a01d1af2a872) | auth.ts, styles.css | +83 / -6 |
