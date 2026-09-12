@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 03:18 | aufanhakim1920-source | practice | [the loop works end to end, and a failure in it now says what happened](../../commit/24a67731ddad62f0cbd20aef223792c17bae8a26) | Practice.tsx, ReportCard.tsx, report-visuals.css +2 | +261 / -15 |
 | 13 Sept, 02:59 | aufanhakim1920-source | other | [the live engine verified, and the one timing risk in the demo](../../commit/64641b28a930647a39ea000ace49b6e70d9eb86f) | DECISIONS.md | +30 / -0 |
 | 13 Sept, 02:55 | aufanhakim1920-source | practice | [each level says what it asks of the WORKER, not what the customer is like](../../commit/11bde242874e47ae34267b0480ee533b4f3a799f) | launch.json, Practice.tsx, scenarios.ts +1 | +56 / -2 |
 | 13 Sept, 01:47 | aufanhakim1920-source | other | [the demo's argument is a row, not a score](../../commit/39aea8649ba86a9867e9891761f76f0b4fa1e47d) | DECISIONS.md | +45 / -0 |
