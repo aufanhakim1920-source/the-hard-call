@@ -406,3 +406,48 @@ from notice to request under the new rule; they are open questions for the rules
 
 **The pattern, for the third time on this project:** when wording will not hold a rule, make the model
 produce something *checkable* and let code check it. First a classification, now a quotation.
+
+## The demo's argument is a row, not a score
+
+Twelve runs of the two-worker demo — seven coached, five silent — killed the comparison we thought we
+had:
+
+| | coached (7) | silent (5) |
+|---|---|---|
+| score | 95 twice, **"not verified" five times** | 30, 30, 40, 40, 45 |
+| fraction | 4 of 4 twice, 3 of 4 five times | 2 of 3, 2 of 3, 2 of 3, 1 of 3, 1 of 3 |
+| signs missed | **0, every run** | at least 1, every run |
+| **the statutory notice** | **handled 7 of 7** | **missed 5 of 5** |
+
+**The coached run usually returns no score at all.** The card withholds rather than invents whenever a
+sign cannot be verified from the transcript, and the hardship-process prompt often cannot be. So the
+*better* run is frequently the one with no number on it, and a "95 against 20" comparison was a lucky
+pair rather than a result.
+
+**The row that never wavered is the argument**: the statutory obligation was caught every single time
+the worker could see it and missed every single time he could not. That is also the claim the product
+actually makes. The demo points at that row now, and the script puts the score ring explicitly
+off-limits.
+
+**One asymmetry a judge will notice, so we say it first:** the coached run raises four signs and the
+silent one three. The extra is the hardship-process prompt, which can only fire because the coached
+worker said the words. It is a consequence of coaching rather than a rigged comparison — but an
+unexplained difference in the denominator looks like one.
+
+---
+
+## Two cards, one axis — and nothing subtracted
+
+Past reports get their own tab and a compare board that puts two calls on a shared axis, with the two
+ledgers sign by sign underneath.
+
+**Ledgers rather than two whole cards**, because the transcript is never stored. A card recalled from
+storage has no timeline, no answer times and no quoted worker lines, so two cards side by side would
+be one complete card next to one with holes in it. What survives storage is exactly what the argument
+is made of.
+
+**No difference is ever computed.** The same script does not score the same twice — an identical
+coached run gave 95 and then 90. The board prints both fractions and both columns, and states only
+what is true: that the scores are not repeatable, that the two calls raised different numbers of
+signs, that a degraded call was never judged at all. **Subtracting two numbers that are not repeatable
+produces a number that means nothing.**
