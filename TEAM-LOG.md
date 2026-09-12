@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 00:50 | aufanhakim1920-source | other | [why we kept the lower-recall model, and the tier that was dropped at a boundary](../../commit/81c156e46a9eb9225aa31dd0b5215409761c9347) | DECISIONS.md | +38 / -0 |
 | 13 Sept, 00:48 | aufanhakim1920-source | engine | [the published numbers now describe the engine that actually ships, and a request stops being counted as an obligation](../../commit/77d20feac98dd2bb580715bd3c74bfddd5056821) | README.md, fixture-results.json, results.json +4 | +373 / -246 |
 | 13 Sept, 00:19 | aufanhakim1920-source | other | [why the report card leads with a fraction, and the measurement feedback loop](../../commit/e3f4019bc55f130030af92c58be6481926d32b8a) | DECISIONS.md | +42 / -0 |
 | 13 Sept, 00:18 | aufanhakim1920-source | report | [the card leads with a part-to-whole reading, and the product's claim is finally drawn as a duration](../../commit/c9eed6bb188719b60a69abe15605f2da139b73da) | Accessibility.tsx, Account.tsx, CallTimeline.tsx +15 | +1527 / -251 |
