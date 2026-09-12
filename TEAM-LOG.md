@@ -4,6 +4,10 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 00:07 | aufanhakim1920-source | project + live call | [the 2x button now works, the practice screen stops trapping you, and the pitch artefacts exist](../../commit/cba361b05de93c34c9b187a662c4d541d8177c24) | README.md, DECISIONS.md, DEMO-SCRIPT.md +2 | +468 / -83 |
+| 12 Sept, 23:45 | aufanhakim1920-source | other | [a 401 is not always a bad key - read the error code](../../commit/7fdc53abb812dfc2181038ac541a9f119151974d) | DECISIONS.md | +23 / -0 |
+| 12 Sept, 23:39 | aufanhakim1920-source | live call + report | [seven measured sounds, and the app goes quiet on a live call](../../commit/4b1ff476c934ae6ba5b65fdebd68019e1ea3d7ef) | ATTRIBUTION.md, deadline-done.mp3, mark-handled.mp3 +10 | +200 / -22 |
+| 12 Sept, 23:32 | aufanhakim1920-source | live call + design | [a11y: the phone sheet can be opened by keyboard, and two controls stop lying](../../commit/7d06b948a4c38229e730d001327561c59b77d8ce) | CallScreen.tsx, Sheet.tsx, styles.css | +53 / -13 |
 | 12 Sept, 23:23 | aufanhakim1920-source | project | [a decision log, including what we tried and rejected](../../commit/b309b84bd9a2d732985bbdf7d91004124b0324a4) | README.md, DECISIONS.md | +239 / -0 |
 | 12 Sept, 23:00 | aufanhakim1920-source | live call + design | [one panel for how the assistant behaves and how the app is read, and coaching can be switched off](../../commit/ac442c657f747b4e549562b5a2903246ae79fb87) | Accessibility.tsx, CallScreen.tsx, SignStack.tsx +7 | +545 / -104 |
 | 12 Sept, 22:57 | Shawn Lee | report | [accept canonical transcripts and verify detector integration](../../commit/a4023e1f044946991ea04fa80cfa021b30422874) | REPORT_HANDOFF.md, detector-report.mjs, report-input.test.mjs +2 | +340 / -6 |

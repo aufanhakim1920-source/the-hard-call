@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { announce, coachingOn, getA11y } from "./a11y";
 import { postFlags, postReport } from "./api";
 import { maskSensitive } from "./mask";
-import { play } from "./sfx";
+import { play, playSigns } from "./sfx";
 import { actions, getStore, getStoreScope, lessonTexts } from "./store";
 import type { AssistantState, Customer, Line, Mode, Report, Session, Sign, Speaker } from "./types";
 import { uid } from "./types";
@@ -61,7 +61,7 @@ export function useCallEngine(opts: EngineOptions) {
           // timeline all see them. Only the card, the sound and the
           // announcement — the three things the worker would notice — stop.
           if (fresh.length && coachingOn()) {
-            play("sign");
+            playSigns(fresh);
             for (const g of fresh) {
               // A legal sign starts a clock, so it interrupts; a tip waits its turn.
               const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
@@ -107,7 +107,7 @@ export function useCallEngine(opts: EngineOptions) {
       ...cur,
       signs: cur.signs.map((g) => (g.id === id ? { ...g, handled, handledAt: handled ? Date.now() : undefined } : g)),
     }));
-    play(handled ? "handled" : "tap");
+    play(handled ? "handled" : "undo");
   }, []);
 
   const endCall = useCallback(async (): Promise<Report> => {
@@ -131,6 +131,7 @@ export function useCallEngine(opts: EngineOptions) {
       throw new Error("Account changed during the call. Start a new call in the current account.");
     }
     actions.addReport(report);
+    play("report");
     return report;
   }, [startedScope]);
 

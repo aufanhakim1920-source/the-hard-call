@@ -111,14 +111,23 @@ export function Sheet({
         transform: `translateY(${ty}px)`,
         transition: y !== null ? "none" : `transform 420ms ${IOS}`,
       }}
-      aria-expanded={detent === "full"}
       data-animating={animating || undefined}
     >
       <div className="sheet-head" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
         <div className="sheet-handle" aria-hidden="true" />
-        <div className="sheet-head-row" onClick={() => settle(detent === "full" ? "peek" : "full")}>
+        {/* A real button, not a div with a click handler. On a phone this head is
+            the ONLY way into the sheet, and every sign lives inside it — so a
+            keyboard user had no route to the signs at all, and a screen reader
+            was told "expanded" by an element it could not operate. */}
+        <button
+          type="button"
+          className="sheet-head-row"
+          onClick={() => settle(detent === "full" ? "peek" : "full")}
+          aria-expanded={detent === "full"}
+          aria-label={detent === "full" ? "Collapse the signs" : "Expand the signs"}
+        >
           {head}
-        </div>
+        </button>
       </div>
       <div className="sheet-body">{children}</div>
     </div>

@@ -62,6 +62,11 @@ decide.
 
 ## The deterministic detector owns the law; the model owns the judgement
 
+> ⚠️ **Not on `main` yet.** The detector is on an open pull request. Until it merges, the flags come
+> from the model pass and **can** be rate-limited. This section describes the agreed direction, not
+> today's build — a distinction worth keeping honest, since the rest of this file is used to answer
+> "does it really work".
+
 The detector in `src/detector/` runs in **rules mode by default and makes zero API calls**. The legal
 test is two signals in the same turn — payment inability plus not-near-term — with recovery language
 as a suppressor. The model only adjudicates genuinely ambiguous turns, typically none or one per call,
@@ -234,3 +239,26 @@ so it darkens to `#8A5E1C` (4.91:1) for text while the sign's gold **fill** stay
   40-case set fell from 1.00 to 0.83 — and 7 of those 8 "misses" are cases we had labelled wrongly
   against the actual law. They were left alone. Editing the test to match the code is how a gate stops
   meaning anything.
+
+## A 401 is not always a bad key — read the error code
+
+A deployment check reported the public anon key getting `401 Invalid API key` from the REST root, which
+reads like a broken credential. It was not.
+
+| call | result |
+|---|---|
+| `/auth/v1/settings` | 200 — the key is valid |
+| `/functions/v1/api/health` | 200 — the key is valid |
+| `/rest/v1/reports?select=id` | 401, `42501 permission denied for table reports` |
+
+`42501` is a **grants** error, not an invalid-JWT error. Every table has row level security on, one
+policy — `FOR ALL TO authenticated USING (user_id = auth.uid())` — and privileges granted to
+`authenticated` only.
+
+**Two layers, and reading only one of them produces a false alarm.** The grant decides whether a role
+may touch the table at all. The policy decides which rows it sees. A bare anon key reaches nothing; a
+signed-in user, including an anonymous-auth user, reaches only their own rows.
+
+The tempting fix — `GRANT SELECT ON public.reports TO anon` — would have made every row readable with
+the key that ships inside the published bundle. **Both failures are HTTP 401. One means "who are you",
+the other means "you may not touch this table."**

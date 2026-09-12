@@ -4,7 +4,7 @@ import { fmtClock } from "../lib/dates";
 import { DEMO_SCRIPT } from "../lib/demoScript";
 import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
-import { play } from "../lib/sfx";
+import { play, setCallMode } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
 import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
@@ -43,6 +43,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   });
   const { session, interim, setInterim, assistant, addLine, markHandled, endCall, elapsed, newestOpen } = engine;
   useEffect(() => onAssistant(assistant), [assistant, onAssistant]);
+
+  // Tell the sound layer which kind of call this is. On a LIVE call the
+  // customer can hear whatever the headset leaks and cannot interpret it, so
+  // only the legal sign plays, quieter. Practice is where the worker learns
+  // what that sound means. Cleared on unmount so a closed call cannot leave
+  // the app stuck in live policy.
+  useEffect(() => {
+    setCallMode(mode);
+    return () => setCallMode(null);
+  }, [mode]);
 
   const speech = useSpeech({
     onFinal: (t) => addLine(t, "unknown"),
@@ -84,24 +94,33 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const typeRef = useRef<HTMLInputElement>(null);
 
   // Demo mode: the script plays through the real engine.
+  //
+  // One chained timer, not eleven scheduled up front. Every delay used to be
+  // computed at mount from the speed AT THAT MOMENT, so pressing 2x after the
+  // replay started changed nothing at all — measured, the line times were
+  // identical. Which mattered: the whole call is 49.6s, and the demo runs it
+  // TWICE (coaching off, then on) inside 90 seconds. Chaining means each delay
+  // is read fresh, so 2x takes effect from the next line.
   useEffect(() => {
     if (mode !== "demo") return;
     let cancelled = false;
-    const timers: number[] = [];
-    let at = 600;
-    DEMO_SCRIPT.forEach((l, i) => {
-      at += (l.gap * 1000) / speedRef.current;
-      timers.push(
-        window.setTimeout(() => {
-          if (cancelled) return;
-          addLine(l.text, l.speaker);
-          if (i === DEMO_SCRIPT.length - 1) setDemoDone(true);
-        }, at),
-      );
-    });
+    let timer = 0;
+    let i = 0;
+    const step = () => {
+      if (cancelled || i >= DEMO_SCRIPT.length) return;
+      const line = DEMO_SCRIPT[i];
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        addLine(line.text, line.speaker);
+        i += 1;
+        if (i >= DEMO_SCRIPT.length) setDemoDone(true);
+        else step();
+      }, (line.gap * 1000) / speedRef.current);
+    };
+    timer = window.setTimeout(step, 600);
     return () => {
       cancelled = true;
-      timers.forEach(clearTimeout);
+      clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
@@ -199,7 +218,10 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
         <div className="clock" aria-label="Call length">
           {fmtClock(elapsed)}
         </div>
-        <button className="btn gold" onClick={() => void finish()} disabled={!started || ending}>
+        {/* A practice call with nothing said used to be a trap: End call was
+            disabled, and the only escape was reloading the page. Leaving is
+            always allowed — an empty call simply produces an empty report. */}
+        <button className="btn gold" onClick={() => void finish()} disabled={ending}>
           {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
         </button>
       </header>
@@ -276,14 +298,19 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           <div className="inputs">
             {mode === "live" && (
               <>
+                {/* A control that cannot work must be disabled and must SAY why.
+                    It used to stay enabled and hide the reason in a title
+                    tooltip, which never appears on a phone and never reaches a
+                    screen reader as an explanation. */}
                 <button
                   className={"btn" + (speech.listening ? " listening" : "")}
                   onClick={() => (speech.listening ? speech.stop() : speech.start())}
-                  title={speech.supported ? "Uses this browser's speech engine (Chrome or Edge)" : "No speech engine in this browser"}
+                  disabled={!speech.supported}
                 >
                   <span className="rec-dot" />
                   {speech.listening ? "Listening" : "Listen"}
                 </button>
+                {!speech.supported && <span className="hint">This browser has no speech engine. Type what was said instead, or use Chrome or Edge.</span>}
                 <form className="type" onSubmit={submitTyped}>
                   <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
                   <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
@@ -298,15 +325,27 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             )}
             {mode === "demo" && (
               <>
-                <span className="hint">
-                  Speed
-                </span>
-                <button className={"btn sm" + (speed === 1 ? " gold" : "")} onClick={() => setSpeed(1)}>
-                  1×
-                </button>
-                <button className={"btn sm" + (speed === 2 ? " gold" : "")} onClick={() => setSpeed(2)}>
-                  2×
-                </button>
+                {/* One choice of two, so say so. It was two plain buttons with
+                    the state carried by the gold fill alone — invisible to a
+                    screen reader, and meaning in colour only. */}
+                <div className="speed" role="radiogroup" aria-label="Replay speed">
+                  <span className="hint" aria-hidden="true">
+                    Speed
+                  </span>
+                  {([1, 2] as const).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={speed === n}
+                      aria-label={`${n} times speed`}
+                      className={"btn sm" + (speed === n ? " gold" : "")}
+                      onClick={() => setSpeed(n)}
+                    >
+                      {n}×
+                    </button>
+                  ))}
+                </div>
                 <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
               </>
             )}
