@@ -1,4 +1,4 @@
-import { SEEDS, levelLabel, voiceFor } from "../lib/scenarios";
+import { SEEDS, levelAsk, levelLabel, voiceFor } from "../lib/scenarios";
 import { useFlip, useRowExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
@@ -60,7 +60,16 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                   voice: {voiceFor(s).name} · {voiceFor(s).note}
                 </div>
               </div>
-              <div className="sit">{s.whyThisOne}</div>
+              {/* One cell, not two. .scen is a four-column grid and a fifth
+                  child pushed the footer into an implicit column, squeezing the
+                  situation text to one word per line. */}
+              <div className="why">
+                <div className="sit">{s.whyThisOne}</div>
+                {/* The level said "hides it" — which describes the CUSTOMER and
+                    leaves the worker with no idea what to do differently. This
+                    is the same rule, said to the person who has to act on it. */}
+                <div className="ask-of-you">{levelAsk(s.level)}</div>
+              </div>
               <div className="foot">
                 <span className="stats2">{p ? `${p} ${p === 1 ? "go" : "goes"} · best ${b}` : "not tried yet"}</span>
                 <span style={{ display: "flex", gap: 6 }}>

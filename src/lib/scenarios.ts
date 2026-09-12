@@ -180,3 +180,20 @@ Have a realistic call. If the worker offers a concrete next step that fits your 
 export function levelLabel(l: 1 | 2 | 3): string {
   return l === 1 ? "Level 1 · opens up" : l === 2 ? "Level 2 · defensive" : "Level 3 · hides it";
 }
+
+/**
+ * What the level asks of the WORKER, not what it says about the customer.
+ *
+ * "Hides it" was the only thing the practice roster said about a level, and it
+ * describes the customer's behaviour — which leaves the worker with no idea
+ * what they are supposed to do differently. The prompt in `buildPrompt` already
+ * encodes the answer; this is the same three rules said to the person who has
+ * to act on them.
+ */
+export function levelAsk(l: 1 | 2 | 3): string {
+  return l === 1
+    ? "One caring question is enough. Ask what changed and she tells you."
+    : l === 2
+      ? "He will not volunteer it. Ask an open question about what changed before you ask for a date — push for money and he shuts down."
+      : "She deflects and apologises. Slow down, check it is a safe time to talk, and take one piece at a time.";
+}
