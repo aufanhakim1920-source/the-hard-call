@@ -349,6 +349,17 @@ async function main() {
   const publicDir = path.join(ROOT, "public");
   fs.mkdirSync(publicDir, { recursive: true });
   const publicPath = path.join(publicDir, "eval-results.json");
+  // public/eval-results.json is served by the deployed site — it is the number a
+  // judge reads. A partial run is a real measurement of a subset, not of the
+  // engine, so it prints its table and publishes nothing. Overwriting the
+  // published score with a --limit 3 run is a footgun that fires silently.
+  if (cases.length < allCases.length) {
+    console.log(
+      `\nran ${cases.length} of ${allCases.length} cases, so nothing was written. ` +
+        `Drop --limit to publish ${path.relative(ROOT, resultsPath)} and ${path.relative(ROOT, publicPath)}.`,
+    );
+    return;
+  }
   fs.writeFileSync(resultsPath, text);
   fs.writeFileSync(publicPath, text);
   console.log(`\nwrote ${path.relative(ROOT, resultsPath)} and ${path.relative(ROOT, publicPath)}`);

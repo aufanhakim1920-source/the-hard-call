@@ -265,3 +265,33 @@ and nothing in them can make the model fire a sign the words do not support.
 that a lesson still reaches the model, and that a lesson instructing the model
 to ignore the period test and invent evidence still produces no sign — the
 gates, not the prompt, are what hold that.
+
+## What was verified without a key, and what still needs one
+
+`npm run eval` needs `GEMINI_API_KEY`, which is not available on this machine,
+so the real recall after the ground-truth correction is still unmeasured. The
+harness itself was exercised end to end offline by replacing `fetch` with a
+perfect oracle that answers each request with that case's own ground truth:
+
+- 44/44 cases pass, every key at P/R/F1 1.000. That proves the three gates do
+  not block a correct answer, that the scoring, the new warnings and the
+  artifact writing all run, and that `existingKeys` really reaches the engine —
+  c42 fails without it. It proves nothing whatsoever about Gemini.
+- The oracle run also exposed a footgun: `run.mjs` wrote `eval/results.json`
+  and `public/eval-results.json` at the end of EVERY run, including a
+  `--limit 3` one. `public/eval-results.json` is served by the deployed site, so
+  a partial run silently replaced the number a judge reads. A partial run now
+  prints its table and publishes nothing. The artifacts committed here are still
+  the real 12 Sept gemini-2.5-flash run.
+
+To finish this, from a machine with the key:
+
+```
+cp .env.example .env      # then put the real GEMINI_API_KEY in .env, never in chat
+npm run eval              # all 44 cases; rewrites both artifacts
+```
+
+Expect `hardship-request` recall to rise from 0.533 with no engine change,
+because seven of its recorded misses were correct refusals. What is genuinely
+new and unmeasured is c42/c43/c44 — whether the model gets the ABA tip's timing
+right — and whether c09 and c34 hold up once Laural has ruled on them.
