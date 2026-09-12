@@ -249,3 +249,36 @@ test("no lesson can talk a sign past the gates", async () => {
   assert.deepEqual(await keys([hardship({ period: "near_term_recovery" })], { lessons }), []);
   assert.deepEqual(await keys([hardship({ evidence: "make something up" })], { lessons }), []);
 });
+
+// --- the demo's money shot -------------------------------------------------
+
+test("the line the demo pastes still raises the notice and its 21-day clock", async () => {
+  // docs/DEMO-SCRIPT.md at 1:12 pastes this into the type box and reads the
+  // gold LEGAL card aloud at 1:16. The type box has a "Who said it" control, so
+  // the speaker is chosen by a person and the turn is KNOWN — which is why the
+  // speaker gate does not touch the demo. The same is true of the replay, whose
+  // lines carry explicit speakers from demoScript.ts. Only the microphone path
+  // is inferred, and the script says to skip the microphone.
+  //
+  // This test exists so that nobody discovers otherwise at 1:16 on stage.
+  const pasted = "I lost my job last month and I can't make the repayments, not this month and not for a few months.";
+  const transcript = [
+    { id: "d1", speaker: "worker", t: 0, text: "So when do you think you could pay the full amount?" },
+    { id: "d2", speaker: "customer", t: 1, text: pasted },
+  ];
+  const { body } = await run(
+    [
+      hardship({ evidence: "I can't make the repayments, not this month and not for a few months" }),
+      jobLoss({ evidence: "I lost my job last month" }),
+    ],
+    { transcript, newLineId: "d2", speaker: "customer" },
+  );
+  assert.equal(body.speakerConfidence, "known", "a person chose the speaker in the type box");
+  const legal = body.signs.find((x) => x.key === "hardship-request");
+  assert.ok(legal, "the gold LEGAL card must still appear");
+  assert.equal(legal.kind, "legal");
+  assert.equal(legal.dueDays, 21);
+  assert.equal(legal.dueDate, "2026-10-03", "today + 21, the date the Deadlines tab shows at 1:22");
+  assert.equal(legal.source, "National Credit Code s72");
+  assert.ok(legal.askNext, "Ask next is read aloud at 1:16");
+});
