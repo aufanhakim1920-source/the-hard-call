@@ -62,6 +62,11 @@ decide.
 
 ## The deterministic detector owns the law; the model owns the judgement
 
+> ⚠️ **Not on `main` yet.** The detector is on an open pull request. Until it merges, the flags come
+> from the model pass and **can** be rate-limited. This section describes the agreed direction, not
+> today's build — a distinction worth keeping honest, since the rest of this file is used to answer
+> "does it really work".
+
 The detector in `src/detector/` runs in **rules mode by default and makes zero API calls**. The legal
 test is two signals in the same turn — payment inability plus not-near-term — with recovery language
 as a suppressor. The model only adjudicates genuinely ambiguous turns, typically none or one per call,

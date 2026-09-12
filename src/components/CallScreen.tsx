@@ -94,24 +94,33 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const typeRef = useRef<HTMLInputElement>(null);
 
   // Demo mode: the script plays through the real engine.
+  //
+  // One chained timer, not eleven scheduled up front. Every delay used to be
+  // computed at mount from the speed AT THAT MOMENT, so pressing 2x after the
+  // replay started changed nothing at all — measured, the line times were
+  // identical. Which mattered: the whole call is 49.6s, and the demo runs it
+  // TWICE (coaching off, then on) inside 90 seconds. Chaining means each delay
+  // is read fresh, so 2x takes effect from the next line.
   useEffect(() => {
     if (mode !== "demo") return;
     let cancelled = false;
-    const timers: number[] = [];
-    let at = 600;
-    DEMO_SCRIPT.forEach((l, i) => {
-      at += (l.gap * 1000) / speedRef.current;
-      timers.push(
-        window.setTimeout(() => {
-          if (cancelled) return;
-          addLine(l.text, l.speaker);
-          if (i === DEMO_SCRIPT.length - 1) setDemoDone(true);
-        }, at),
-      );
-    });
+    let timer = 0;
+    let i = 0;
+    const step = () => {
+      if (cancelled || i >= DEMO_SCRIPT.length) return;
+      const line = DEMO_SCRIPT[i];
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        addLine(line.text, line.speaker);
+        i += 1;
+        if (i >= DEMO_SCRIPT.length) setDemoDone(true);
+        else step();
+      }, (line.gap * 1000) / speedRef.current);
+    };
+    timer = window.setTimeout(step, 600);
     return () => {
       cancelled = true;
-      timers.forEach(clearTimeout);
+      clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
@@ -209,7 +218,10 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
         <div className="clock" aria-label="Call length">
           {fmtClock(elapsed)}
         </div>
-        <button className="btn gold" onClick={() => void finish()} disabled={!started || ending}>
+        {/* A practice call with nothing said used to be a trap: End call was
+            disabled, and the only escape was reloading the page. Leaving is
+            always allowed — an empty call simply produces an empty report. */}
+        <button className="btn gold" onClick={() => void finish()} disabled={ending}>
           {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
         </button>
       </header>
