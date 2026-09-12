@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 01:14 | aufanhakim1920-source | live call | [two workers, one customer - the before-and-after now has something to show](../../commit/b1181c146190771b272c2c2b783910adfa5789d9) | CallScreen.tsx, demoScript.ts | +89 / -17 |
 | 13 Sept, 01:10 | aufanhakim1920-source | live call + practice voice | [six things a full sweep caught, including a phone that could not end its own call](../../commit/6a1a1ea1a0f52c0d2153fad47f096ba2908163c5) | CallScreen.tsx, Practice.tsx, ReportCard.tsx +2 | +46 / -7 |
 | 13 Sept, 01:06 | aufanhakim1920-source | report | [the card says how the call ran, and a clear that asks first](../../commit/acb60c9d92970c7cfca149a1dda168653e431a7b) | Deadlines.tsx, ReportCard.tsx, ReportLedger.tsx +2 | +249 / -3 |
 | 13 Sept, 00:50 | aufanhakim1920-source | other | [why we kept the lower-recall model, and the tier that was dropped at a boundary](../../commit/81c156e46a9eb9225aa31dd0b5215409761c9347) | DECISIONS.md | +38 / -0 |
