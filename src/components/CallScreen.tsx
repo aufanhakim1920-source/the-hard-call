@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useA11y } from "../lib/a11y";
 import { fmtClock } from "../lib/dates";
 import { demoScriptFor } from "../lib/demoScript";
@@ -6,7 +6,7 @@ import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
 import { play, setCallMode } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
-import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
+import type { AssistantState, Customer, Mode, Report, Scenario, Session, Sign, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
 import { PHONE, useMedia } from "../lib/useMedia";
 import { Select } from "./Select";
@@ -75,6 +75,24 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const signCount = session.signs.length;
   const newestSign = signCount ? session.signs[signCount - 1] : undefined;
   const openCount = session.signs.filter((g) => !g.handled).length;
+  // What the sheet's handle names. NOT the newest sign: the stack is ordered
+  // open legal, then open tips, then handled, so the newest is often a tip
+  // sitting BELOW the legal card the head was naming it over. The head and the
+  // first card are read as one object — a head naming a different card than the
+  // one under it is the worst version of both.
+  //
+  // SignStack owns this order; this mirrors it because the two files cannot
+  // share a helper without another lane's file being opened. If the stack's
+  // order changes, this changes with it.
+  const leadSign = useMemo<Sign | undefined>(() => {
+    const newestFirst = (a: Sign, b: Sign) => b.t - a.t;
+    const open = session.signs.filter((s) => !s.handled);
+    return (
+      open.filter((s) => s.kind === "legal").sort(newestFirst)[0] ??
+      open.filter((s) => s.kind !== "legal").sort(newestFirst)[0] ??
+      [...session.signs].sort((a, b) => (b.handledAt ?? 0) - (a.handledAt ?? 0))[0]
+    );
+  }, [session.signs]);
   // On a phone, a legal sign lifts the sheet by itself; tips wait in the peek.
   // With coaching off it must not — a sheet rising on its own is the loudest
   // prompt on the screen.
@@ -398,9 +416,9 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
               <>
                 <span className={"sheet-count" + (openCount ? " on" : "")}>{signCount}</span>
                 <span className="sheet-title">
-                  {newestSign ? (
+                  {leadSign ? (
                     <>
-                      <b>{newestSign.title}</b>
+                      <b>{leadSign.title}</b>
                       <span className="small muted"> · {openCount} open</span>
                     </>
                   ) : (

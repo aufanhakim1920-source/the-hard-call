@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { motionOff } from "../lib/a11y";
 import type { Report, Session } from "../lib/types";
 import { fmtGap, gapParts, niceSpan, responseGaps, tickStep } from "./report-math";
 import "./report-visuals.css";
@@ -14,31 +12,15 @@ import "./report-visuals.css";
 // A sign the worker never answered has no bar. It gets the fire mark and an
 // empty lane, because a zero-width bar would read as "answered instantly" and
 // a full-width one as "took forever". Neither is known, so neither is drawn.
-
-const GROW_MS = 620;
-// The lanes arrive one at a time, top to bottom. Simultaneous arrival is the
-// one arrangement in which four durations cannot be compared as they land.
-const STAGGER_MS = 90;
+//
+// Which is also why no bar here grows: a zero-width bar means something on this
+// chart, and a sweep starts at exactly that value. The lanes arrive one at a
+// time, top to bottom — Heer & Robertson's staged reading — but by a 7px rise,
+// so a lane that never gets a frame is 7px low rather than a wrong duration.
 
 export function ResponseTimes({ session, report }: { session: Session; report: Report }) {
   const gaps = responseGaps(session, report);
   const lanes = gaps.length;
-
-  // Grown at first paint when there will be no frames to watch: reduced motion,
-  // or a hidden tab. The timeout is the second net — a bar stuck at 0% is not a
-  // subtler bar, it is a wrong number.
-  const [grown, setGrown] = useState(() => motionOff() || document.hidden);
-  useEffect(() => {
-    if (grown) return;
-    const raf = requestAnimationFrame(() => setGrown(true));
-    // Long enough to clear the LAST lane's delay as well as its own duration —
-    // a net that fires before the slowest thing it is protecting is not a net.
-    const safety = window.setTimeout(() => setGrown(true), GROW_MS + lanes * STAGGER_MS + 200);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(safety);
-    };
-  }, [grown, lanes]);
 
   if (lanes === 0) return null;
 
@@ -62,25 +44,29 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
         {gaps.map(({ item, gapMs }, i) => {
           const has = gapMs !== undefined;
           return (
-            <div className={"rv-rt-row " + item.verdict + (has ? "" : " none")} key={item.signId}>
+            <div
+              className={"rv-rt-row " + item.verdict + (has ? "" : " none")}
+              key={item.signId}
+              // The lane's place in the stagger. The rise is a transform, so
+              // the lane is visible and at its true length even if the frame
+              // it would have animated on never arrives.
+              style={{ "--rv-i": i } as CSSProperties}
+            >
               <div className="rv-rt-head">
                 <span className="rv-rt-title">{item.title}</span>
                 <span className="rv-rt-stamp">{item.verdict}</span>
               </div>
               <div className="rv-rt-track" aria-hidden="true">
                 <i className="rv-rt-fire" />
-                {/* Final width on the first frame; only the scale moves, so the
-                    row is never laid out again while the bar sweeps. */}
+                {/* True width on the first frame. It used to sweep out from
+                    zero behind a requestAnimationFrame, and a page that is
+                    visible but not compositing never fires one — the lane sat
+                    at "answered instantly" until a timeout started the same
+                    transition, which froze at zero as well. */}
                 {has && (
                   <i
                     className="rv-rt-bar"
-                    style={
-                      {
-                        width: `${Math.min(100, ((gapMs as number) / axis) * 100)}%`,
-                        "--grow": grown ? 1 : 0,
-                        "--rv-d": `${i * STAGGER_MS}ms`,
-                      } as CSSProperties
-                    }
+                    style={{ width: `${Math.min(100, ((gapMs as number) / axis) * 100)}%` }}
                   />
                 )}
               </div>

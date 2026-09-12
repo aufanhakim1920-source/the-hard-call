@@ -21,12 +21,14 @@
 
    Two rules came out of applying that here:
 
-   1. Only the chart whose growth MEANS something grows. An answer-time bar
-      sweeping out from the fire line is a duration elapsing, which is what the
-      number under it says. The ledger's split bar growing from zero is not a
-      reading at all — it is "0 of 4" held on screen for 820ms, and the card is
-      meant to be grasped in about two seconds. That bar is true on its first
-      frame now and arrives by rising into place.
+   1. NOTHING here grows from zero any more, including the answer-time bars,
+      which were the last holdout. The argument for their sweep was that the
+      distance travelled IS the duration — but a transition holds its first
+      style for as long as a tab is not compositing, and that first style was
+      zero length. A chart's failure mode has to be "less pretty", never "a
+      different number", and there is no version of a sweep whose first frame
+      is true. Every quantity on this card is correct on the frame it appears
+      and arrives by rising into place.
 
    2. Nothing moves by width or height. Those relay out the row on every frame,
       and four answer lanes, three ledger segments and a history strip all
@@ -232,9 +234,18 @@
   background: var(--gold-dim);
   box-shadow: inset 0 0 0 1px var(--gold-2);
 }
+/* Hazard bars cut out of the solid signal. On a call that went entirely one
+   way this segment is the WHOLE bar, and a full-width solid gold bar was
+   reading as a finished one — gold is the positive accent everywhere else in
+   this app, so the worst call in the demo looked like the best. The stripes are
+   the card's own ground showing through, which is a second channel: it survives
+   greyscale, every kind of colour blindness, and a printed page, because it is
+   texture rather than hue. 2px of ground every 6px at 45deg — coarse enough to
+   count at 14px tall, fine enough to still read as one bar. */
 .rv-seg.missed,
 .rv-key.missed i {
-  background: var(--gold-2);
+  background-color: var(--gold-2);
+  background-image: repeating-linear-gradient(45deg, var(--ink) 0 2px, transparent 2px 6px);
 }
 /* Quieter than the other two on purpose: "not verified" is a caveat, not an
    alarm, and a dense pattern would out-shout the signal colour. */
@@ -324,8 +335,15 @@
   gap: 0 18px;
   align-items: center;
 }
+/* Staged arrival, top to bottom: Heer & Robertson measured a staged transition
+   as read more accurately than a simultaneous one, and four durations landing
+   at once is the arrangement in which none of them can be compared as it
+   lands. A transform rise only — nothing in the row moves by width, and
+   nothing starts from a value that would be wrong if it stopped there. */
 .rv-rt-row {
   padding: 9px 2px;
+  animation: rvRise 320ms var(--ease-out) both;
+  animation-delay: calc(var(--rv-i, 0) * 90ms);
 }
 .rv-rt-row + .rv-rt-row {
   border-top: 1px solid var(--line);
@@ -391,37 +409,29 @@
   width: 2px;
   background: var(--gold-2);
 }
-/* The one bar on this card whose growth is the reading: it sweeps out from the
-   fire line, and the distance it covers IS the duration printed beside it. The
-   lanes go one at a time, top to bottom, so four durations are compared in the
-   order they are listed rather than all landing at once.
-   It is at its FINAL width from the first frame and only the scale moves, so
-   nothing in the row is laid out again while it runs. */
+/* The bar spans the fire line to where the worker's words landed, and that
+   distance IS the duration printed beside it. It is drawn at its true width on
+   the first frame.
+
+   It used to sweep out from zero. A transition never advances past its first
+   style in a tab that is not compositing, and its first style was scaleX(0):
+   measured with the transition paused and seeked, 0px of a 200px bar at t=0, and
+   the setTimeout that was meant to rescue it only STARTED the same transition,
+   so the rescue froze at zero too. Four lanes reading "instant" is not a subtler
+   picture of the call, it is the opposite one. The length already says the
+   duration in space; the sweep only said it again in time, and it is the half
+   that can lie. The lanes still arrive one at a time — by a 7px rise, which
+   frozen at its first frame is 7px low and still true. */
 .rv-rt-bar {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
+  min-width: 2px;
   background: var(--gold-dim);
-  transform: scaleX(var(--grow));
-  transform-origin: left center;
-  transition: --grow 620ms var(--ease-out) var(--rv-d, 0ms);
-}
-/* The leading edge is where the answer landed on the axis, so it has to stay a
-   crisp 2px at every point of the sweep. It was a border-right, which scaleX
-   would have squashed to a hairline; as a counter-scaled cap it reads the SAME
-   interpolated --grow as its parent, so the two cancel exactly, frame by
-   frame. The clamp only keeps the division finite at the start. */
-.rv-rt-bar::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 2px;
-  background: var(--gold-2);
-  transform: scaleX(calc(1 / max(var(--grow), 0.02)));
-  transform-origin: right center;
+  /* The leading edge is where the answer landed on the axis, and box-sizing
+     keeps it inside the true width, so the cap's outer edge IS the reading. */
+  border-right: 2px solid var(--gold-2);
 }
 .rv-rt-value {
   grid-area: value;
@@ -621,21 +631,32 @@
   stroke: var(--slate);
   stroke-width: 1;
 }
+/* The sign card's two shapes at chart scale — a solid triangle for a legal
+   sign, a ring for a tip. Both in --gold-2, per the colour rule at the top of
+   this file: a marker that has to be seen against the ground. Composited
+   against the real chart ground it measures 8.45:1 on ink and 4.91:1 on cream,
+   where plain --gold was 2.18:1 on cream — below the 3:1 WCAG 1.4.11 asks of a
+   graphic, on the one mark that carries a statutory obligation. */
 .rv-tl-legal {
-  fill: var(--gold);
-  transition: fill 140ms var(--ease-out);
+  fill: var(--gold-2);
+  stroke: var(--gold-2);
+  stroke-width: 0;
+  transition: stroke-width 140ms var(--ease-out);
 }
 .rv-tl-tip {
   fill: none;
-  stroke: var(--gold);
-  stroke-width: 1;
-  transition: stroke 140ms var(--ease-out);
+  stroke: var(--gold-2);
+  stroke-width: 1.4;
+  transition: stroke-width 140ms var(--ease-out);
 }
+/* Hover changes WEIGHT, not hue. Every other colour on this chart means
+   something — cream is where the worker answered — so a marker that changed
+   colour under the pointer would borrow a meaning for a moment. */
 .rv-tl-mark:hover .rv-tl-legal {
-  fill: var(--gold-2);
+  stroke-width: 2;
 }
 .rv-tl-mark:hover .rv-tl-tip {
-  stroke: var(--gold-2);
+  stroke-width: 2.4;
 }
 .rv-tl-hit {
   fill: transparent;
@@ -1437,14 +1458,14 @@
    the media query. */
 .reduce-motion .rv-whole,
 .reduce-motion .rv-hist-bar,
-.reduce-motion .rv-rt-bar {
+.reduce-motion .rv-rt-row {
   animation-delay: 0ms !important;
   transition-delay: 0ms !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .rv-whole,
   .rv-hist-bar,
-  .rv-rt-bar {
+  .rv-rt-row {
     animation-delay: 0ms !important;
     transition-delay: 0ms !important;
   }

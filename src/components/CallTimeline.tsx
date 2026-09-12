@@ -5,9 +5,10 @@ import { fmtGap, responseGaps } from "./report-math";
 import "./report-visuals.css";
 
 // The whole call on one axis: every line is a tick, every sign a marker at its
-// moment. Customer above the axis in cream, worker below in grey; legal signs
-// are solid gold, tips outlined; a handled sign gets a cream tick under it and
-// a missed one a dotted gold drop-line to the word.
+// moment. Customer above the axis in cream, worker below in grey; a legal sign
+// is the card's solid triangle and a tip is the card's ring, so the chart and
+// the card say "hazard" and "note" the same way; a handled sign gets a cream
+// tick under it and a missed one a dotted gold drop-line to the word.
 //
 // Above the markers, the reach: a hairline from the sign to the worker's cited
 // words, ending in a cream cap. Same vocabulary as the answer-time rows — gold
@@ -23,6 +24,11 @@ const TICK = 8;
 const Y_MARK_BASE = 38;
 const Y_MARK_APEX = 48;
 const MARK_HALF = 5;
+// The ring sits in the triangle's band and carries the same visual weight: a
+// 4.2 radius with a 1.4 stroke reaches 4.9 from the centre, against the
+// triangle's 5, so a row of mixed markers keeps one baseline and one rhythm.
+const Y_MARK_MID = (Y_MARK_BASE + Y_MARK_APEX) / 2;
+const MARK_R = 4.2;
 const Y_DONE_TOP = 71;
 const Y_DONE_BOT = 77;
 const Y_DROP_END = 92;
@@ -140,7 +146,17 @@ export function CallTimeline({ session, report }: { session: Session; report: Re
                   <line className="rv-tl-ans" x1={crisp(rx)} x2={crisp(rx)} y1={Y_LINK - LINK_CAP} y2={Y_LINK + LINK_CAP} />
                 </>
               )}
-              <polygon className={s.kind === "legal" ? "rv-tl-legal" : "rv-tl-tip"} points={tri} />
+              {/* Same two shapes the sign card uses, at chart scale: a solid
+                  triangle is a hazard with a clock on it, a ring is a note. An
+                  outlined triangle was the same silhouette as a filled one, so
+                  the timeline was telling the two kinds apart by weight while
+                  the card told them apart by shape — two vocabularies for one
+                  distinction, and the card is the thing that gets looked at. */}
+              {s.kind === "legal" ? (
+                <polygon className="rv-tl-legal" points={tri} />
+              ) : (
+                <circle className="rv-tl-tip" cx={cx} cy={Y_MARK_MID} r={MARK_R} />
+              )}
               {s.handled && <line className="rv-tl-done" x1={cx} x2={cx} y1={Y_DONE_TOP} y2={Y_DONE_BOT} />}
               {(missed || unver) && (
                 <>

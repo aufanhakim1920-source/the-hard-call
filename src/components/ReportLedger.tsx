@@ -9,9 +9,12 @@ import "./report-visuals.css";
 // same fact as a rate (Gigerenzer 2011), and one part-to-whole comparison is
 // one reading where four independent bars are four.
 //
-// Three treatments, never three hues: answered is a quiet tint, missed is the
-// solid signal, and a verdict the transcript could not support is an empty
-// dotted slot. All three survive greyscale and high contrast, and the accent
+// Three treatments, never three hues: answered is a quiet tint with a hairline
+// edge, missed is the solid signal cut with hazard bars, and a verdict the
+// transcript could not support is an empty dotted slot. Texture rather than
+// colour tells them apart, because a call that went entirely one way draws ONE
+// full-width segment — and the demo's whole argument is two of those cards held
+// side by side. All three survive greyscale and high contrast, and the accent
 // is spent on the one thing the worker still has to fix.
 
 // Only the NUMERATOR counts. How many signs were raised was never in question
