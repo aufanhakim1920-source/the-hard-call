@@ -4,6 +4,13 @@
 //   legal — starts a clock the bank is legally on. Solid gold on screen.
 //   tip   — changes how the worker should handle the next minute. Outlined.
 //
+// And, for hardship only, two TIERS — because a hint is not a notice:
+//   notice  — an inability to pay over a PERIOD. s72 is engaged, 21 days.
+//   request — difficulty language with no period. The worker is prompted to
+//             ASK. No clock, nothing stored, nothing scored.
+// The tier is decided by code in api/flags.ts from facts the model reports,
+// never by the model itself. See DERIVED_SIGN_DEFS below.
+//
 // Sources for the legal ones:
 //   hardship-request — National Credit Code s72: a hardship notice can be
 //     spoken, needs no magic words, and the lender must reply in writing
@@ -12,6 +19,14 @@
 //     and needs a written response within 30 calendar days.
 
 export type SignKind = "legal" | "tip";
+
+/**
+ * Which tier an emitted sign belongs to. Mirrors the `tier` field on the
+ * transcript contract in _shared/reportInput.ts, so the live engine and the
+ * transcript adapter draw the same line: only a "notice" is an obligation,
+ * and only obligations are stored, clocked and scored.
+ */
+export type SignTier = "notice" | "request";
 
 export interface SignDef {
   key: string;
@@ -48,7 +63,7 @@ export const SIGN_DEFS: SignDef[] = [
     key: "inform-hardship-provisions",
     kind: "tip",
     label: "Tell them the hardship process exists",
-    cue: "a hardship notice has already been raised on this call and the worker has NOT yet told the customer that hardship provisions exist / that they can apply for hardship assistance. ABA financial difficulty guideline — the duty staff most often forget under pressure. Never fire before a hardship-request sign exists, and never if the worker has already mentioned hardship assistance, a hardship application, or a repayment arrangement process.",
+    cue: "a hardship notice has already been raised on this call and the worker has NOT yet told the customer that hardship provisions exist / that they can apply for hardship assistance. ABA financial difficulty guideline — the duty staff most often forget under pressure. Never fire before a hardship NOTICE exists — an inability stated over a period, not a passing mention of difficulty — and never if the worker has already mentioned hardship assistance, a hardship application, or a repayment arrangement process.",
     source: "ABA financial difficulty guideline",
   },
   {
@@ -107,10 +122,53 @@ export const SIGN_DEFS: SignDef[] = [
   },
 ];
 
+/** The key the request tier is emitted under. Deliberately NOT "hardship-request". */
+export const REQUEST_KEY = "ask-about-hardship";
+
+/**
+ * Signs the code derives; the model never picks these, so they are kept out of
+ * SIGN_DEFS, out of the response schema and out of the prompt's taxonomy.
+ *
+ * `ask-about-hardship` is the request tier of NCC s72. The model reports two
+ * facts about a hardship turn — `period` and `recovery` — and api/flags.ts
+ * decides: a period means a notice, no period means this, a named recovery
+ * means silence.
+ *
+ * It carries its own key for one structural reason, not for tidiness: the
+ * engine refuses to fire a key that is already on screen. Sharing the
+ * "hardship-request" key would let an early hint eat the statutory notice that
+ * comes two turns later — a hint silently cancelling a legal obligation. With
+ * its own key, a request and a later notice are independent.
+ *
+ * No dueDays, no dueLabel, no source: a request starts no clock and cites no
+ * authority, because none has been engaged yet.
+ */
+export const DERIVED_SIGN_DEFS: SignDef[] = [
+  {
+    key: REQUEST_KEY,
+    kind: "tip",
+    label: "Worth asking about hardship",
+    cue: "the customer used difficulty language about their own repayments — 'things are tight', 'I'm behind', 'struggling', 'I can't do the full amount' — but has NOT stated an inability over a period, and has NOT named a recovery. Nothing legal has been triggered; the worker is being prompted to ask the question that would settle it.",
+  },
+];
+
 export const SIGN_KEYS = SIGN_DEFS.map((d) => d.key);
+export const ALL_SIGN_DEFS = [...SIGN_DEFS, ...DERIVED_SIGN_DEFS];
+export const ALL_SIGN_KEYS = ALL_SIGN_DEFS.map((d) => d.key);
 
 export function signDef(key: string): SignDef | undefined {
-  return SIGN_DEFS.find((d) => d.key === key);
+  return ALL_SIGN_DEFS.find((d) => d.key === key);
+}
+
+/**
+ * Obligation, or prompt-to-ask. Only a "notice" is stored, clocked and scored.
+ * Undefined for the ordinary cue tips (job-loss, health, stress…): they are
+ * neither, and inventing a tier for them would blur the one line this field
+ * exists to draw.
+ */
+export function tierOf(key: string): SignTier | undefined {
+  if (key === REQUEST_KEY) return "request";
+  return signDef(key)?.kind === "legal" ? "notice" : undefined;
 }
 
 /** ISO date (YYYY-MM-DD) that is `days` after `fromISO`, computed in plain calendar days. */

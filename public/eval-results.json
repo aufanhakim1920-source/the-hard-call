@@ -1,28 +1,28 @@
 {
   "model": "gemini-flash-latest",
-  "ranAt": "2026-09-12T14:36:07.701Z",
+  "ranAt": "2026-09-12T15:15:37.864Z",
   "n": 41,
   "blind": false,
   "errors": 0,
   "overall": {
     "precision": 1,
-    "recall": 0.738,
-    "f1": 0.849,
-    "exact": 0.732,
-    "tp": 31,
+    "recall": 0.69,
+    "f1": 0.817,
+    "exact": 0.683,
+    "tp": 29,
     "fp": 0,
-    "fn": 11
+    "fn": 13
   },
   "perKey": {
     "hardship-request": {
       "support": 16,
-      "predicted": 5,
-      "tp": 5,
+      "predicted": 3,
+      "tp": 3,
       "fp": 0,
-      "fn": 11,
+      "fn": 13,
       "precision": 1,
-      "recall": 0.313,
-      "f1": 0.476
+      "recall": 0.188,
+      "f1": 0.316
     },
     "complaint": {
       "support": 2,
@@ -135,13 +135,113 @@
       "f1": 1
     }
   },
+  "requestTier": {
+    "key": "ask-about-hardship",
+    "scored": false,
+    "labelledHardship": 16,
+    "outcomes": {
+      "notice": 3,
+      "request": 9,
+      "silent": 4
+    },
+    "rows": [
+      {
+        "id": "c01",
+        "outcome": "request",
+        "text": "Yeah look, I'm a bit behind at the moment, things are pretty tight."
+      },
+      {
+        "id": "c02",
+        "outcome": "silent",
+        "text": "Any chance we can push the payment back a couple of weeks? I get paid on the twentieth."
+      },
+      {
+        "id": "c03",
+        "outcome": "silent",
+        "text": "Yeah, my hours got cut at work so this month's going to be tight. Can it wait till the next one?"
+      },
+      {
+        "id": "c04",
+        "outcome": "request",
+        "text": "Is there any way to pause it for a bit? I just can't do it right now."
+      },
+      {
+        "id": "c05",
+        "outcome": "request",
+        "text": "Mate, I got made redundant last month. I haven't got it, simple as that."
+      },
+      {
+        "id": "c06",
+        "outcome": "notice",
+        "text": "I've been in and out of hospital since June and I can't keep up with the repayments."
+      },
+      {
+        "id": "c07",
+        "outcome": "notice",
+        "text": "My husband's moved out and the loan's in both our names. I can't cover the whole thing on my own."
+      },
+      {
+        "id": "c08",
+        "outcome": "request",
+        "text": "Dad passed away three weeks ago and the funeral's cleaned me out. I'm going to miss this one too."
+      },
+      {
+        "id": "c09",
+        "outcome": "request",
+        "text": "The floods took the whole ground floor, we're staying at my sister's. There's no way I can pay this month."
+      },
+      {
+        "id": "c10",
+        "outcome": "notice",
+        "text": "I honestly don't know what to do anymore. I can't cope with all this and I can't pay it."
+      },
+      {
+        "id": "c11",
+        "outcome": "silent",
+        "text": "Could I just pay half this month and catch the rest up next month?"
+      },
+      {
+        "id": "c12",
+        "outcome": "request",
+        "text": "I'm going to need a bit more time. Is there something we can work out?"
+      },
+      {
+        "id": "c13",
+        "outcome": "request",
+        "text": "My casual contract finished up, so there's nothing coming in till I find something. I can't make the next payment."
+      },
+      {
+        "id": "c14",
+        "outcome": "request",
+        "text": "I've had to stop work to look after my mum, she's not well. Money's stretched, I can't do the full amount."
+      },
+      {
+        "id": "c34",
+        "outcome": "request",
+        "text": "I put it all on the pokies, mate. There's nothing left this fortnight."
+      },
+      {
+        "id": "c41",
+        "outcome": "silent",
+        "text": "Oh yeah, sorry about that. Don't worry about it, I'll be fine in a month."
+      }
+    ],
+    "ifScoredAgainstFlatLabels": {
+      "precision": 0.763,
+      "recall": 0.69,
+      "f1": 0.725,
+      "tp": 29,
+      "fp": 9,
+      "fn": 13
+    }
+  },
   "speakerAccuracy": 1,
   "latency": {
-    "p50": 1710,
-    "p95": 3605,
-    "mean": 1975,
-    "min": 1192,
-    "max": 5053
+    "p50": 1940,
+    "p95": 3295,
+    "mean": 2261,
+    "min": 1163,
+    "max": 10067
   },
   "failures": [
     {
@@ -152,12 +252,17 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
-      "evidence": []
+      "evidence": [
+        "ask-about-hardship: \"I'm a bit behind at the moment, things are pretty tight.\" (0.75)"
+      ]
     },
     {
       "id": "c02",
@@ -167,6 +272,7 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [],
       "missing": [
         "hardship-request"
       ],
@@ -185,6 +291,7 @@
       "got": [
         "job-loss"
       ],
+      "requests": [],
       "missing": [
         "hardship-request"
       ],
@@ -192,6 +299,26 @@
       "speaker": "customer",
       "evidence": [
         "job-loss: \"my hours got cut at work\" (0.95)"
+      ]
+    },
+    {
+      "id": "c04",
+      "direction": "inbound",
+      "text": "Is there any way to pause it for a bit? I just can't do it right now.",
+      "expect": [
+        "hardship-request"
+      ],
+      "got": [],
+      "requests": [
+        "ask-about-hardship"
+      ],
+      "missing": [
+        "hardship-request"
+      ],
+      "extra": [],
+      "speaker": "customer",
+      "evidence": [
+        "ask-about-hardship: \"Is there any way to pause it for a bit? I just can't do it right now.\" (0.85)"
       ]
     },
     {
@@ -205,13 +332,17 @@
       "got": [
         "job-loss"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "job-loss: \"I got made redundant last month\" (0.95)"
+        "job-loss: \"I got made redundant last month.\" (0.95)",
+        "ask-about-hardship: \"I haven't got it, simple as that.\" (0.85)"
       ]
     },
     {
@@ -225,13 +356,17 @@
       "got": [
         "bereavement"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "bereavement: \"Dad passed away three weeks ago and the funeral's cleaned me out.\" (0.95)"
+        "bereavement: \"Dad passed away three weeks ago\" (0.95)",
+        "ask-about-hardship: \"the funeral's cleaned me out. I'm going to miss this one too.\" (0.85)"
       ]
     },
     {
@@ -245,13 +380,17 @@
       "got": [
         "disaster"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "disaster: \"The floods took the whole ground floor, we're staying at my sister's.\" (0.98)"
+        "disaster: \"The floods took the whole ground floor, we're staying at my sister's.\" (0.95)",
+        "ask-about-hardship: \"There's no way I can pay this month.\" (0.9)"
       ]
     },
     {
@@ -262,6 +401,7 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [],
       "missing": [
         "hardship-request"
       ],
@@ -277,12 +417,17 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
-      "evidence": []
+      "evidence": [
+        "ask-about-hardship: \"I'm going to need a bit more time. Is there something we can work out?\" (0.85)"
+      ]
     },
     {
       "id": "c13",
@@ -295,13 +440,44 @@
       "got": [
         "job-loss"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "job-loss: \"My casual contract finished up, so there's nothing coming in till I find something.\" (0.95)"
+        "job-loss: \"My casual contract finished up, so there's nothing coming in till I find something.\" (0.95)",
+        "ask-about-hardship: \"I can't make the next payment.\" (0.9)"
+      ]
+    },
+    {
+      "id": "c14",
+      "direction": "outbound",
+      "text": "I've had to stop work to look after my mum, she's not well. Money's stretched, I can't do the full amount.",
+      "expect": [
+        "hardship-request",
+        "health",
+        "job-loss"
+      ],
+      "got": [
+        "health",
+        "job-loss"
+      ],
+      "requests": [
+        "ask-about-hardship"
+      ],
+      "missing": [
+        "hardship-request"
+      ],
+      "extra": [],
+      "speaker": "customer",
+      "evidence": [
+        "ask-about-hardship: \"Money's stretched, I can't do the full amount.\" (0.9)",
+        "health: \"look after my mum, she's not well\" (0.95)",
+        "job-loss: \"I've had to stop work to look after my mum\" (0.9)"
       ]
     },
     {
@@ -315,13 +491,17 @@
       "got": [
         "gambling"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "missing": [
         "hardship-request"
       ],
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "gambling: \"I put it all on the pokies, mate\" (0.95)"
+        "gambling: \"I put it all on the pokies, mate.\" (0.95)",
+        "ask-about-hardship: \"There's nothing left this fortnight.\" (0.85)"
       ]
     },
     {
@@ -332,6 +512,7 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [],
       "missing": [
         "hardship-request"
       ],
@@ -347,9 +528,12 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2909,
+      "ms": 1866,
       "attempts": 1
     },
     {
@@ -358,9 +542,10 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1710,
+      "ms": 2124,
       "attempts": 1
     },
     {
@@ -372,9 +557,10 @@
       "got": [
         "job-loss"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1704,
+      "ms": 3123,
       "attempts": 1
     },
     {
@@ -382,12 +568,13 @@
       "expect": [
         "hardship-request"
       ],
-      "got": [
-        "hardship-request"
+      "got": [],
+      "requests": [
+        "ask-about-hardship"
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1573,
+      "ms": 2024,
       "attempts": 1
     },
     {
@@ -399,9 +586,12 @@
       "got": [
         "job-loss"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1527,
+      "ms": 2025,
       "attempts": 1
     },
     {
@@ -411,12 +601,13 @@
         "health"
       ],
       "got": [
-        "health",
-        "hardship-request"
+        "hardship-request",
+        "health"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 3962,
+      "ms": 3761,
       "attempts": 1
     },
     {
@@ -429,9 +620,10 @@
         "separation",
         "hardship-request"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 2071,
+      "ms": 2091,
       "attempts": 1
     },
     {
@@ -443,9 +635,12 @@
       "got": [
         "bereavement"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2030,
+      "ms": 2283,
       "attempts": 1
     },
     {
@@ -457,9 +652,12 @@
       "got": [
         "disaster"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 3605,
+      "ms": 2383,
       "attempts": 1
     },
     {
@@ -472,9 +670,10 @@
         "stress",
         "hardship-request"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 5053,
+      "ms": 2601,
       "attempts": 1
     },
     {
@@ -483,9 +682,10 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1482,
+      "ms": 1855,
       "attempts": 1
     },
     {
@@ -494,9 +694,12 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1192,
+      "ms": 3026,
       "attempts": 1
     },
     {
@@ -508,9 +711,12 @@
       "got": [
         "job-loss"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1766,
+      "ms": 2337,
       "attempts": 1
     },
     {
@@ -521,103 +727,115 @@
         "job-loss"
       ],
       "got": [
-        "job-loss",
         "health",
-        "hardship-request"
+        "job-loss"
+      ],
+      "requests": [
+        "ask-about-hardship"
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2339,
+      "ms": 2461,
       "attempts": 1
     },
     {
       "id": "c15",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1482,
+      "ms": 2165,
       "attempts": 1
     },
     {
       "id": "c16",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 2870,
+      "ms": 1163,
       "attempts": 1
     },
     {
       "id": "c17",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1378,
+      "ms": 3295,
       "attempts": 1
     },
     {
       "id": "c18",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 2234,
+      "ms": 1913,
       "attempts": 1
     },
     {
       "id": "c19",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "worker",
-      "ms": 1456,
+      "ms": 2272,
       "attempts": 1
     },
     {
       "id": "c20",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1412,
+      "ms": 1411,
       "attempts": 1
     },
     {
       "id": "c21",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1353,
+      "ms": 1489,
       "attempts": 1
     },
     {
       "id": "c22",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1677,
+      "ms": 1250,
       "attempts": 1
     },
     {
       "id": "c23",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 2214,
+      "ms": 1589,
       "attempts": 1
     },
     {
       "id": "c24",
       "expect": [],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1729,
+      "ms": 1503,
       "attempts": 1
     },
     {
@@ -628,9 +846,10 @@
       "got": [
         "complaint"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1428,
+      "ms": 1849,
       "attempts": 1
     },
     {
@@ -641,9 +860,10 @@
       "got": [
         "complaint"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1670,
+      "ms": 1689,
       "attempts": 1
     },
     {
@@ -654,9 +874,10 @@
       "got": [
         "safety"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1678,
+      "ms": 1739,
       "attempts": 1
     },
     {
@@ -667,9 +888,10 @@
       "got": [
         "safety"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1687,
+      "ms": 1787,
       "attempts": 1
     },
     {
@@ -680,9 +902,10 @@
       "got": [
         "safety"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1781,
+      "ms": 1613,
       "attempts": 1
     },
     {
@@ -693,9 +916,10 @@
       "got": [
         "scam"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1719,
+      "ms": 2833,
       "attempts": 1
     },
     {
@@ -706,9 +930,10 @@
       "got": [
         "scam"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1742,
+      "ms": 1891,
       "attempts": 1
     },
     {
@@ -719,9 +944,10 @@
       "got": [
         "scam"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1712,
+      "ms": 10067,
       "attempts": 1
     },
     {
@@ -732,9 +958,10 @@
       "got": [
         "gambling"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1542,
+      "ms": 1783,
       "attempts": 1
     },
     {
@@ -746,9 +973,12 @@
       "got": [
         "gambling"
       ],
+      "requests": [
+        "ask-about-hardship"
+      ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1329,
+      "ms": 2202,
       "attempts": 1
     },
     {
@@ -759,9 +989,10 @@
       "got": [
         "stress"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1772,
+      "ms": 1889,
       "attempts": 1
     },
     {
@@ -772,9 +1003,10 @@
       "got": [
         "disaster"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1360,
+      "ms": 2326,
       "attempts": 1
     },
     {
@@ -785,9 +1017,10 @@
       "got": [
         "health"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 3208,
+      "ms": 1816,
       "attempts": 1
     },
     {
@@ -798,9 +1031,10 @@
       "got": [
         "bereavement"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1617,
+      "ms": 1940,
       "attempts": 1
     },
     {
@@ -811,9 +1045,10 @@
       "got": [
         "separation"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 2155,
+      "ms": 1535,
       "attempts": 1
     },
     {
@@ -824,9 +1059,10 @@
       "got": [
         "job-loss"
       ],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 2520,
+      "ms": 2032,
       "attempts": 1
     },
     {
@@ -835,9 +1071,10 @@
         "hardship-request"
       ],
       "got": [],
+      "requests": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1330,
+      "ms": 1697,
       "attempts": 1
     }
   ]
