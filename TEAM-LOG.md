@@ -4,6 +4,9 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 21:26 | TronJuan | engine | [Update cases.json](../../commit/ca2cab7a9602ac832a5971ceac7026a158785729) | cases.json | +1 / -1 |
+| 12 Sept, 21:21 | TronJuan | engine | [Update cases.json](../../commit/c92fd3cd0192cce65bbde6c0d75fe12fab942fb8) | cases.json | +13 / -1 |
+| 12 Sept, 20:14 | aufanhakim1920-source | accounts + design | [the page no longer scrolls sideways at any width, and the guest refusal is asked once](../../commit/ab5cffdacabbb919a2b32c83e452a01d1af2a872) | auth.ts, styles.css | +83 / -6 |
 | 12 Sept, 20:00 | TronJuan | engine | [Update gemini.ts](../../commit/63569c6abc30828c96d4e8ceed9d75172cfed859) | gemini.ts | +1 / -1 |
 | 12 Sept, 19:56 | aufanhakim1920-source | project + design | [every fr track gets a zero floor, and a check that keeps it that way](../../commit/3f974b273ccd74dc7657928e811e5d897c285713) | pages.yml, package.json, gate-css.mjs +1 | +93 / -14 |
 | 12 Sept, 19:55 | TronJuan | engine | [Update gemini.ts](../../commit/aab9e9911d7292cbc2202c6d745a8e54bf5d43bb) | gemini.ts | +1 / -1 |
