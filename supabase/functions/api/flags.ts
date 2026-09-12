@@ -32,6 +32,8 @@ interface ModelSign {
   askNext: string;
   evidence: string;
   confidence: number;
+  /** For hardship-request only: how long the customer says they cannot pay. */
+  period?: "none" | "single_payment" | "near_term_recovery" | "months_or_open_ended";
 }
 
 interface ModelAnswer {
@@ -54,8 +56,9 @@ const SCHEMA = {
           askNext: { type: "string" },
           evidence: { type: "string" },
           confidence: { type: "number" },
+          period: { type: "string", enum: ["none", "single_payment", "near_term_recovery", "months_or_open_ended"] },
         },
-        required: ["key", "title", "detail", "askNext", "evidence", "confidence"],
+        required: ["key", "title", "detail", "askNext", "evidence", "confidence", "period"],
       },
     },
   },
@@ -78,8 +81,20 @@ Rules for what you write:
 - detail: one short sentence on what to DO right now. For legal signs leave detail as an empty string; the app fills in the deadline.
 - askNext: ONE question the worker can say word for word, under 20 words, warm, open, no jargon. For hardship: offer a change to repayments rather than asking for money. For stress: slow down and ask what would help. For safety: ask if it is a safe time to talk. Never promise an outcome.
 - evidence: the exact words from the newest line that triggered the sign.
+- period: for hardship-request, classify what the customer has said SO FAR about how long they cannot meet the repayments. Use "none" for every other sign key.
+    "none" — they have not said anything about being unable to pay, or have only given a CAUSE (job loss, illness, reduced hours, a death). A cause is not a notice.
+    "single_payment" — one payment only: "I missed the last one", "I don't think I'll make the next one".
+    "near_term_recovery" — they name a recovery: a date, a payday, a new job already started, and future repayments are manageable.
+    "months_or_open_ended" — a period: "not next month or the month after", "not for a while", "until I'm back at work", months, or no end in sight.
+  Report what was SAID, not what you infer from the situation. Someone out of work who has not yet spoken about the repayments is "none".
 - confidence: 0 to 1. Only fire at 0.6 or above.
 - Health: never write a diagnosis or condition name in the title or detail.
+- A legal sign names a DUTY that has been triggered, never a diagnosis of the person. Before firing a legal sign, state to yourself which words created the obligation.
+- Timing matters as much as the key: fire on the turn where the test is actually met, not on an earlier turn that only hinted at it. An early flag is a wrong flag.
+- PATIENCE, for the hardship sign specifically. A first mention of difficulty ("I missed the payment", "it's been a struggle", "money's tight") is NOT enough on its own, because the very next turns usually decide it. Hold and return no sign until one of these is true:
+  (a) the customer states inability going forward — months, "not for a while", "not until I'm back at work", or no end in sight → fire;
+  (b) the customer names a recovery — a date, a payday, a new job already started — and says future repayments are manageable → this call is a timing gap, NOT a hardship notice, so never fire it, not even later.
+  Waiting one or two turns costs nothing; a wrong legal flag costs the customer a process they did not ask for and the bank a false clock.
 - A sign must be about the CUSTOMER'S OWN money or situation. A matching word alone is never a sign: "behind on my emails" is not hardship, a brother losing his job is not job-loss, a power outage is not a disaster, a bounced debit that has since cleared is not hardship. When in doubt, do not fire.
 - Worker lines almost never trigger signs. A customer line can trigger more than one.
 ${lessons.length ? `\nLessons from this team's manager (these override your defaults):\n${lessons.map((l) => "- " + l).join("\n")}\n` : ""}
@@ -120,9 +135,17 @@ Today's date: ${today}`;
       model: body.model,
     });
 
+    // The legal gate: a hardship notice under NCC s72 needs a stated inability
+    // over a PERIOD. The model classifies what was said; this line decides.
+    // Prompt wording alone could not hold it — the model kept reading a cause
+    // ("I lost my job, nothing's coming in") as an inability. Measured against
+    // laural's fixtures: eval/fixtures.mjs.
+    const periodOk = (s: ModelSign) => s.key !== "hardship-request" || s.period === "months_or_open_ended";
+
     const seen = new Set<string>();
     const signs = (data.signs ?? [])
       .filter((s) => s && SIGN_KEYS.includes(s.key) && !existing.has(s.key) && s.confidence >= 0.6)
+      .filter(periodOk)
       .filter((s) => (seen.has(s.key) ? false : (seen.add(s.key), true)))
       .map((s) => {
         const def = signDef(s.key)!;

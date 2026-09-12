@@ -127,16 +127,16 @@ async function main() {
   }
   console.log(`key: ${keySource === "environment" ? "environment" : path.basename(keySource)}`);
 
-  const [{ default: handler }, { SIGN_KEYS }] = await Promise.all([
+  const [{ handle: handler }, { SIGN_KEYS }] = await Promise.all([
     import("../supabase/functions/api/flags.ts"),
-    import("../netlify/lib/signs.mts"),
+    import("../supabase/functions/_shared/signs.ts"),
   ]);
 
   const allCases = JSON.parse(fs.readFileSync(path.join(HERE, "cases.json"), "utf8"));
   const cases = allCases.slice(0, args.limit);
   for (const c of cases) {
     for (const k of c.expect) {
-      if (!SIGN_KEYS.includes(k)) console.log(`WARNING ${c.id}: expect key "${k}" is not in signs.mts`);
+      if (!SIGN_KEYS.includes(k)) console.log(`WARNING ${c.id}: expect key "${k}" is not in signs.ts`);
     }
   }
 

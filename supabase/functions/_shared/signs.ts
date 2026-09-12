@@ -30,7 +30,7 @@ export const SIGN_DEFS: SignDef[] = [
     key: "hardship-request",
     kind: "legal",
     label: "Counts as a hardship request",
-    cue: "the customer says or implies they are, or expect to be, unable to meet a repayment — 'a bit behind', 'can't make it this month', 'can I pause', 'things are tight', reduced hours, job loss, or asking for more time. The word 'hardship' is not required.",
+    cue: "the customer states or clearly implies an INABILITY to meet the repayments, not a passing wobble. The legal test is inability, not distress: it must be a problem they cannot resolve in the near term — 'I can't make the repayments', 'not this month and not for a while', 'not until I'm back at work', a period of months, or an open-ended 'I don't know when'. The word 'hardship' is never used. Informal language the ABA trains staff on — 'struggling', 'can't afford', 'low on funds', 'strapped', 'money problems' — is the signal to START LISTENING, never the trigger on its own; ask yourself INABILITY, OR DELAY? Do NOT fire on a temporary timing gap where the customer names a recovery (a date, a payday, a new job starting) and confirms future repayments are manageable — that is not a hardship notice under s72 and firing on it is the single worst error this system can make. Fire on the turn where the inability is actually stated, not on the first hint of difficulty. TWO THINGS THAT ARE NOT A NOTICE, however sympathetic: (1) a CAUSE on its own — losing a job, an illness, surgery, reduced hours, a death, a separation — explains WHY someone may struggle but starts no clock; wait for what they say about the REPAYMENTS. (2) a single payment — 'I missed the last one', 'I don't think I'll make the next one' — is a near-term problem; the notice needs a PERIOD: 'not next month or the month after', 'not for a while', 'until I'm back at work', months, or no end stated.",
     dueDays: 21,
     dueLabel: "Reply due",
     source: "National Credit Code s72",
@@ -43,6 +43,13 @@ export const SIGN_DEFS: SignDef[] = [
     dueDays: 30,
     dueLabel: "Written response due",
     source: "ASIC RG 271",
+  },
+  {
+    key: "inform-hardship-provisions",
+    kind: "tip",
+    label: "Tell them the hardship process exists",
+    cue: "a hardship notice has already been raised on this call and the worker has NOT yet told the customer that hardship provisions exist / that they can apply for hardship assistance. ABA financial difficulty guideline — the duty staff most often forget under pressure. Never fire before a hardship-request sign exists, and never if the worker has already mentioned hardship assistance, a hardship application, or a repayment arrangement process.",
+    source: "ABA financial difficulty guideline",
   },
   {
     key: "job-loss",

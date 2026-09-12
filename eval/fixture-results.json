@@ -1,0 +1,128 @@
+{
+  "ranAt": "2026-09-12T09:15:13.176Z",
+  "passed": 2,
+  "total": 3,
+  "results": [
+    {
+      "call": "call_001",
+      "pass": true,
+      "notes": [
+        "ok    NCC_72_ORAL_NOTICE at 51200ms (0.0s off)",
+        "      tips (not scored): Lost their job; Customer sounds stressed about money; Told customer about hardship process"
+      ],
+      "raised": [
+        {
+          "key": "job-loss",
+          "rule_id": null,
+          "kind": "tip",
+          "title": "Lost their job",
+          "atMs": 35500,
+          "turn": 7,
+          "evidence": "I lost my job. Six weeks ago now. The site got shut down, they let the whole crew go."
+        },
+        {
+          "key": "hardship-request",
+          "rule_id": "NCC_72_ORAL_NOTICE",
+          "kind": "legal",
+          "title": "Cannot make repayments for a period",
+          "atMs": 51200,
+          "turn": 9,
+          "evidence": "I've got maybe two weeks of savings left and after that I can't make the repayment. Not this month and honestly not for a while."
+        },
+        {
+          "key": "stress",
+          "rule_id": null,
+          "kind": "tip",
+          "title": "Customer sounds stressed about money",
+          "atMs": 51200,
+          "turn": 9,
+          "evidence": "I've got maybe two weeks of savings left and after that I can't make the repayment. Not this month and honestly not for a while. My partner's working but it's part-time, it doesn't cover the mortgage on its own."
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+          "kind": "tip",
+          "title": "Told customer about hardship process",
+          "atMs": 86600,
+          "turn": 12,
+          "evidence": "Daniel, what you've just told me counts as a hardship notice — that's a formal thing under the National Credit Code, and it means we have to look at whether we can change your loan arrangements. I'm lodging that now while we're on the call."
+        }
+      ]
+    },
+    {
+      "call": "call_002",
+      "pass": true,
+      "notes": [
+        "ok    NCC_72_ORAL_NOTICE correctly did not fire",
+        "      tips (not scored): Changed jobs, new pay cycle"
+      ],
+      "raised": [
+        {
+          "key": "job-loss",
+          "rule_id": null,
+          "kind": "tip",
+          "title": "Changed jobs, new pay cycle",
+          "atMs": 31300,
+          "turn": 5,
+          "evidence": "I changed jobs in August and the new place pays monthly instead of fortnightly, so I've had this awkward five-week gap with nothing coming in. The first full pay lands on the twentieth."
+        }
+      ]
+    },
+    {
+      "call": "call_003",
+      "pass": false,
+      "notes": [
+        "LATE  NCC_72_ORAL_NOTICE fired at 16500ms, expected 45000ms (28.5s off, tolerance 3s)",
+        "LATE  ABA_INFORM_HARDSHIP_PROVISIONS fired at 64600ms, expected 103200ms (38.6s off, tolerance 3s)",
+        "      tips (not scored): Customer had surgery; Customer is off work due to health; Tell them hardship process exists"
+      ],
+      "raised": [
+        {
+          "key": "hardship-request",
+          "rule_id": "NCC_72_ORAL_NOTICE",
+          "kind": "legal",
+          "title": "Cannot make repayments for a period",
+          "atMs": 16500,
+          "turn": 3,
+          "evidence": "I've missed the last two and I don't think I'm going to make the next one either."
+        },
+        {
+          "key": "health",
+          "rule_id": null,
+          "kind": "tip",
+          "title": "Customer had surgery",
+          "atMs": 26300,
+          "turn": 5,
+          "evidence": "I had surgery in July and I'm signed off work until at least February."
+        },
+        {
+          "key": "job-loss",
+          "rule_id": null,
+          "kind": "tip",
+          "title": "Customer is off work due to health",
+          "atMs": 26300,
+          "turn": 5,
+          "evidence": "I'm signed off work until at least February. I'm on the income protection but it's about sixty per cent of what I was on."
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+          "kind": "tip",
+          "title": "Tell them hardship process exists",
+          "atMs": 64600,
+          "turn": 8,
+          "evidence": "Okay. What I can do is set up an arrangement where you pay what you can each month and we'll review it."
+        },
+        {
+          "key": "complaint",
+          "rule_id": "RG271_COMPLAINT",
+          "kind": "legal",
+          "title": "Customer is concerned about impact of arrangement",
+          "atMs": 71600,
+          "turn": 9,
+          "evidence": "What does that mean, though? Am I still behind? Does it still count against me?"
+        }
+      ]
+    }
+  ]
+}
