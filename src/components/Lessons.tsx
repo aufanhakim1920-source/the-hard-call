@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { fmtWhen } from "../lib/dates";
+import { useFlip, useRowExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import type { LessonKind } from "../lib/types";
@@ -21,6 +22,11 @@ export function Lessons() {
   const store = useStore();
   const [kind, setKind] = useState<LessonKind>("missed-sign");
   const [text, setText] = useState("");
+  // Adding a lesson is the whole learning loop, and it used to pop a row into
+  // existence. The new row rises in; a removed one leaves and the rest close
+  // the gap behind it.
+  const list = useFlip<HTMLDivElement>(store.lessons.map((l) => l.id).join());
+  const exit = useRowExit();
   const add = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
@@ -29,7 +35,7 @@ export function Lessons() {
     play("handled");
   };
   return (
-    <div className="page narrow">
+    <div className="page narrow" ref={list}>
       <h1>Lessons</h1>
       <p className="lede">
         What a manager has corrected. Every lesson is sent to the engine with every call from then on, so the team's judgement becomes the AI's.
@@ -42,13 +48,13 @@ export function Lessons() {
         </button>
       </form>
       {store.lessons.length === 0 && (
-        <div className="empty">
+        <div className="empty" data-flip="empty">
           <b>No lessons yet.</b>
           Correct a sign on any report card and it lands here.
         </div>
       )}
       {store.lessons.map((l) => (
-        <div className="lesson" key={l.id}>
+        <div className={"lesson" + (exit.leaving === l.id ? " is-leaving-row" : "")} key={l.id} data-flip={l.id}>
           <span className="k">{KIND_LABEL[l.kind]}</span>
           <div>
             <div>{l.text}</div>
@@ -60,8 +66,8 @@ export function Lessons() {
           <button
             className="btn ghost sm"
             onClick={() => {
-              actions.removeLesson(l.id);
               play("tap");
+              exit.remove(l.id, () => actions.removeLesson(l.id));
             }}
           >
             Remove

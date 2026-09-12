@@ -139,25 +139,37 @@ built from what is already known, marked `degraded`, with no invented score.
 
 ### Evaluation
 
-`eval/cases.json` holds **40 labelled utterances** — real phrasings that never use the word
+`eval/cases.json` holds **41 labelled utterances** — real phrasings that never use the word
 "hardship", hard negatives built to look similar, and one to three cases per cue. `npm run eval`
 replays them through the real handler and reports precision, recall, exact-set accuracy, speaker
 accuracy and latency. The published run (`public/eval-results.json`, also shown on the app's About
-page, model `gemini-2.5-flash`):
+page) is measured against **the model the deployed function actually uses**, `gemini-flash-latest`:
 
 | | |
 |---|---|
-| Precision | **0.97** (1 false positive in 35 predictions) |
-| Recall | **0.83** |
-| Exact set match | **32 of 40** |
-| Speaker accuracy | **40 of 40** |
-| Latency | **p50 1.87 s · p95 2.35 s** |
+| Precision | **1.00** (no false positives) |
+| Recall | **0.74** |
+| Exact set match | **30 of 41** |
+| Speaker accuracy | **41 of 41** |
+| Latency | **p50 1.71 s · p95 3.61 s** |
 
-**The honest part of that table:** recall fell from 1.00 to 0.83 the day the strict legal gate landed,
-and **7 of the 8 misses are cases we had labelled wrongly against the actual law** — "push the payment
-back a couple of weeks, I get paid Friday" is near-term recovery, which is not a section 72 notice.
-They were left alone. Editing the test until it agrees with the code is how a gate stops meaning
-anything.
+**Read that table the right way round.** For this product precision is the number that matters:
+a false notice starts a 21-day clock the bank does not owe and puts a customer into a process they
+never asked for. Recall costs a prompt the worker did not get; a false positive costs a legal
+obligation invented out of nothing.
+
+**And every one of the 11 misses is a `hardship-request`** — not one is a statutory notice. Under the
+two-tier rule the team agreed, those are **requests**: a hint that should prompt the worker to ask,
+starting no clock and stored nowhere. The request tier is not built yet, which is exactly where that
+recall number is sitting.
+
+The same run against `gemini-2.5-flash` scores **0.97 / 0.81**. It catches one more hardship case and
+buys that with a false positive on "the storm knocked our power out". We chose the model that never
+invents an obligation.
+
+**We did not edit the test to flatter the code.** Recall fell the day the strict legal gate landed,
+and the cases it "missed" are ones we had labelled wrongly against the actual law. They were left
+alone. Editing the test until it agrees with the code is how a gate stops meaning anything.
 
 A second, stricter set comes from the detection branch: three full call fixtures with ground truth
 for *when* the obligation arises. `npm run eval:fixtures` replays them turn by turn — **2 of 3

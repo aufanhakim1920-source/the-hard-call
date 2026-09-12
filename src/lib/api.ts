@@ -59,8 +59,6 @@ export async function postReport(session: Session, lessons: string[]): Promise<R
     return localReport(session, err);
   }
 }
-
-
 export type ScenarioPayload = Pick<
   Scenario,
   "name" | "age" | "voice" | "job" | "product" | "situation" | "hiddenProblem" | "firstMessage" | "level" | "expectedSigns" | "whyThisOne"

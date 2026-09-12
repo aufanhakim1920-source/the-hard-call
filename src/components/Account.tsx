@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
+import { useExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { useStore } from "../lib/store";
 import { counts, onSync, type SyncState } from "../lib/sync";
@@ -19,6 +20,9 @@ export function AccountChip() {
   const [msg, setMsg] = useState<string | null>(null);
   const [sync, setSync] = useState<SyncState>("off");
   useEffect(() => onSync(setSync), []);
+  // The panel opened with motion and closed by disappearing. `open` still
+  // flips on the click — only the node stays behind long enough to leave.
+  const panel = useExit(open);
 
   const label =
     auth.status === "loading"
@@ -58,8 +62,8 @@ export function AccountChip() {
         <span className="acct-label">{label}</span>
         {dot && <span className="acct-sync">{dot}</span>}
       </button>
-      {open && (
-        <div className="acct-panel" role="dialog" aria-label="Account">
+      {panel.mounted && (
+        <div className={"acct-panel" + (panel.leaving ? " is-leaving" : "")} role="dialog" aria-label="Account" inert={panel.leaving}>
           {auth.status === "account" ? (
             <>
               <div className="label">Signed in</div>

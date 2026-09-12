@@ -1,28 +1,28 @@
 {
-  "model": "gemini-2.5-flash",
-  "ranAt": "2026-09-12T09:16:20.451Z",
-  "n": 40,
+  "model": "gemini-flash-latest",
+  "ranAt": "2026-09-12T14:36:07.701Z",
+  "n": 41,
   "blind": false,
   "errors": 0,
   "overall": {
-    "precision": 0.971,
-    "recall": 0.829,
-    "f1": 0.895,
-    "exact": 0.8,
-    "tp": 34,
-    "fp": 1,
-    "fn": 7
+    "precision": 1,
+    "recall": 0.738,
+    "f1": 0.849,
+    "exact": 0.732,
+    "tp": 31,
+    "fp": 0,
+    "fn": 11
   },
   "perKey": {
     "hardship-request": {
-      "support": 15,
-      "predicted": 8,
-      "tp": 8,
+      "support": 16,
+      "predicted": 5,
+      "tp": 5,
       "fp": 0,
-      "fn": 7,
+      "fn": 11,
       "precision": 1,
-      "recall": 0.533,
-      "f1": 0.696
+      "recall": 0.313,
+      "f1": 0.476
     },
     "complaint": {
       "support": 2,
@@ -106,13 +106,13 @@
     },
     "disaster": {
       "support": 2,
-      "predicted": 3,
+      "predicted": 2,
       "tp": 2,
-      "fp": 1,
+      "fp": 0,
       "fn": 0,
-      "precision": 0.667,
+      "precision": 1,
       "recall": 1,
-      "f1": 0.8
+      "f1": 1
     },
     "stress": {
       "support": 2,
@@ -137,11 +137,11 @@
   },
   "speakerAccuracy": 1,
   "latency": {
-    "p50": 1868,
-    "p95": 2350,
-    "mean": 1867,
-    "min": 1184,
-    "max": 2960
+    "p50": 1710,
+    "p95": 3605,
+    "mean": 1975,
+    "min": 1192,
+    "max": 5053
   },
   "failures": [
     {
@@ -191,7 +191,27 @@
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "job-loss: \"my hours got cut at work\" (0.9)"
+        "job-loss: \"my hours got cut at work\" (0.95)"
+      ]
+    },
+    {
+      "id": "c05",
+      "direction": "outbound",
+      "text": "Mate, I got made redundant last month. I haven't got it, simple as that.",
+      "expect": [
+        "hardship-request",
+        "job-loss"
+      ],
+      "got": [
+        "job-loss"
+      ],
+      "missing": [
+        "hardship-request"
+      ],
+      "extra": [],
+      "speaker": "customer",
+      "evidence": [
+        "job-loss: \"I got made redundant last month\" (0.95)"
       ]
     },
     {
@@ -211,7 +231,7 @@
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "bereavement: \"Dad passed away three weeks ago\" (0.9)"
+        "bereavement: \"Dad passed away three weeks ago and the funeral's cleaned me out.\" (0.95)"
       ]
     },
     {
@@ -231,7 +251,7 @@
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "disaster: \"The floods took the whole ground floor, we're staying at my sister's.\" (0.9)"
+        "disaster: \"The floods took the whole ground floor, we're staying at my sister's.\" (0.98)"
       ]
     },
     {
@@ -250,20 +270,38 @@
       "evidence": []
     },
     {
-      "id": "c24",
+      "id": "c12",
+      "direction": "outbound",
+      "text": "I'm going to need a bit more time. Is there something we can work out?",
+      "expect": [
+        "hardship-request"
+      ],
+      "got": [],
+      "missing": [
+        "hardship-request"
+      ],
+      "extra": [],
+      "speaker": "customer",
+      "evidence": []
+    },
+    {
+      "id": "c13",
       "direction": "inbound",
-      "text": "The storm knocked our power out for a few hours last night. Anyway, I want to check a transaction from yesterday.",
-      "expect": [],
+      "text": "My casual contract finished up, so there's nothing coming in till I find something. I can't make the next payment.",
+      "expect": [
+        "hardship-request",
+        "job-loss"
+      ],
       "got": [
-        "disaster"
+        "job-loss"
       ],
-      "missing": [],
-      "extra": [
-        "disaster"
+      "missing": [
+        "hardship-request"
       ],
+      "extra": [],
       "speaker": "customer",
       "evidence": [
-        "disaster: \"The storm knocked our power out for a few hours last night.\" (0.8)"
+        "job-loss: \"My casual contract finished up, so there's nothing coming in till I find something.\" (0.95)"
       ]
     },
     {
@@ -283,8 +321,23 @@
       "extra": [],
       "speaker": "customer",
       "evidence": [
-        "gambling: \"I put it all on the pokies, mate.\" (0.9)"
+        "gambling: \"I put it all on the pokies, mate\" (0.95)"
       ]
+    },
+    {
+      "id": "c41",
+      "direction": "outbound",
+      "text": "Oh yeah, sorry about that. Don't worry about it, I'll be fine in a month.",
+      "expect": [
+        "hardship-request"
+      ],
+      "got": [],
+      "missing": [
+        "hardship-request"
+      ],
+      "extra": [],
+      "speaker": "customer",
+      "evidence": []
     }
   ],
   "cases": [
@@ -296,7 +349,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1580,
+      "ms": 2909,
       "attempts": 1
     },
     {
@@ -307,7 +360,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1662,
+      "ms": 1710,
       "attempts": 1
     },
     {
@@ -321,7 +374,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2515,
+      "ms": 1704,
       "attempts": 1
     },
     {
@@ -334,7 +387,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1781,
+      "ms": 1573,
       "attempts": 1
     },
     {
@@ -344,12 +397,11 @@
         "job-loss"
       ],
       "got": [
-        "job-loss",
-        "hardship-request"
+        "job-loss"
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2165,
+      "ms": 1527,
       "attempts": 1
     },
     {
@@ -364,7 +416,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2291,
+      "ms": 3962,
       "attempts": 1
     },
     {
@@ -379,7 +431,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2298,
+      "ms": 2071,
       "attempts": 1
     },
     {
@@ -393,7 +445,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2290,
+      "ms": 2030,
       "attempts": 1
     },
     {
@@ -407,7 +459,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2296,
+      "ms": 3605,
       "attempts": 1
     },
     {
@@ -422,7 +474,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2274,
+      "ms": 5053,
       "attempts": 1
     },
     {
@@ -433,7 +485,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1272,
+      "ms": 1482,
       "attempts": 1
     },
     {
@@ -441,12 +493,10 @@
       "expect": [
         "hardship-request"
       ],
-      "got": [
-        "hardship-request"
-      ],
+      "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1955,
+      "ms": 1192,
       "attempts": 1
     },
     {
@@ -456,12 +506,11 @@
         "job-loss"
       ],
       "got": [
-        "job-loss",
-        "hardship-request"
+        "job-loss"
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2195,
+      "ms": 1766,
       "attempts": 1
     },
     {
@@ -472,13 +521,13 @@
         "job-loss"
       ],
       "got": [
-        "health",
         "job-loss",
+        "health",
         "hardship-request"
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2960,
+      "ms": 2339,
       "attempts": 1
     },
     {
@@ -487,7 +536,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1441,
+      "ms": 1482,
       "attempts": 1
     },
     {
@@ -496,7 +545,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1359,
+      "ms": 2870,
       "attempts": 1
     },
     {
@@ -505,7 +554,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1383,
+      "ms": 1378,
       "attempts": 1
     },
     {
@@ -514,7 +563,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1342,
+      "ms": 2234,
       "attempts": 1
     },
     {
@@ -523,7 +572,7 @@
       "got": [],
       "ok": true,
       "speaker": "worker",
-      "ms": 1917,
+      "ms": 1456,
       "attempts": 1
     },
     {
@@ -532,7 +581,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1430,
+      "ms": 1412,
       "attempts": 1
     },
     {
@@ -541,7 +590,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1184,
+      "ms": 1353,
       "attempts": 1
     },
     {
@@ -550,7 +599,7 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1461,
+      "ms": 1677,
       "attempts": 1
     },
     {
@@ -559,18 +608,16 @@
       "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1298,
+      "ms": 2214,
       "attempts": 1
     },
     {
       "id": "c24",
       "expect": [],
-      "got": [
-        "disaster"
-      ],
+      "got": [],
       "ok": true,
       "speaker": "customer",
-      "ms": 1740,
+      "ms": 1729,
       "attempts": 1
     },
     {
@@ -583,7 +630,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1975,
+      "ms": 1428,
       "attempts": 1
     },
     {
@@ -596,7 +643,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1602,
+      "ms": 1670,
       "attempts": 1
     },
     {
@@ -609,7 +656,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1980,
+      "ms": 1678,
       "attempts": 1
     },
     {
@@ -622,7 +669,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1886,
+      "ms": 1687,
       "attempts": 1
     },
     {
@@ -635,7 +682,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1981,
+      "ms": 1781,
       "attempts": 1
     },
     {
@@ -648,7 +695,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1983,
+      "ms": 1719,
       "attempts": 1
     },
     {
@@ -661,7 +708,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2014,
+      "ms": 1742,
       "attempts": 1
     },
     {
@@ -674,7 +721,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1840,
+      "ms": 1712,
       "attempts": 1
     },
     {
@@ -687,7 +734,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1868,
+      "ms": 1542,
       "attempts": 1
     },
     {
@@ -701,7 +748,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2350,
+      "ms": 1329,
       "attempts": 1
     },
     {
@@ -714,7 +761,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 2081,
+      "ms": 1772,
       "attempts": 1
     },
     {
@@ -727,7 +774,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1785,
+      "ms": 1360,
       "attempts": 1
     },
     {
@@ -740,7 +787,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1672,
+      "ms": 3208,
       "attempts": 1
     },
     {
@@ -753,7 +800,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1919,
+      "ms": 1617,
       "attempts": 1
     },
     {
@@ -766,7 +813,7 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1817,
+      "ms": 2155,
       "attempts": 1
     },
     {
@@ -779,7 +826,18 @@
       ],
       "ok": true,
       "speaker": "customer",
-      "ms": 1843,
+      "ms": 2520,
+      "attempts": 1
+    },
+    {
+      "id": "c41",
+      "expect": [
+        "hardship-request"
+      ],
+      "got": [],
+      "ok": true,
+      "speaker": "customer",
+      "ms": 1330,
       "attempts": 1
     }
   ]

@@ -28,7 +28,10 @@ export function localReport(s: Session, err: unknown): ReportPayload {
     tip: "",
     score: 0,
     scoreUnverified: true,
-    caught: s.signs.length,
+    // Obligations only, matching the server: a request is a prompt to ask, not
+    // a duty to discharge. Ported from the copy that lived in api.ts before
+    // this moved out, so the fix is not lost to the move.
+    caught: s.signs.filter((g) => g.kind === "legal").length,
     handled: 0,
     partly: 0,
     unverified: items.length,

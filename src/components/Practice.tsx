@@ -1,5 +1,6 @@
 import { hasVerifiedReportScore } from "../lib/reportScore";
 import { SEEDS, levelLabel, voiceFor } from "../lib/scenarios";
+import { useFlip, useRowExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { AGENT_ID } from "../lib/practice";
@@ -13,6 +14,10 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const plays = (id: string) => store.reports.filter((r) => r.scenarioId === id).length;
   const sorted = [...all].sort((a, b) => a.level - b.level || b.createdAt - a.createdAt);
   const next = sorted.find((s) => best(s.id) < 70);
+  // A customer built from a real call is approved into this list, and used to
+  // appear in it with nothing moving.
+  const list = useFlip<HTMLDivElement>(sorted.map((s) => s.id).join());
+  const exit = useRowExit();
 
   return (
     <div className="page">
@@ -21,12 +26,16 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
         A customer with a real voice, who hides the real problem until you ask well. The same signs fire, and the same report card grades you.
         {!AGENT_ID && " (The practice voice is not configured on this build yet.)"}
       </p>
-      <div className="scen-grid">
+      <div className="scen-grid" ref={list}>
         {sorted.map((s) => {
           const b = best(s.id);
           const p = plays(s.id);
           return (
-            <div className={"scen" + (next?.id === s.id ? " next" : "")} key={s.id}>
+            <div
+              className={"scen" + (next?.id === s.id ? " next" : "") + (exit.leaving === s.id ? " is-leaving-row" : "")}
+              key={s.id}
+              data-flip={s.id}
+            >
               <div className="lvl" aria-label={levelLabel(s.level)}>
                 <span className="bars">
                   {[1, 2, 3].map((n) => (
@@ -56,8 +65,8 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                     <button
                       className="btn ghost sm"
                       onClick={() => {
-                        actions.removeScenario(s.id);
                         play("tap");
+                        exit.remove(s.id, () => actions.removeScenario(s.id));
                       }}
                     >
                       Remove

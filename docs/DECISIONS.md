@@ -262,3 +262,45 @@ signed-in user, including an anonymous-auth user, reaches only their own rows.
 The tempting fix — `GRANT SELECT ON public.reports TO anon` — would have made every row readable with
 the key that ships inside the published bundle. **Both failures are HTTP 401. One means "who are you",
 the other means "you may not touch this table."**
+
+## The report card leads with a fraction, not a score
+
+It used to lead with a ring showing a score out of 100 — which on most calls reads "not verified",
+i.e. an empty circle as the first thing anyone sees. Rebuilt from the research:
+
+- **"2 of 3 signs answered", not four percentages.** Natural frequencies are read correctly far more
+  often than rates — Gigerenzer's study had 16 of 24 doctors right with frequencies against 1 of 24
+  with the same fact as a percentage.
+- **Answer times on a shared seconds axis.** The gap between a sign firing and the worker acting *is*
+  the product's claim, and it had never been drawn as a duration. Position on a common scale is judged
+  more accurately than length, which beats angle — which is also why a ring is no longer the primary
+  reading.
+- **A benchmark strip**, the same ratio over the last five calls. A number out of 100 invites a school
+  grade; a comparison against your own history does not.
+- **Motion encodes arrival only**, once, and every chart starts finished when the frames will not come.
+  A bar frozen at 0% is not a subtler bar, it is a wrong one.
+
+**Found by looking:** a `missed` verdict carries evidence too — the worker line where they failed to
+address it — so the first build printed "answered in 21 s" underneath the word MISSED.
+
+---
+
+## Never let a measurement feed back into the thing being measured
+
+The call screen sized itself as `100dvh` minus a hardcoded 56 px top bar. The bar is two rows on a
+narrow screen and taller again at the largest text size, so the call header was pushed to **-32 px** —
+above the top of the page, hiding the setup fields on the first screen anyone opens.
+
+The obvious fix is to measure the bar and publish its height into `--topbar`. That is a **loop**,
+because the bar's own height is `var(--topbar)`. It latched at 90 px and stayed there even at 1440 px
+where the bar is genuinely one row — and a latched loop looks perfectly stable, which is why a spot
+check at one width passes.
+
+**A measured value gets its own variable.** `--topbar` stays the static token the bar is built from,
+`--bar-h` carries the observation, and anything subtracting the real height reads
+`var(--bar-h, var(--topbar))` so the fallback is correct before the first measurement lands.
+
+Two more of the same family, both fixed: a `transform` keyframe ending on `none` wiped the centring of
+a toast for its whole entrance (**183 px off**, only while moving), and a list reorder cannot be
+animated by a transition at all — it changes node order, not a property, so a ticked deadline
+teleported until it was given a FLIP.
