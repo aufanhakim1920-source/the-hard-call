@@ -193,6 +193,28 @@ Still open, deliberately not touched here:
   meaning ("what the worker ticked"). The comparison can read low for reasons
   that have nothing to do with the worker.
 
+## ⚠ The ground-truth correction below contradicts README.md
+
+Read this before acting on the next section. README.md line 156 already covers
+the same seven cases and reaches the opposite conclusion:
+
+> **7 of the 8 misses are cases we had labelled wrongly against the actual law**
+> ... **They were left alone.** Editing the test until it agrees with the code is
+> how a gate stops meaning anything.
+
+Aufan found the same seven, chose deliberately to leave them, and published that
+choice in the judge-facing README as an integrity claim. The correction below
+overrides it, so README.md is now inconsistent with `eval/cases.json` on both
+the case count (40 vs 44) and the "left alone" claim. The README was not edited.
+
+The README's principle is right: editing a test until it agrees with the code
+destroys the gate. The argument for the change is that these labels were moved
+to agree with the AUTHORITY — `docs/hardship-flag-rules.md` and
+`fixtures/expected/expected_flags.json` — not with the code, and the code
+follows the same authority. A reviewer could fairly read that as the same move,
+which is why it is flagged rather than assumed, PR #5 is still a draft, and the
+three ways out are listed there.
+
 ## The eval was scoring the engine against the wrong ground truth
 
 `eval/results.json` (gemini-2.5-flash, 40 cases) records `hardship-request` at
