@@ -1,10 +1,15 @@
 // Adapter for docs/transcript-schema.md. Fixture annotations and resolution
 // judgements are deliberately ignored: the report evaluates transcript evidence.
+export type SpeakerConfidence = "known" | "inferred" | "unknown";
+const CONFIDENCE: SpeakerConfidence[] = ["known", "inferred", "unknown"];
+
 export interface Turn {
   speaker: "customer" | "staff";
   start_ms: number;
   end_ms: number;
   text: string;
+  /** Optional, defaults to "known" so every existing fixture keeps its meaning. */
+  speaker_confidence?: SpeakerConfidence;
 }
 export interface Transcript { call_id: string; turns: Turn[] }
 export interface FlagEvent {
@@ -44,7 +49,11 @@ export function adaptReportInput(input: unknown) {
   const lines = transcript.turns.map((turn: unknown, index: number) => {
     if (!record(turn) || !["customer", "staff"].includes(String(turn.speaker)) ||
         !millis(turn.start_ms) || !millis(turn.end_ms) || turn.end_ms < turn.start_ms ||
-        turn.start_ms < previous || !nonempty(turn.text)) {
+        turn.start_ms < previous || !nonempty(turn.text) ||
+        // Absent is "known"; an unrecognised value is rejected rather than read
+        // as the safe default, because silently trusting a typo is the failure
+        // this field exists to prevent.
+        !(turn.speaker_confidence === undefined || CONFIDENCE.includes(turn.speaker_confidence as SpeakerConfidence))) {
       throw new Error(`Invalid transcript turn at index ${index}.`);
     }
     previous = turn.start_ms;
@@ -52,7 +61,11 @@ export function adaptReportInput(input: unknown) {
     if (refs.has(ref)) throw new Error(`Ambiguous transcript reference at index ${index}.`);
     const id = `t${index}`;
     refs.set(ref, id);
-    return { id, speaker: turn.speaker === "staff" ? "worker" : "customer", t: turn.start_ms, text: turn.text, endMs: turn.end_ms };
+    return {
+      id, speaker: turn.speaker === "staff" ? "worker" : "customer",
+      t: turn.start_ms, text: turn.text, endMs: turn.end_ms,
+      speakerConfidence: (turn.speaker_confidence ?? "known") as SpeakerConfidence,
+    };
   });
   const ids = new Set<string>();
   const signs = input.flags.map((flag: unknown, index: number) => {

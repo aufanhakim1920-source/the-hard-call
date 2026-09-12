@@ -326,3 +326,90 @@ undefined and the reader falls back to item verdicts, and `unverified` and
 See `docs/sync-isolation.md` for the detail and the three tests. Still
 unverified: the real Supabase schema, an actual two-device round trip, and the
 401 on the deployed anon key recorded in the PR description.
+
+## speaker_confidence — laural's contract, implemented
+
+`speaker_confidence: "known" | "inferred" | "unknown"`, optional on a turn,
+absent means `known`. Every existing fixture and every transcript written
+before today keeps its exact meaning.
+
+Why it is load bearing, in laural's words: only customer turns can raise an
+obligation and only staff turns can satisfy one, so a wrong speaker corrupts
+the record both ways. A staff line read as the customer starts a 21-day clock
+on the bank's own words — `eval/cases.json` c19, *"if you're in hardship there
+are options"*, is exactly that line. A customer line read as staff marks a duty
+handled that nobody handled, which is a false compliance record and worse than
+a miss. And it is the same 429 chain: the rate limit kills attribution, which
+corrupts the detector's inputs.
+
+### Where it is enforced
+
+**The live engine** (`api/flags.ts`). A legal sign now needs a supporting turn
+that is both not-worker and `known`. The newest line arrives `unknown` from live
+dictation and the model's guess fills it in — so that turn is marked `inferred`
+server-side regardless of what the client sends, and it cannot raise a notice.
+Tips still fire on it, so live coaching is not switched off, it is limited to
+what costs nobody a clock. The response now carries `speakerConfidence`.
+
+**The report** (`_shared/reportItems.ts`). Two rules:
+- An `inferred` or `unknown` staff turn cannot prove `handled`/`partly`; it is
+  dropped from the evidence and the item comes back `unverified`.
+- An `inferred` or `unknown` triggering turn records nothing definitive at all —
+  not handled, not partly, and **not missed** — with a note saying the speaker
+  was never established. A `missed` on a misattributed trigger is still a false
+  record, just in the other direction.
+
+That is the "no definitive marks on uncertain attribution" rule living in the
+layer rather than in each consumer, so the report card and the UI both get it
+without implementing it twice.
+
+**The adapter** (`_shared/reportInput.ts`) accepts `speaker_confidence` per turn
+and refuses an unrecognised value rather than falling back to `known` — quietly
+trusting a typo is the failure the field exists to prevent. A canonical flag
+raised at an inferred turn needs no separate rule: its `raised_at` resolves to
+that line, and the trigger rule above catches it.
+
+**The report prompt** marks non-`known` turns as `(speaker inferred, not
+established)` / `(speaker unknown)` and tells the model not to rest a judgement
+on one. `known` turns render exactly as before.
+
+### One decision that needs laural's sign-off
+
+She wrote that `inferred` "can raise at most a request and never a notice".
+Our taxonomy has no request/notice tier — `hardship-request` and `complaint`
+are both notices, each carrying a statutory clock (21 and 30 days). So
+`inferred` currently raises **no legal sign at all**, which is the strict
+reading. If the request tier lands, an inferred turn should raise the request
+and stop there. Flagged rather than invented.
+
+### The one thing that is not wired, and it is not mine
+
+`src/lib/engine.ts` patches a dictated line with the answer's speaker:
+
+```ts
+l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown"
+  ? { ...l, speaker: res.speaker }
+  : l
+```
+
+It must also carry `speakerConfidence: res.speakerConfidence`, or the session
+posted to `/api/report` presents every guessed line as `known` and **the report
+gate never fires for live dictation**. The live flag path is already protected
+because `flags.ts` decides that server-side; the report path is not.
+
+`engine.ts` belongs to `part/live-call`, so this is a one-line handoff, not a
+change made here. The manual speaker correction control is the same owner:
+`Line.speakerConfidence` exists, and a person correcting a turn sets the
+speaker and `speakerConfidence: "known"`, which re-enables notices on it.
+
+`docs/transcript-schema.md` is laural's; the field is implemented to her
+message and should land in her table too.
+
+### Still unverified
+
+Overlapping speech in practice mode, which she and Tron are still sizing; the
+real two-stream attribution end to end; and whether a Gemini speaker guess is
+right often enough to be worth showing at all. None of the tests here say
+anything about that — they test what the code does with an attribution, not
+how good the attribution is. 32 offline tests touch this contract; 7 of them
+fail against the previous code.

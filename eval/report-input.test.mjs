@@ -94,3 +94,21 @@ test("call_003: endpoint evaluates supplied flags and preserves worker evidence 
     if (key === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = key;
   }
 });
+
+test("speaker_confidence is optional, validated, and defaults to known", () => {
+  const base = fixture("call_003_missed_notice.json");
+  // Every existing fixture is silent on the field and must keep its meaning.
+  for (const line of adaptReportInput(base).lines) assert.equal(line.speakerConfidence, "known");
+
+  const marked = { ...base, transcript: { ...base.transcript, turns: base.transcript.turns.map((t, i) => (i === 0 ? { ...t, speaker_confidence: "inferred" } : t)) } };
+  const lines = adaptReportInput(marked).lines;
+  assert.equal(lines[0].speakerConfidence, "inferred");
+  assert.equal(lines[1].speakerConfidence, "known");
+
+  // A typo is refused rather than read as the safe default: silently trusting
+  // one is the failure the field exists to prevent.
+  for (const bad of ["Known", "guessed", "", null, 1]) {
+    const broken = { ...base, transcript: { ...base.transcript, turns: base.transcript.turns.map((t, i) => (i === 0 ? { ...t, speaker_confidence: bad } : t)) } };
+    assert.throws(() => adaptReportInput(broken), /Invalid transcript turn at index 0/, `${JSON.stringify(bad)} must be refused`);
+  }
+});

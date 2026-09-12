@@ -177,18 +177,43 @@ const liveMic = [
   { id: "u2", speaker: "unknown", t: 2, text: "I can't make the repayments, not for a while." },
 ];
 
-test("a live microphone line is attributed from the answer, not thrown away", async () => {
-  // The live screen sends a new line as "unknown" and patches it from this same
-  // answer. Read any other way, every sign on a real mic line would be lost.
+test("an inferred speaker can still raise a tip, but never a notice", async () => {
+  // laural's speaker_confidence contract. This case used to fire the notice: the
+  // newest line arrives "unknown", the model guesses "customer", and the guess
+  // became the label. c19 in cases.json is the line that makes that dangerous —
+  // a STAFF line offering hardship options, read as the customer, would start a
+  // 21-day clock on the bank's own words. An inferred turn raises no notice.
+  assert.deepEqual(await keys([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "customer" }), []);
+  assert.deepEqual(await keys([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "worker" }), []);
+  // The coaching is not thrown away with it: a tip costs nobody a clock.
   assert.deepEqual(
-    await keys([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "customer" }),
-    ["hardship-request"],
-  );
-  assert.deepEqual(
-    await keys([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "worker" }),
-    [],
+    await keys([jobLoss()], { transcript: liveMic, newLineId: "u2", speaker: "customer" }),
+    ["job-loss"],
   );
 });
+
+test("practice keeps its notice, because both streams are known by construction", async () => {
+  const told = liveMic.map((l) => (l.id === "u2" ? { ...l, speaker: "customer" } : l));
+  assert.deepEqual(await keys([hardship()], { transcript: told, newLineId: "u2", speaker: "customer" }), ["hardship-request"]);
+});
+
+test("a turn already marked inferred is not laundered by a later known turn", async () => {
+  const marked = [
+    { id: "c1", speaker: "customer", speakerConfidence: "inferred", t: 1, text: "I can't make the repayments, not for a while." },
+    { id: "c2", speaker: "customer", t: 2, text: "Anyway, that is where I am at." },
+  ];
+  assert.deepEqual(await keys([hardship()], { transcript: marked, newLineId: "c2", speaker: "customer" }), []);
+});
+
+test("the answer says how the speaker was decided", async () => {
+  const guessed = await run([], { transcript: liveMic, newLineId: "u2", speaker: "customer" });
+  assert.equal(guessed.body.speakerConfidence, "inferred");
+  const nobody = await run([], { transcript: liveMic, newLineId: "u2", speaker: "unknown" });
+  assert.equal(nobody.body.speakerConfidence, "unknown");
+  const told = await run([], { speaker: "customer" });
+  assert.equal(told.body.speakerConfidence, "known", "the request had already labelled that line");
+});
+
 
 test("an impossible date falls back to today instead of costing the turn its signs", async () => {
   const fallback = addDays(new Date().toISOString().slice(0, 10), 21);

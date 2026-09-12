@@ -14,6 +14,8 @@ interface Line {
   t: number;
   speaker: string;
   text: string;
+  /** Absent = "known". Marked in the transcript below when it is not. */
+  speakerConfidence?: "known" | "inferred" | "unknown";
 }
 interface Sign {
   id: string;
@@ -82,6 +84,7 @@ For each sign the app raised during the call, decide from the transcript:
 - partly: they touched it but pushed on (e.g. acknowledged the job loss then asked for the full amount).
 - missed: they did not act on it.
 - unverified: the transcript does not provide enough evidence to judge the worker.
+A turn marked "speaker inferred" or "speaker unknown" is a turn nobody established the speaker of. Do not treat it as proof of who said it, and do not rest a handled or partly on one.
 For handled or partly, evidenceLineIds must cite the IDs of worker lines AFTER the sign's triggering customer line that demonstrate the response. For missed, cite relevant worker lines if present; explain the missing action without inventing a quote. An empty or unknown-speaker response is unverified, not missed.
 Only assess actions observable in this call. Do not infer that a later decision, written notice or deadline was completed. Do not invent legal requirements or penalise failure to recite a deadline unless a supplied rule explicitly requires it.
 Never repeat sensitive customer circumstances in summary, notes, missedByAI or tip. Describe the worker's action and the duty only.
@@ -125,7 +128,14 @@ export async function handle(req: Request): Promise<Response> {
 
   const t0 = s.startedAt;
   const transcript = s.lines
-    .map((l) => `[id=${l.id} ${fmt(l.t - t0)}] ${l.speaker}: ${l.text}`)
+    .map((l) => {
+      // A turn nobody established the speaker of is named as such, so the model
+      // is not invited to read a guess as a fact. Turns written before the field
+      // existed carry no marker and read exactly as they did.
+      const c = l.speakerConfidence ?? "known";
+      const mark = c === "known" ? "" : c === "inferred" ? " (speaker inferred, not established)" : " (speaker unknown)";
+      return `[id=${l.id} ${fmt(l.t - t0)}] ${l.speaker}${mark}: ${l.text}`;
+    })
     .join("\n");
   const signs = s.signs
     .map(

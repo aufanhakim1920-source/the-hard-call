@@ -1,4 +1,12 @@
 export type Speaker = "customer" | "worker" | "unknown";
+/** How the speaker of a turn was decided. Absent means "known".
+    known    — the source told us (practice: two streams; a person corrected it).
+    inferred — a model guessed it from the words. Live dictation on one mic.
+    unknown  — nobody could tell.
+    Only a `known` turn may assert an obligation: a staff line read as the
+    customer would start a statutory clock on the bank's own words, and a
+    customer line read as staff would mark a duty handled that nobody handled. */
+export type SpeakerConfidence = "known" | "inferred" | "unknown";
 export type Mode = "live" | "practice" | "demo";
 export type SignKind = "legal" | "tip";
 export type Direction = "inbound" | "outbound";
@@ -9,6 +17,8 @@ export interface Line {
   speaker: Speaker;
   text: string;
   masked?: boolean;
+  /** Absent = "known". Set it when a model decided the speaker. */
+  speakerConfidence?: SpeakerConfidence;
 }
 
 export interface Sign {
@@ -161,6 +171,10 @@ export interface Store {
 
 export interface FlagsResponse {
   speaker: Speaker;
+  /** "known" when the request already labelled the line, "inferred" when this
+      answer is what decided it. The live screen should carry it onto the line
+      so a person can correct it and the report card can see it. */
+  speakerConfidence: SpeakerConfidence;
   signs: Omit<Sign, "id" | "t" | "lineId" | "handled" | "handledAt">[];
   model: string;
   ms: number;

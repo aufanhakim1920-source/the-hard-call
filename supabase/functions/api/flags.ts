@@ -9,10 +9,14 @@ import { askGemini } from "../_shared/gemini.ts";
 import { json, preflight, readJson } from "../_shared/env.ts";
 import { SIGN_KEYS, addDays, signDef, taxonomyText } from "../_shared/signs.ts";
 
+type SpeakerConfidence = "known" | "inferred" | "unknown";
+
 interface Line {
   id: string;
   speaker: "customer" | "worker" | "unknown";
   text: string;
+  /** Absent = "known". See src/lib/types.ts for why this gates the legal signs. */
+  speakerConfidence?: SpeakerConfidence;
 }
 
 interface FlagsRequest {
@@ -178,26 +182,32 @@ Today's date: ${today}`;
     // tip fires on what the worker did NOT say, so the words that made its duty
     // live are usually an earlier turn. Matched line by line, so a quote cannot
     // be stitched across two speakers' turns.
-    // Whose words these are. The live screen sends a new line as "unknown" and
-    // patches the speaker from this same answer, so the newest line is read the
-    // same way here — otherwise every sign on a live microphone line would look
-    // unattributed and be thrown away.
-    const spoken = lines.map((l) => ({
-      speaker: l.id === newLine.id && l.speaker === "unknown" ? data.speaker ?? "unknown" : l.speaker,
-      text: flatten(l.text),
-    }));
+    // Whose words these are, and how well we know it. The live screen sends a
+    // new line as "unknown" and patches the speaker from this same answer — so
+    // that line's attribution is INFERRED, however confident the model sounds.
+    const spoken = lines.map((l) => {
+      const guessed = l.id === newLine.id && l.speaker === "unknown";
+      return {
+        speaker: guessed ? data.speaker ?? "unknown" : l.speaker,
+        confidence: guessed ? (data.speaker && data.speaker !== "unknown" ? "inferred" : "unknown") : l.speakerConfidence ?? "known",
+        text: flatten(l.text),
+      };
+    });
     const evidenceOk = (s: ModelSign) => {
       const quote = flatten(s.evidence ?? "");
       if (!quote) return false;
       const said = spoken.filter((line) => line.text.includes(quote));
       if (!said.length) return false;
-      // A legal duty arises from what the CUSTOMER said. Worker lines are sent
-      // so the model has context, and the prompt says they almost never trigger
-      // a sign — but nothing enforced it, so a worker paraphrasing ("so you
-      // can't pay for a few months?") could start the 21-day clock from the
-      // bank's own mouth. A legal sign whose words exist ONLY in worker lines is
-      // dropped. "unknown" is left alone: it is not proof of either speaker.
-      return signDef(s.key)?.kind !== "legal" || said.some((line) => line.speaker !== "worker");
+      if (signDef(s.key)?.kind !== "legal") return true;
+      // A legal duty arises from what the CUSTOMER said, and only from a turn we
+      // actually know the speaker of. Two ways a guess corrupts the record, both
+      // raised by laural: a staff line read as the customer starts a 21-day
+      // clock on the bank's own words — c19, "if you're in hardship there are
+      // options", is exactly that line — and a customer line read as staff marks
+      // a duty handled that nobody handled. Every legal sign we raise carries a
+      // clock, so it is a notice, and an inferred turn may never raise a notice.
+      // Practice mode has two streams and stays "known", so it is unaffected.
+      return said.some((line) => line.speaker !== "worker" && line.confidence === "known");
     };
 
     const seen = new Set<string>();
@@ -235,7 +245,16 @@ Today's date: ${today}`;
         };
       });
 
-    return json(req, 200, { speaker: data.speaker ?? "unknown", signs, model, ms });
+    // The live screen patches the line from this, so hand back how the speaker
+    // was decided rather than leaving each consumer to work it out.
+    const answered = data.speaker ?? "unknown";
+    const speakerConfidence: SpeakerConfidence =
+      newLine.speaker !== "unknown"
+        ? newLine.speakerConfidence ?? "known"
+        : answered === "unknown"
+          ? "unknown"
+          : "inferred";
+    return json(req, 200, { speaker: answered, speakerConfidence, signs, model, ms });
   } catch (e) {
     return json(req, 502, { error: String(e instanceof Error ? e.message : e) });
   }
