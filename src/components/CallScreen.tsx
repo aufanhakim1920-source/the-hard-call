@@ -4,7 +4,7 @@ import { fmtClock } from "../lib/dates";
 import { DEMO_SCRIPT } from "../lib/demoScript";
 import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
-import { play } from "../lib/sfx";
+import { play, setCallMode } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
 import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
@@ -43,6 +43,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   });
   const { session, interim, setInterim, assistant, addLine, markHandled, endCall, elapsed, newestOpen } = engine;
   useEffect(() => onAssistant(assistant), [assistant, onAssistant]);
+
+  // Tell the sound layer which kind of call this is. On a LIVE call the
+  // customer can hear whatever the headset leaks and cannot interpret it, so
+  // only the legal sign plays, quieter. Practice is where the worker learns
+  // what that sound means. Cleared on unmount so a closed call cannot leave
+  // the app stuck in live policy.
+  useEffect(() => {
+    setCallMode(mode);
+    return () => setCallMode(null);
+  }, [mode]);
 
   const speech = useSpeech({
     onFinal: (t) => addLine(t, "unknown"),
