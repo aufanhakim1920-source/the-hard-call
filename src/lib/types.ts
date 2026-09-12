@@ -46,6 +46,8 @@ export interface Session {
   signs: Sign[];
   scenarioId?: string;
   scenarioExpected?: string[];
+  /** False = the assistant listened but said nothing during the call. */
+  coaching: boolean;
 }
 
 export type Verdict = "handled" | "partly" | "missed" | "unverified";
@@ -80,6 +82,11 @@ export interface Report {
   tip: string;
   score: number;
   scoreUnverified?: boolean;
+  /** True when the write-up could not be produced (quota, or the model was
+      unreachable) and the card was built from what the call itself recorded.
+      A degraded report never carries a score. */
+  degraded?: boolean;
+  degradedReason?: "quota" | "unreachable";
   unverified?: number;
   caught: number;
   handled: number;
@@ -93,6 +100,13 @@ export interface Report {
   customer: string;
   at: number;
   scenarioId?: string;
+  /** Which mode the call ran in. False = the worker was given nothing live, so
+      a low score measures the gap, not a worker ignoring prompts.
+      ⚠ Read it as `coaching === false`, never as `!coaching`: absent means the
+      mode was not recorded (a card pulled from the server, which has no column
+      for it yet). Cards already in this browser are backfilled true on load —
+      coaching was the only mode that existed when they were written. */
+  coaching?: boolean;
 }
 
 export type LessonKind = "not-a-sign" | "missed-sign" | "wording";

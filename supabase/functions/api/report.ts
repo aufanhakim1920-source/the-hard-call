@@ -158,7 +158,40 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
       model,
     });
   } catch (e) {
-    return json(req, 502, { error: String(e instanceof Error ? e.message : e) });
+    // The write-up needs the model. Everything else does NOT: the signs, whether
+    // the worker marked them handled, the legal deadlines and the duration are
+    // all already known here. Dying with Google's raw 429 in front of a judge
+    // threw all of that away and looked like the product had broken.
+    //
+    // So: hand back a real report card built from what we have, and be honest
+    // that the judged part is missing. Never invent a score to fill the hole.
+    const items = buildReportItems(s.signs, s.lines, [], t0);
+    const deadlines = s.signs
+      .filter((g) => g.kind === "legal" && g.dueDate)
+      .map((g) => ({ key: g.key, label: g.dueLabel ?? "Due", date: g.dueDate!, title: g.title, customer: s.customer.name, callId: s.id }));
+    const raw = String(e instanceof Error ? e.message : e);
+    const quota = /429|quota|rate.?limit|exhausted/i.test(raw);
+    return json(req, 200, {
+      callId: s.id,
+      summary: quota
+        ? "The written review is unavailable: the free daily limit on the AI has been reached. Everything below was recorded during the call itself and is complete."
+        : "The written review is unavailable because the AI could not be reached. Everything below was recorded during the call itself and is complete.",
+      items,
+      missedByAI: [],
+      tip: "",
+      score: 0,
+      scoreUnverified: true,
+      caught: s.signs.length,
+      handled: s.signs.filter((g) => g.handled).length,
+      partly: 0,
+      unverified: items.length,
+      missed: 0,
+      deadlines,
+      durationSec: Math.round(((s.endedAt ?? Date.now()) - t0) / 1000),
+      model: "",
+      degraded: true,
+      degradedReason: quota ? "quota" : "unreachable",
+    });
   }
 }
 

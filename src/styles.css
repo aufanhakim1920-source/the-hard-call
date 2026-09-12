@@ -819,6 +819,32 @@ select.field option {
   padding: 18px 4px;
 }
 
+/* Coaching off. Quiet, not alarmed — the column is empty on purpose, and the
+   struck-through triangle is the shape that is being held back. */
+.silent-note {
+  padding-top: 24px;
+}
+.silent-mark {
+  width: 26px;
+  height: 26px;
+  display: block;
+  margin-bottom: 12px;
+  color: var(--grey);
+  opacity: 0.55;
+}
+.silent-where {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.sheet-count.silent {
+  border-style: dashed;
+  color: var(--text-3);
+}
+
 .privacy-line {
   display: flex;
   gap: 14px;
@@ -1821,16 +1847,73 @@ select.field option {
 .a11y-chip-label {
   font-size: 13px;
 }
+/* The head stays put and the groups scroll under it, so Reset is always
+   reachable — the content is 1131px in a box that can only ever be ~530px, so
+   "scroll to the bottom to undo something" is not a fair ask. */
 .a11y-panel {
   width: min(380px, calc(100vw - 28px));
   max-height: min(74vh, 640px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.a11y-panel:focus {
+  outline: none;
 }
 .a11y-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex: none;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.a11y-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 10px 8px 16px 0;
+  margin-right: -8px;
+  /* A 17px system scrollbar sat over the panel before this. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+.a11y-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.a11y-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.a11y-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 3px;
+}
+.a11y-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--grey);
+}
+/* A cut-off list must read as "there is more". The fade sits only on the side
+   that actually has something hidden — the tab strip's device, turned 90°. */
+.a11y-scroll[data-edge="bottom"] {
+  mask-image: linear-gradient(180deg, #000 calc(100% - 30px), transparent);
+}
+.a11y-scroll[data-edge="top"] {
+  mask-image: linear-gradient(180deg, transparent, #000 30px);
+}
+.a11y-scroll[data-edge="both"] {
+  mask-image: linear-gradient(180deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
+}
+/* The first group heading sits under the sticky head; it needs no second rule. */
+.a11y-scroll > .a11y-group:first-of-type {
+  margin-top: 4px;
+  padding-top: 0;
+  border-top: 0;
+}
+.a11y-note {
+  margin: 2px 2px 0;
+  padding-left: 50px; /* lines up with the switch label, not the track */
 }
 .a11y-group {
   display: block;
@@ -2032,6 +2115,23 @@ select.field option {
 :root[data-theme="light"] .a11y-seg button.on {
   color: #1c1f24;
 }
+/* Two faults in the switch, both only visible on cream, both found by
+   measuring rather than looking:
+   1. The blanket .a11y-track rule above lands after `.a11y-row.on .a11y-track`
+      and ties on specificity, so the ON fill — the strongest signal a switch
+      has — was being erased on this ground. Position and border still carried
+      the state, but far more faintly than on the dark one.
+   2. The knob is `--ink`, and --ink IS cream here: cream on gold measures
+      2.18:1, the same failure the vault recorded for gold as text. The part
+      that carries the state needs 3:1 (WCAG 1.4.11), so it goes to real ink
+      on gold, 6.56:1. */
+:root[data-theme="light"] .a11y-row.on .a11y-track {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+:root[data-theme="light"] .a11y-row.on .a11y-knob {
+  background: #1c1f24;
+}
 :root[data-theme="light"] .ln .text mark {
   box-shadow: inset 0 -2px 0 #8a5e1c;
 }
@@ -2091,6 +2191,16 @@ select.field option {
 .big-targets select.field {
   height: 46px;
 }
+/* The edge fade dims the words at the top and bottom of the list. Anyone who
+   asked for higher contrast gets a hard edge instead — the scrollbar still
+   says there is more. */
+.high-contrast .a11y-scroll[data-edge] {
+  mask-image: none;
+}
+.high-contrast .silent-mark {
+  opacity: 1;
+}
+
 .big-targets .a11y-row {
   padding: 13px 2px;
 }

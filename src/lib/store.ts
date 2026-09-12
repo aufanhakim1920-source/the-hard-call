@@ -23,7 +23,15 @@ function load(): Store {
     const raw = localStorage.getItem(KEY);
     if (!raw) return EMPTY;
     const parsed = JSON.parse(raw) as Partial<Store>;
-    return { ...EMPTY, ...parsed, settings: { ...EMPTY.settings, ...(parsed.settings ?? {}) } };
+    return {
+      ...EMPTY,
+      ...parsed,
+      // Cards written before the coaching switch existed all ran coached —
+      // there was no other mode. Backfilled here so a missing field can never
+      // be read as "this call was silent".
+      reports: (parsed.reports ?? []).map((r) => ({ ...r, coaching: r.coaching ?? true })),
+      settings: { ...EMPTY.settings, ...(parsed.settings ?? {}) },
+    };
   } catch {
     return EMPTY;
   }

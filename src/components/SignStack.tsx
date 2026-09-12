@@ -17,6 +17,29 @@ function Icon({ kind }: { kind: Sign["kind"] }) {
   );
 }
 
+/**
+ * What stands where the signs would be when coaching is off.
+ *
+ * An empty column reads as broken, so this says the quiet part: the assistant
+ * is working, it is just not interrupting. The glyph is the sign's own
+ * triangle, struck through and dimmed — the shape that is being withheld,
+ * rather than a blank rectangle standing in for it.
+ */
+function SilentNote() {
+  return (
+    <div className="empty silent-note">
+      <svg className="silent-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3 L22 20 H2 Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M4 21 L20 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+      <b>Coaching is off for this call.</b>
+      The assistant is still listening and still judging every line. Nothing appears here while you are on the phone — the whole
+      report card arrives the moment you end the call.
+      <span className="silent-where">Settings → The assistant, to turn it back on.</span>
+    </div>
+  );
+}
+
 export function SignStack({
   signs,
   startedAt,
@@ -24,6 +47,7 @@ export function SignStack({
   onJump,
   newestOpenId,
   compact,
+  coaching = true,
 }: {
   signs: Sign[];
   startedAt: number;
@@ -31,18 +55,25 @@ export function SignStack({
   onJump: (lineId: string) => void;
   newestOpenId?: string;
   compact?: boolean;
+  coaching?: boolean;
 }) {
-  const list = [...signs].reverse();
+  // Coaching off: the column is deliberately empty, and it says so. It must
+  // not leak a count either — a badge going up is the prompt this mode exists
+  // to withhold.
+  const list = coaching ? [...signs].reverse() : [];
   return (
-    <aside className="signs" aria-label="Danger signs">
+    <aside className="signs" aria-label={coaching ? "Danger signs" : "Danger signs, not shown during this call"}>
       {!compact && (
         <div className="signs-head">
           <span className="label">Signs</span>
-          <span className="small muted">{signs.length ? `${signs.filter((s) => !s.handled).length} open · newest on top` : "none yet"}</span>
+          <span className="small muted">
+            {!coaching ? "silent this call" : signs.length ? `${signs.filter((s) => !s.handled).length} open · newest on top` : "none yet"}
+          </span>
         </div>
       )}
       <div className="signs-list">
-        {list.length === 0 && (
+        {!coaching && <SilentNote />}
+        {coaching && list.length === 0 && (
           <div className="empty">
             <b>Nothing to act on yet.</b>
             A sign appears the moment the customer says something that counts. Each one comes once, with the question to ask next.
