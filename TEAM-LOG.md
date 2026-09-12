@@ -4,6 +4,8 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 22:39 | aufanhakim1920-source | practice | [the customer stopped repeating herself, and the failure says what went wrong](../../commit/f98f4c0db115127f35d58f5fba55038fa623fa32) | practice.ts | +47 / -2 |
+| 12 Sept, 22:39 | aufanhakim1920-source | project + report | [the product is CallFlag, and the mark now survives the size it lives at](../../commit/3a3d5206d7537a5ed6409b94950275e5290c5e7f) | backend.md, data.md, engine.md +12 | +435 / -14 |
 | 12 Sept, 22:32 | aufanhakim1920-source | design | [three entrances stopped deciding whether a thing can be seen at all](../../commit/9a06c695d7878e4aa08806c4745e96956883a8cf) | styles.css | +14 / -7 |
 | 12 Sept, 22:28 | aufanhakim1920-source | live call + report | [one listbox replaces the native dropdowns, which opened the OS popup](../../commit/a30aa4bac1e4456cf87699c0f0c1442c0556e457) | CallScreen.tsx, Lessons.tsx, Select.tsx +1 | +600 / -13 |
 | 12 Sept, 22:27 | aufanhakim1920-source | report | [the score and the bars can no longer be frozen at zero, and the evidence quote is a real button](../../commit/d85900911191b48b1098bade8962e7e2055e1743) | ui-craft.md, ScoreRing.tsx, SignBars.tsx +3 | +178 / -11 |
