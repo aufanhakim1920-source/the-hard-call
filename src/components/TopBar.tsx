@@ -7,12 +7,21 @@ import { AccessibilityPanel } from "./Accessibility";
 
 export type View = "live" | "practice" | "deadlines" | "lessons" | "about";
 
+/**
+ * The CallFlag mark: a swallowtail flag knocked out of a disc.
+ *
+ * It lives at 20px in the bar and 16px in the tab, and on a phone the wordmark
+ * is hidden entirely, so below 940px this is the whole brand. Every feature is
+ * drawn at 6 units or more of the 64 viewBox — 1.5px at 16px — because the old
+ * triangle's exclamation was 4.8 and vanished. Colours come from brand.css so
+ * they answer the ground; a fill attribute here could not.
+ */
 export function Mark() {
   return (
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 8 L58 54 H6 Z" fill="#C79C5A" />
-      <rect x="29.6" y="24" width="4.8" height="15" rx="1.6" fill="#1C1F24" />
-      <circle cx="32" cy="46" r="2.8" fill="#1C1F24" />
+    <svg className="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <circle className="disc" cx="32" cy="32" r="29" />
+      <path className="flag" d="M17 12h6v40h-6z" />
+      <path className="flag" d="M17 18h30l-10 7.5 10 7.5H17z" />
     </svg>
   );
 }
@@ -61,7 +70,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
     <header className="topbar">
       <div className="wordmark">
         <Mark />
-        The Hard Call
+        CallFlag
       </div>
       <nav className="tabs" aria-label="Sections" ref={navRef}>
         <span className="tab-ink" style={{ transform: `translateX(${ink.left}px)`, width: ink.width }} aria-hidden="true" />

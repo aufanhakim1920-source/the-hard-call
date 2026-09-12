@@ -4,6 +4,16 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 23:39 | aufanhakim1920-source | live call + report | [seven measured sounds, and the app goes quiet on a live call](../../commit/4b1ff476c934ae6ba5b65fdebd68019e1ea3d7ef) | ATTRIBUTION.md, deadline-done.mp3, mark-handled.mp3 +10 | +200 / -22 |
+| 12 Sept, 23:32 | aufanhakim1920-source | live call + design | [a11y: the phone sheet can be opened by keyboard, and two controls stop lying](../../commit/7d06b948a4c38229e730d001327561c59b77d8ce) | CallScreen.tsx, Sheet.tsx, styles.css | +53 / -13 |
+| 12 Sept, 23:23 | aufanhakim1920-source | project | [a decision log, including what we tried and rejected](../../commit/b309b84bd9a2d732985bbdf7d91004124b0324a4) | README.md, DECISIONS.md | +239 / -0 |
+| 12 Sept, 23:00 | aufanhakim1920-source | live call + design | [one panel for how the assistant behaves and how the app is read, and coaching can be switched off](../../commit/ac442c657f747b4e549562b5a2903246ae79fb87) | Accessibility.tsx, CallScreen.tsx, SignStack.tsx +7 | +545 / -104 |
+| 12 Sept, 22:57 | Shawn Lee | report | [accept canonical transcripts and verify detector integration](../../commit/a4023e1f044946991ea04fa80cfa021b30422874) | REPORT_HANDOFF.md, detector-report.mjs, report-input.test.mjs +2 | +340 / -6 |
+| 12 Sept, 22:57 | TronJuan | engine | [Update cases.json](../../commit/f8cf456d6e21252b3cf102eacd9d7048981969d4) | cases.json | +1 / -1 |
+| 12 Sept, 22:39 | aufanhakim1920-source | practice | [the customer stopped repeating herself, and the failure says what went wrong](../../commit/f98f4c0db115127f35d58f5fba55038fa623fa32) | practice.ts | +47 / -2 |
+| 12 Sept, 22:39 | aufanhakim1920-source | project + report | [the product is CallFlag, and the mark now survives the size it lives at](../../commit/3a3d5206d7537a5ed6409b94950275e5290c5e7f) | backend.md, data.md, engine.md +12 | +435 / -14 |
+| 12 Sept, 22:32 | aufanhakim1920-source | design | [three entrances stopped deciding whether a thing can be seen at all](../../commit/9a06c695d7878e4aa08806c4745e96956883a8cf) | styles.css | +14 / -7 |
+| 12 Sept, 22:28 | aufanhakim1920-source | live call + report | [one listbox replaces the native dropdowns, which opened the OS popup](../../commit/a30aa4bac1e4456cf87699c0f0c1442c0556e457) | CallScreen.tsx, Lessons.tsx, Select.tsx +1 | +600 / -13 |
 | 12 Sept, 22:27 | aufanhakim1920-source | report | [the score and the bars can no longer be frozen at zero, and the evidence quote is a real button](../../commit/d85900911191b48b1098bade8962e7e2055e1743) | ui-craft.md, ScoreRing.tsx, SignBars.tsx +3 | +178 / -11 |
 | 12 Sept, 22:17 | aufanhakim1920-source | engine | [a spare Gemini key takes over when the first one is refused](../../commit/70c8ad69b24d4ed88053c823da6acf7b3d487680) | gemini.ts, health.ts | +69 / -22 |
 | 12 Sept, 21:26 | TronJuan | engine | [Update cases.json](../../commit/ca2cab7a9602ac832a5971ceac7026a158785729) | cases.json | +1 / -1 |

@@ -47,8 +47,58 @@ export function postFlags(args: {
 
 export type ReportPayload = Omit<Report, "mode" | "customer" | "at" | "scenarioId">;
 
-export function postReport(session: Session, lessons: string[]): Promise<ReportPayload> {
-  return post<ReportPayload>("/api/report", { session, lessons });
+export async function postReport(session: Session, lessons: string[]): Promise<ReportPayload> {
+  try {
+    return await post<ReportPayload>("/api/report", { session, lessons });
+  } catch (err) {
+    // Only the WRITTEN review needs the model. The signs, whether the worker
+    // marked each one handled, the legal deadlines and the length of the call
+    // are all already in this browser. Losing the whole card to Google's rate
+    // limit in front of a room threw away work the call had genuinely done.
+    return localReport(session, err);
+  }
+}
+
+/**
+ * The report card the browser can build unaided. Everything in it was recorded
+ * during the call; nothing is guessed. `scoreUnverified` stays true, because a
+ * score without the model's judgement would be a number we invented.
+ */
+function localReport(s: Session, err: unknown): ReportPayload {
+  const raw = String(err instanceof Error ? err.message : err);
+  const quota = /429|quota|rate.?limit|exhausted/i.test(raw);
+  const items = s.signs.map((g) => ({
+    signId: g.id,
+    key: g.key,
+    title: g.title,
+    kind: g.kind,
+    verdict: "unverified" as const,
+    note: g.handled ? "Marked handled during the call." : "Not marked handled during the call.",
+    evidence: [],
+  }));
+  return {
+    callId: s.id,
+    summary: quota
+      ? "The written review is unavailable: the free daily limit on the AI has been reached. Everything below was recorded during the call itself."
+      : "The written review is unavailable because the AI could not be reached. Everything below was recorded during the call itself.",
+    items,
+    missedByAI: [],
+    tip: "",
+    score: 0,
+    scoreUnverified: true,
+    caught: s.signs.length,
+    handled: s.signs.filter((g) => g.handled).length,
+    partly: 0,
+    unverified: items.length,
+    missed: 0,
+    deadlines: s.signs
+      .filter((g) => g.kind === "legal" && g.dueDate)
+      .map((g) => ({ key: g.key, label: g.dueLabel ?? "Due", date: g.dueDate as string, title: g.title, customer: s.customer.name, callId: s.id })),
+    durationSec: Math.round(((s.endedAt ?? Date.now()) - s.startedAt) / 1000),
+    model: "",
+    degraded: true,
+    degradedReason: quota ? "quota" : "unreachable",
+  };
 }
 
 export type ScenarioPayload = Pick<

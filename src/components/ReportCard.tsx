@@ -110,7 +110,7 @@ export function ReportCard({
 
   const copy = async () => {
     const lines = [
-      `The Hard Call — report card, ${fmtWhen(report.at)}`,
+      `CallFlag — report card, ${fmtWhen(report.at)}`,
       `${report.customer} · ${report.mode} · score ${report.scoreUnverified ? "not verified" : report.score}`,
       report.summary,
       ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),

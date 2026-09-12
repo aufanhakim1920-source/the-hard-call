@@ -736,6 +736,6 @@
   "expect": [
     "hardship-request"
   ],
-  "note": "Deflects with no explicit ask or statement of current inability — implies things aren't fine right now but volunteers no request and no reason. Confirmed on the live engine (gemini-flash-latest) not to fire. Keep as a hard negative unless the team decides an implied-but-brushed-off inability should still count under NCC s72."
+  "note": "No explicit ask and no stated reason, but 'I'll be fine in a month' implies they are not fine now — team decision: this counts as a hardship notice under NCC s72, which needs no magic words. Currently a known gap: the deployed engine (gemini-flash-latest) does not fire on this phrasing, so this case is expected to fail until the hardship-request cue is widened to catch soft, deflecting admissions like this one."
 }
 ]

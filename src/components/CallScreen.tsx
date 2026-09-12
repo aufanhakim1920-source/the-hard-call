@@ -1,16 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useA11y } from "../lib/a11y";
 import { fmtClock } from "../lib/dates";
 import { DEMO_SCRIPT } from "../lib/demoScript";
 import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
-import { play } from "../lib/sfx";
+import { play, setCallMode } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
 import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
 import { PHONE, useMedia } from "../lib/useMedia";
+import { Select } from "./Select";
 import { Sheet, type Detent } from "./Sheet";
 import { SignStack } from "./SignStack";
 import { Transcript } from "./Transcript";
+
+const DIRECTION_OPTIONS = [
+  { value: "outbound", label: "Bank rang them" },
+  { value: "inbound", label: "They rang the bank" },
+];
+
+const SPEAKER_OPTIONS = [
+  { value: "customer", label: "Customer" },
+  { value: "worker", label: "Worker" },
+];
 
 export interface CallProps {
   mode: Mode;
@@ -32,6 +44,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const { session, interim, setInterim, assistant, addLine, markHandled, endCall, elapsed, newestOpen } = engine;
   useEffect(() => onAssistant(assistant), [assistant, onAssistant]);
 
+  // Tell the sound layer which kind of call this is. On a LIVE call the
+  // customer can hear whatever the headset leaks and cannot interpret it, so
+  // only the legal sign plays, quieter. Practice is where the worker learns
+  // what that sound means. Cleared on unmount so a closed call cannot leave
+  // the app stuck in live policy.
+  useEffect(() => {
+    setCallMode(mode);
+    return () => setCallMode(null);
+  }, [mode]);
+
   const speech = useSpeech({
     onFinal: (t) => addLine(t, "unknown"),
     onInterim: setInterim,
@@ -47,12 +69,17 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const [speed, setSpeed] = useState<1 | 2>(1);
   const phone = useMedia(PHONE);
   const [detent, setDetent] = useState<Detent>("peek");
+  // Live, not the session's start value: flipping the switch mid-call takes
+  // effect on the next line. The report card keeps the start value.
+  const coaching = useA11y().coaching;
   const signCount = session.signs.length;
   const newestSign = signCount ? session.signs[signCount - 1] : undefined;
   const openCount = session.signs.filter((g) => !g.handled).length;
   // On a phone, a legal sign lifts the sheet by itself; tips wait in the peek.
+  // With coaching off it must not — a sheet rising on its own is the loudest
+  // prompt on the screen.
   useEffect(() => {
-    if (!phone || !newestSign) return;
+    if (!phone || !newestSign || !coaching) return;
     if (newestSign.kind === "legal") {
       setDetent("full");
       try {
@@ -61,7 +88,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
         /* no haptics here */
       }
     }
-  }, [phone, newestSign, signCount]);
+  }, [phone, newestSign, signCount, coaching]);
   const speedRef = useRef(speed);
   speedRef.current = speed;
   const typeRef = useRef<HTMLInputElement>(null);
@@ -121,8 +148,11 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+      // H marks the newest sign handled — with nothing on screen there is
+      // nothing to mark, and a silent keystroke that changes hidden state is
+      // worse than a key that does nothing.
       if (e.key === "h" || e.key === "H") {
-        if (newestOpen) markHandled(newestOpen.id, true);
+        if (newestOpen && coaching) markHandled(newestOpen.id, true);
       } else if (e.key === "e" || e.key === "E") {
         if (session.lines.length) void finish();
       } else if (e.key === "t" || e.key === "T") {
@@ -132,7 +162,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [newestOpen, markHandled, finish, session.lines.length]);
+  }, [newestOpen, markHandled, finish, session.lines.length, coaching]);
 
   const submitTyped = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,10 +184,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             <span className="label">Call with</span>
             <input className="field" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} aria-label="Customer name" />
             <input className="field" value={customer.product} onChange={(e) => setCustomer({ ...customer, product: e.target.value })} aria-label="Product" />
-            <select className="field" value={customer.direction} onChange={(e) => setCustomer({ ...customer, direction: e.target.value as Customer["direction"] })} aria-label="Direction">
-              <option value="outbound">Bank rang them</option>
-              <option value="inbound">They rang the bank</option>
-            </select>
+            <Select value={customer.direction} onChange={(v) => setCustomer({ ...customer, direction: v as Customer["direction"] })} options={DIRECTION_OPTIONS} label="Direction" />
           </div>
         ) : (
           <div className="who">
@@ -200,7 +227,8 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             </b>
             <span>
               {practice.status === "idle" && `${scenario.name}, ${scenario.age}, ${scenario.job}. The real problem is hidden — ask well.`}
-              {practice.status === "connected" && "Talk like it's a real call. The signs on the right are live."}
+              {practice.status === "connected" &&
+                (coaching ? "Talk like it's a real call. The signs on the right are live." : "Talk like it's a real call. Nothing will prompt you — the report comes at the end.")}
               {practice.status === "error" && (practice.error ?? "")}
               {practice.status === "ended" && "End the call to see your report card."}
             </span>
@@ -230,7 +258,9 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           </div>
           <Transcript
             lines={session.lines}
-            signs={session.signs}
+            /* The transcript underlines the words a sign was raised on. That is
+               the same prompt in a quieter place, so it goes too. */
+            signs={coaching ? session.signs : []}
             interim={interim}
             startedAt={session.startedAt}
             mode={mode}
@@ -256,19 +286,21 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           <div className="inputs">
             {mode === "live" && (
               <>
+                {/* A control that cannot work must be disabled and must SAY why.
+                    It used to stay enabled and hide the reason in a title
+                    tooltip, which never appears on a phone and never reaches a
+                    screen reader as an explanation. */}
                 <button
                   className={"btn" + (speech.listening ? " listening" : "")}
                   onClick={() => (speech.listening ? speech.stop() : speech.start())}
-                  title={speech.supported ? "Uses this browser's speech engine (Chrome or Edge)" : "No speech engine in this browser"}
+                  disabled={!speech.supported}
                 >
                   <span className="rec-dot" />
                   {speech.listening ? "Listening" : "Listen"}
                 </button>
+                {!speech.supported && <span className="hint">This browser has no speech engine. Type what was said instead, or use Chrome or Edge.</span>}
                 <form className="type" onSubmit={submitTyped}>
-                  <select className="field" value={typedAs} onChange={(e) => setTypedAs(e.target.value as Speaker)} aria-label="Who said it">
-                    <option value="customer">Customer</option>
-                    <option value="worker">Worker</option>
-                  </select>
+                  <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
                   <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
                 </form>
                 {onDemo && !started && (
@@ -281,27 +313,47 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             )}
             {mode === "demo" && (
               <>
-                <span className="hint">
-                  Speed
-                </span>
-                <button className={"btn sm" + (speed === 1 ? " gold" : "")} onClick={() => setSpeed(1)}>
-                  1×
-                </button>
-                <button className={"btn sm" + (speed === 2 ? " gold" : "")} onClick={() => setSpeed(2)}>
-                  2×
-                </button>
+                {/* One choice of two, so say so. It was two plain buttons with
+                    the state carried by the gold fill alone — invisible to a
+                    screen reader, and meaning in colour only. */}
+                <div className="speed" role="radiogroup" aria-label="Replay speed">
+                  <span className="hint" aria-hidden="true">
+                    Speed
+                  </span>
+                  {([1, 2] as const).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={speed === n}
+                      aria-label={`${n} times speed`}
+                      className={"btn sm" + (speed === n ? " gold" : "")}
+                      onClick={() => setSpeed(n)}
+                    >
+                      {n}×
+                    </button>
+                  ))}
+                </div>
                 <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
               </>
             )}
             {mode === "practice" && (
               <span className="hint">
-                Say what you would really say. <kbd>H</kbd> marks the newest sign handled · <kbd>E</kbd> ends the call
+                Say what you would really say.{" "}
+                {coaching ? (
+                  <>
+                    <kbd>H</kbd> marks the newest sign handled ·{" "}
+                  </>
+                ) : null}
+                <kbd>E</kbd> ends the call
               </span>
             )}
             {endErr && <span className="warn">Report failed: {endErr}</span>}
           </div>
         </section>
-        {!phone && <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} />}
+        {!phone && (
+          <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} coaching={coaching} />
+        )}
       </div>
 
       {phone && (
@@ -309,23 +361,43 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           detent={detent}
           onDetent={setDetent}
           head={
-            <>
-              <span className={"sheet-count" + (openCount ? " on" : "")}>{signCount}</span>
-              <span className="sheet-title">
-                {newestSign ? (
-                  <>
-                    <b>{newestSign.title}</b>
-                    <span className="small muted"> · {openCount} open</span>
-                  </>
-                ) : (
-                  <span className="muted">No signs yet</span>
-                )}
-              </span>
-              <span className="sheet-hint small muted">{detent === "full" ? "drag down" : "drag up"}</span>
-            </>
+            coaching ? (
+              <>
+                <span className={"sheet-count" + (openCount ? " on" : "")}>{signCount}</span>
+                <span className="sheet-title">
+                  {newestSign ? (
+                    <>
+                      <b>{newestSign.title}</b>
+                      <span className="small muted"> · {openCount} open</span>
+                    </>
+                  ) : (
+                    <span className="muted">No signs yet</span>
+                  )}
+                </span>
+                <span className="sheet-hint small muted">{detent === "full" ? "drag down" : "drag up"}</span>
+              </>
+            ) : (
+              // No count, no title: the handle would otherwise tick upward and
+              // say exactly what this mode is meant not to say.
+              <>
+                <span className="sheet-count silent" aria-hidden="true">
+                  —
+                </span>
+                <span className="sheet-title muted">Coaching off · report at the end</span>
+                <span className="sheet-hint small muted">{detent === "full" ? "drag down" : "drag up"}</span>
+              </>
+            )
           }
         >
-          <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} compact />
+          <SignStack
+            signs={session.signs}
+            startedAt={session.startedAt}
+            onHandled={markHandled}
+            onJump={jump}
+            newestOpenId={newestOpen?.id}
+            coaching={coaching}
+            compact
+          />
         </Sheet>
       )}
 
@@ -334,7 +406,12 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
         <span>Card and account numbers are masked before they leave this browser.</span>
         <span className="spacer" />
         <span className="hint">
-          <kbd>H</kbd> handle newest · <kbd>E</kbd> end call · <kbd>T</kbd> type
+          {coaching && (
+            <>
+              <kbd>H</kbd> handle newest ·{" "}
+            </>
+          )}
+          <kbd>E</kbd> end call · <kbd>T</kbd> type
         </span>
       </footer>
     </div>

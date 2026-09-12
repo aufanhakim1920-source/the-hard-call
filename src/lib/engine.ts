@@ -3,10 +3,10 @@
 // practice agent) feeds the same addLine, so the AI sees them identically.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { announce } from "./a11y";
+import { announce, coachingOn, getA11y } from "./a11y";
 import { postFlags, postReport } from "./api";
 import { maskSensitive } from "./mask";
-import { play } from "./sfx";
+import { play, playSigns } from "./sfx";
 import { actions, getStore, lessonTexts } from "./store";
 import type { AssistantState, Customer, Line, Mode, Report, Session, Sign, Speaker } from "./types";
 import { uid } from "./types";
@@ -55,8 +55,12 @@ export function useCallEngine(opts: EngineOptions) {
           const linesNext = cur.lines.map((l) =>
             l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown" ? { ...l, speaker: res.speaker } : l,
           );
-          if (fresh.length) {
-            play("sign");
+          // Coaching off silences the call, not the engine: the signs above are
+          // already on the session, so the report card, the deadlines and the
+          // timeline all see them. Only the card, the sound and the
+          // announcement — the three things the worker would notice — stop.
+          if (fresh.length && coachingOn()) {
+            playSigns(fresh);
             for (const g of fresh) {
               // A legal sign starts a clock, so it interrupts; a tip waits its turn.
               const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
@@ -102,7 +106,7 @@ export function useCallEngine(opts: EngineOptions) {
       ...cur,
       signs: cur.signs.map((g) => (g.id === id ? { ...g, handled, handledAt: handled ? Date.now() : undefined } : g)),
     }));
-    play(handled ? "handled" : "tap");
+    play(handled ? "handled" : "undo");
   }, []);
 
   const endCall = useCallback(async (): Promise<Report> => {
@@ -118,8 +122,12 @@ export function useCallEngine(opts: EngineOptions) {
       customer: finalSession.customer.name,
       at: Date.now(),
       scenarioId: finalSession.scenarioId,
+      // Taken from the session, set when the call started — the card names the
+      // mode the call was run in, not the switch's position an hour later.
+      coaching: finalSession.coaching,
     };
     actions.addReport(report);
+    play("report");
     return report;
   }, []);
 
@@ -139,6 +147,7 @@ function newSession(o: EngineOptions): Session {
     signs: [],
     scenarioId: o.scenarioId,
     scenarioExpected: o.scenarioExpected,
+    coaching: getA11y().coaching,
   };
 }
 

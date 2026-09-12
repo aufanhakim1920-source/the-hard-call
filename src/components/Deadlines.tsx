@@ -31,7 +31,7 @@ export function Deadlines() {
               className="btn sm"
               onClick={() => {
                 actions.toggleDeadline(d.id);
-                play(d.done ? "tap" : "handled");
+                play(d.done ? "undo" : "deadline");
               }}
             >
               {d.done ? "Reopen" : "Mark replied"}

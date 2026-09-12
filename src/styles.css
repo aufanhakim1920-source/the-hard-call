@@ -379,7 +379,13 @@ select.field option {
 .call {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  min-height: calc(100vh - var(--topbar));
+  /* HEIGHT, not min-height. With only a minimum, the middle row grows to fit
+     the signs and pushes the header off the top: measured on a 1280x720 laptop
+     with three signs raised, the document was 888px tall and "End call" sat at
+     top: -98 with the page scrolled as far as it goes. The signs and the
+     transcript scroll inside their own columns instead. */
+  height: calc(100vh - var(--topbar));
+  height: calc(100dvh - var(--topbar));
 }
 .call-head {
   display: flex;
@@ -581,13 +587,15 @@ select.field option {
     opacity: 0;
   }
 }
+/* Transform only. A running animation starting at opacity:0 beats the base
+   opacity:1, and a throttled tab holds frame 0 forever — which means the line
+   is not dimmer, it is absent. This is the sign card's bug, in three more
+   places. See the vault: "An Entrance Must Not Gate Visibility". */
 @keyframes lineIn {
   from {
-    opacity: 0;
     transform: translateY(6px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -628,6 +636,11 @@ select.field option {
 }
 .inputs .type select.field {
   width: 118px;
+}
+.speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .hint {
   font-size: 12px;
@@ -809,6 +822,32 @@ select.field option {
 }
 .signs .empty {
   padding: 18px 4px;
+}
+
+/* Coaching off. Quiet, not alarmed — the column is empty on purpose, and the
+   struck-through triangle is the shape that is being held back. */
+.silent-note {
+  padding-top: 24px;
+}
+.silent-mark {
+  width: 26px;
+  height: 26px;
+  display: block;
+  margin-bottom: 12px;
+  color: var(--grey);
+  opacity: 0.55;
+}
+.silent-where {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.sheet-count.silent {
+  border-style: dashed;
+  color: var(--text-3);
 }
 
 .privacy-line {
@@ -1260,11 +1299,9 @@ select.field option {
 }
 @keyframes viewIn {
   from {
-    opacity: 0;
     transform: translateY(6px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -1317,11 +1354,20 @@ select.field option {
 .sheet.full .sheet-handle {
   opacity: 0.9;
 }
+/* It is a <button> now, so it has to be un-styled back to a row. */
 .sheet-head-row {
   display: flex;
   align-items: center;
   gap: 10px;
   min-height: 40px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 .sheet-count {
   font-family: var(--mono);
@@ -1397,6 +1443,9 @@ select.field option {
     height: 40px;
   }
   .call.phone {
+    /* The phone is the other shape on purpose: the page itself scrolls under
+       the bottom sheet, so the call must be free to grow past the viewport. */
+    height: auto;
     min-height: 100dvh;
     padding-bottom: calc(var(--peek) + var(--safe-bottom) + 12px);
     overscroll-behavior-y: none;
@@ -1632,11 +1681,9 @@ select.field option {
 }
 @keyframes panelIn {
   from {
-    opacity: 0;
     transform: translateY(-4px) scale(0.98);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -1814,16 +1861,73 @@ select.field option {
 .a11y-chip-label {
   font-size: 13px;
 }
+/* The head stays put and the groups scroll under it, so Reset is always
+   reachable — the content is 1131px in a box that can only ever be ~530px, so
+   "scroll to the bottom to undo something" is not a fair ask. */
 .a11y-panel {
   width: min(380px, calc(100vw - 28px));
   max-height: min(74vh, 640px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.a11y-panel:focus {
+  outline: none;
 }
 .a11y-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex: none;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.a11y-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 10px 8px 16px 0;
+  margin-right: -8px;
+  /* A 17px system scrollbar sat over the panel before this. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+.a11y-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.a11y-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.a11y-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 3px;
+}
+.a11y-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--grey);
+}
+/* A cut-off list must read as "there is more". The fade sits only on the side
+   that actually has something hidden — the tab strip's device, turned 90°. */
+.a11y-scroll[data-edge="bottom"] {
+  mask-image: linear-gradient(180deg, #000 calc(100% - 30px), transparent);
+}
+.a11y-scroll[data-edge="top"] {
+  mask-image: linear-gradient(180deg, transparent, #000 30px);
+}
+.a11y-scroll[data-edge="both"] {
+  mask-image: linear-gradient(180deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
+}
+/* The first group heading sits under the sticky head; it needs no second rule. */
+.a11y-scroll > .a11y-group:first-of-type {
+  margin-top: 4px;
+  padding-top: 0;
+  border-top: 0;
+}
+.a11y-note {
+  margin: 2px 2px 0;
+  padding-left: 50px; /* lines up with the switch label, not the track */
 }
 .a11y-group {
   display: block;
@@ -2025,6 +2129,23 @@ select.field option {
 :root[data-theme="light"] .a11y-seg button.on {
   color: #1c1f24;
 }
+/* Two faults in the switch, both only visible on cream, both found by
+   measuring rather than looking:
+   1. The blanket .a11y-track rule above lands after `.a11y-row.on .a11y-track`
+      and ties on specificity, so the ON fill — the strongest signal a switch
+      has — was being erased on this ground. Position and border still carried
+      the state, but far more faintly than on the dark one.
+   2. The knob is `--ink`, and --ink IS cream here: cream on gold measures
+      2.18:1, the same failure the vault recorded for gold as text. The part
+      that carries the state needs 3:1 (WCAG 1.4.11), so it goes to real ink
+      on gold, 6.56:1. */
+:root[data-theme="light"] .a11y-row.on .a11y-track {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+:root[data-theme="light"] .a11y-row.on .a11y-knob {
+  background: #1c1f24;
+}
 :root[data-theme="light"] .ln .text mark {
   box-shadow: inset 0 -2px 0 #8a5e1c;
 }
@@ -2084,6 +2205,16 @@ select.field option {
 .big-targets select.field {
   height: 46px;
 }
+/* The edge fade dims the words at the top and bottom of the list. Anyone who
+   asked for higher contrast gets a hard edge instead — the scrollbar still
+   says there is more. */
+.high-contrast .a11y-scroll[data-edge] {
+  mask-image: none;
+}
+.high-contrast .silent-mark {
+  opacity: 1;
+}
+
 .big-targets .a11y-row {
   padding: 13px 2px;
 }
@@ -2108,4 +2239,268 @@ select.field option {
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
   scroll-behavior: auto !important;
+}
+
+/* ---------- the picker: one listbox everywhere a native <select> used to be ----------
+   Aufan, on the Lessons page: "still a lot like the drop down not smooth".
+   A native select opens the OS list, which no stylesheet reaches and which has
+   no palette and no motion. Everything below is built from the same tokens as
+   the rest of the chrome, so every accessibility setting reaches it for free.
+   No colour literal appears in this section — a literal is what made every
+   worker line invisible the first time this app grew a light ground. */
+.sel {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  /* A flex or grid item's min-width is auto, i.e. min-content, and it will not
+     shrink below its widest option. Same trap as a bare 1fr grid track. */
+  min-width: 0;
+  max-width: 100%;
+}
+.sel-trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  text-align: left;
+  font-size: 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  background: transparent;
+  color: var(--cream);
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-out), background 140ms var(--ease-out);
+}
+.sel-trigger:hover {
+  border-color: var(--gold-line);
+}
+.sel[data-open="true"] .sel-trigger {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+}
+/* One cell, two children stacked: the value that shows, and a copy of every
+   label that only reserves width. */
+.sel-label-box {
+  display: grid;
+  min-width: 0;
+}
+.sel-label-box > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.sel-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sel-sizer {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+.sel-sizer > span {
+  display: block;
+  white-space: nowrap;
+}
+.sel-caret {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  color: var(--grey);
+  transition: transform 200ms var(--ease-out), color 160ms var(--ease-out);
+}
+.sel-caret::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 1px;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+.sel-trigger:hover .sel-caret {
+  color: var(--cream);
+}
+/* The control answers the click itself, not only the popup. */
+.sel[data-open="true"] .sel-caret {
+  transform: rotate(180deg);
+  color: var(--gold-2);
+}
+
+/* Fixed, measured off the trigger: no ancestor's overflow can clip it and
+   opening it never widens the page. */
+.sel-pop {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  overflow: hidden;
+  color: var(--cream);
+  animation: selPopDown 190ms var(--ease-out) both;
+  transform-origin: top center;
+}
+.sel-pop.up {
+  animation-name: selPopUp;
+  transform-origin: bottom center;
+}
+/* ⚠️ Transform only. A running animation whose clock is frozen in a throttled
+   tab pins the element at its `from` keyframe and overrides its own opacity, so
+   `from { opacity: 0 }` here would be a popup that never appears. */
+@keyframes selPopDown {
+  from {
+    transform: translateY(-7px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes selPopUp {
+  from {
+    transform: translateY(7px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+/* The exit may fade — it is leaving, and a frozen exit costs nothing. */
+.sel-pop.closing {
+  pointer-events: none;
+  animation: selPopOut 130ms var(--ease-out) both;
+}
+@keyframes selPopOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.99);
+  }
+}
+.sel-list {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The space is made first, then the rows arrive in it. */
+.sel-opt {
+  padding: 8px 10px 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  animation: selOptIn 200ms var(--ease-out) both;
+  animation-delay: calc(var(--d, 0) * 16ms);
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+@keyframes selOptIn {
+  from {
+    transform: translateX(-7px);
+  }
+  to {
+    transform: none;
+  }
+}
+.sel-pop.closing .sel-opt {
+  animation: none;
+}
+.sel-opt.on {
+  background: var(--gold-dim);
+}
+/* The chosen row is marked by a leading edge and a weight, never by hue alone —
+   the same device the report card uses for a handled sign. */
+.sel-opt.is {
+  box-shadow: inset 2px 0 0 var(--gold);
+  color: var(--gold-2);
+  font-weight: 600;
+}
+/* Measured, not eyeballed: the light ground's gold #8A5E1C reads 4.91 on the
+   page but only 4.48 on this popup's own surface — under AA. So on cream the
+   gold stays in the leading edge (4.48 is fine for a graphic) and the row keeps
+   the ink for its words. */
+:root[data-theme="light"] .sel-opt.is {
+  color: var(--cream);
+  box-shadow: inset 2px 0 0 var(--gold-2);
+}
+
+/* where the picker sits in each row */
+.form-row .sel {
+  flex: none;
+}
+.inputs .type .sel {
+  flex: none;
+  width: 118px;
+}
+
+/* --- accessibility settings reach it like everything else --- */
+.big-targets .sel-trigger {
+  min-height: 46px;
+}
+.big-targets .sel-opt {
+  padding: 13px 12px 13px 14px;
+}
+.high-contrast .sel-trigger,
+.high-contrast .sel-pop {
+  border-width: 2px;
+}
+/* Nothing here blurs, but a wash over text is the same complaint: make the
+   surfaces and the highlight solid. */
+.reduce-transparency .sel-trigger {
+  background: var(--ink-2);
+}
+.reduce-transparency .sel[data-open="true"] .sel-trigger,
+.reduce-transparency .sel-opt.on {
+  background: var(--ink-3);
+}
+.line-spacing .sel-opt,
+.line-spacing .sel-value {
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+}
+/* The options are words being read, so they take the text size. */
+:root[data-text="1"] .sel-trigger,
+:root[data-text="1"] .sel-opt {
+  font-size: 15px;
+}
+:root[data-text="2"] .sel-trigger,
+:root[data-text="2"] .sel-opt {
+  font-size: 16px;
+}
+:root[data-text="3"] .sel-trigger,
+:root[data-text="3"] .sel-opt {
+  font-size: 18px;
+}
+/* A delay survives `animation-duration: 1ms`, so it has to be zeroed by name. */
+.reduce-motion .sel-opt {
+  animation-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sel-opt {
+    animation-delay: 0ms !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .sel-trigger {
+    min-height: 40px;
+  }
+  .setup .sel {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+  .inputs .type .sel {
+    width: 112px;
+  }
 }
