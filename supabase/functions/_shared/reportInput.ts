@@ -18,6 +18,14 @@ export interface FlagEvent {
   authority: string;
   confidence: number;
   staff_prompt: string;
+  /**
+   * Which tier this is. A "request" is a live prompt to the staff member: it
+   * starts no clock and is never scored, because the worker was asked to ASK,
+   * not to discharge an obligation. Only a "notice" is an obligation.
+   * Absent means notice, so an older caller that predates the tier keeps
+   * behaving exactly as it did.
+   */
+  tier?: "notice" | "request";
 }
 export interface TranscriptReportRequest { transcript: Transcript; flags: FlagEvent[] }
 
@@ -62,14 +70,20 @@ export function adaptReportInput(input: unknown) {
         !nonempty(flag.authority) || typeof flag.confidence !== "number" || !Number.isFinite(flag.confidence) ||
         flag.confidence < 0 || flag.confidence > 1 ||
         !(flag.deadline_days === null || (Number.isSafeInteger(flag.deadline_days) && (flag.deadline_days as number) > 0)) ||
-        !(flag.deadline_from === null || nonempty(flag.deadline_from))) {
+        !(flag.deadline_from === null || nonempty(flag.deadline_from)) ||
+        !(flag.tier === undefined || flag.tier === "notice" || flag.tier === "request")) {
       throw new Error(`Invalid flag at index ${index}.`);
     }
     const lineId = refs.get(`${flag.raised_at.speaker}:${flag.raised_at.start_ms}`);
     if (!lineId || ids.has(flag.flag_id)) throw new Error(`Invalid or duplicate flag reference at index ${index}.`);
     ids.add(flag.flag_id);
     return {
-      id: flag.flag_id, key: flag.rule_id, kind: "legal" as const,
+      id: flag.flag_id, key: flag.rule_id,
+      // Hard-coding "legal" here silently promoted every request to an
+      // obligation: a call with no obligation at all came back reporting
+      // caught: 1, which reads as the worker having missed something that was
+      // never owed. The tier decides, and it defaults to notice.
+      kind: (flag.tier === "request" ? "tip" : "legal") as "legal" | "tip",
       title: flag.obligation, askNext: flag.staff_prompt, lineId,
       evidence: "", handled: false, t: flag.raised_at.start_ms,
       source: flag.authority, dueDays: flag.deadline_days,

@@ -146,7 +146,10 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
   try {
     const { data, model } = await askGemini<ModelReport>({ system: SYSTEM + (canonical ? "\nThe supplied flags are the detector output. Assess only those flags; do not detect additional obligations. Return missedByAI as an empty array." : ""), user, schema: SCHEMA, temperature: 0.2 });
     const items = buildReportItems(s.signs, s.lines, data.items, t0);
-    const caught = s.signs.length;
+    // Obligations only. A request is a live prompt to ASK, not a duty to
+    // discharge, so counting one as "caught" makes a call where every hint was
+    // handled well read as a call full of unhandled obligations.
+    const caught = s.signs.filter((g) => g.kind === "legal").length;
     const handled = items.filter((i) => i.verdict === "handled").length;
     const partly = items.filter((i) => i.verdict === "partly").length;
     const missed = items.filter((i) => i.verdict === "missed").length;
@@ -197,7 +200,7 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
       tip: "",
       score: 0,
       scoreUnverified: true,
-      caught: s.signs.length,
+      caught: s.signs.filter((g) => g.kind === "legal").length,
       handled: s.signs.filter((g) => g.handled).length,
       partly: 0,
       unverified: items.length,

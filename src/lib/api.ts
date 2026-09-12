@@ -86,7 +86,9 @@ function localReport(s: Session, err: unknown): ReportPayload {
     tip: "",
     score: 0,
     scoreUnverified: true,
-    caught: s.signs.length,
+    // Obligations only, matching the server: a request is a prompt to ask,
+    // not a duty to discharge.
+    caught: s.signs.filter((g) => g.kind === "legal").length,
     handled: s.signs.filter((g) => g.handled).length,
     partly: 0,
     unverified: items.length,
