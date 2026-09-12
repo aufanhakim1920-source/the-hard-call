@@ -702,3 +702,78 @@ believing any failure.** This is the mirror of the older lesson that a gate
 reads what you declare rather than what is painted. An instrument that cannot
 see the screen produces false alarms exactly as readily as false passes, and a
 false alarm costs whoever chases it.
+
+## Nobody had reset `background` on `button`
+
+The customer's quoted words — the evidence a legal sign rests on — were drawn
+with the **native Windows button face**: grey `#6B6B6B`, a 2 px outset white
+border, centred italic text. It measured **3.10:1** and failed AA. It was the
+second-heaviest object on the product's hero card and the least important
+thing on it.
+
+Worth saying plainly because it is the cheapest kind of defect to carry for
+days: a control that has never been given a background gets the operating
+system's, and the operating system's is louder than anything in the design.
+**Sweep for unstyled native controls once per project**, not per component.
+
+The rest of the card had the same shape of fault a level up — everything after
+the title was one undifferentiated block of 12–13 px mono, so the **reply
+date, which a 21-day statutory clock hangs on, was set at the same size as the
+statute reference printed beside it.** The date is 19 px now in its own block;
+the statute is 10 px underneath. The block appears only on legal cards,
+because starting a clock *is* the difference between the two kinds of sign.
+
+⭐ **Rank type by consequence, not by category.** A date with a legal deadline
+attached and a citation that merely says where the rule lives are not the same
+kind of small grey text.
+
+## A moved node restarts its CSS animation
+
+Ticking a sign re-sorts the stack, React moves the DOM node, and a moved node
+**replays its CSS entrance**. Measured: the ticked card ran its 420 ms entrance
+*while* the FLIP was carrying it to its new position — two animations writing
+`transform` at once, still at scale 1.0008 when the trip ended.
+
+⭐ **One owner per property.** The FLIP owns `transform` during a reorder, so
+the card's CSS entrance was deleted rather than tuned. A list that animates its
+own reordering cannot also let its rows animate themselves.
+
+## A bar that reads "nothing" is not a subtler wrong picture
+
+The obvious fix for a deadline bar animating `width` was to swap it for a
+`scaleX` sweep. Checked against the component instead of pasted, and the sweep
+was wrong: it measured **zero length past 2000 ms** on a page that was visible
+but not compositing, because a CSS transition needs frames exactly as
+`requestAnimationFrame` does and the only guard was `document.hidden`.
+
+On the row carrying a statutory reply date, a bar reading "no time left" is not
+a gentler error than a missing bar — it is a false statement about a legal
+deadline. The bar is true on the first frame now (452 px at 0, 80, 160, 320 ms)
+and the row arrives instead, transform only.
+
+⭐ **Animate a quantity only when the animation is saying something true about
+it, and only when its frozen state is also true.**
+
+**And the same measurement found a case that had never once rendered
+correctly:** past the due date, "time left" computes to zero, so an overdue
+deadline drew a 0 px bar — and the hatch the stylesheet keeps for exactly that
+case had never appeared in the app's life. Now 452 px of hatch where there was
+nothing. A stylesheet rule with no way to reach it is not a safety net.
+
+## The two report cards were nearly identical in the first second
+
+The demo's whole argument is holding the coached card and the silent card side
+by side. Judged as a stranger: both led with the customer's name, which is the
+same on both; the only difference was one leading digit, "0 of 3" against
+"4 of 4", in the same colour at the same size; and **the word carrying the
+legal consequence, MISSED, was 10 px uppercase grey — the smallest type in the
+region.** The one unmistakable difference was the score ring, the reading the
+research deliberately demoted and which reads "not verified" on most real calls.
+
+The miss count now sits under the name at 62 px in a state colour, and the
+consequence is stated in words rather than implied by a number. A card where
+nothing could be checked against the transcript renders **no verdict at all**
+rather than a confident "0 missed".
+
+⭐ **If two things are meant to be compared, measure how they differ in the
+first second — not whether the difference is present somewhere on the page.**
