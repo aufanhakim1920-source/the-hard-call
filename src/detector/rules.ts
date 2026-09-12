@@ -1,13 +1,18 @@
 /**
- * The rule table. The detector decides WHETHER an obligation was triggered;
- * this table decides WHAT the obligation is. Deadlines are never produced by a
- * model — they come from here, so they are always citable.
+ * The rule table. The detector decides WHETHER an event was triggered; this
+ * table decides WHAT it is. Deadlines are never produced by a model — they come
+ * from here, so they are always citable.
  *
  * Source: docs/hardship-flag-rules.md
  */
 
+import type { EventKind } from "./types.js";
+
 export interface Rule {
   rule_id: string;
+  kind: EventKind;
+  /** False -> never reaches a database, report card, or summary. */
+  persist: boolean;
   obligation: string;
   deadline_days: number | null;
   deadline_from: string | null;
@@ -20,8 +25,12 @@ export interface Rule {
 }
 
 export const RULES: Record<string, Rule> = {
+  /* ---------- obligations: asserted, deadline-bearing, persisted ---------- */
+
   NCC_72_ORAL_NOTICE: {
     rule_id: "NCC_72_ORAL_NOTICE",
+    kind: "obligation",
+    persist: true,
     obligation: "Assess the hardship notice and notify the customer of the decision",
     deadline_days: 21,
     deadline_from: "notice_received",
@@ -37,6 +46,8 @@ export const RULES: Record<string, Rule> = {
 
   ABA_INFORM_HARDSHIP_PROVISIONS: {
     rule_id: "ABA_INFORM_HARDSHIP_PROVISIONS",
+    kind: "obligation",
+    persist: true,
     obligation: "Inform the customer that hardship provisions exist under the National Credit Code",
     deadline_days: null,
     deadline_from: null,
@@ -50,6 +61,8 @@ export const RULES: Record<string, Rule> = {
 
   NCC_72_WRITTEN_NOTICE_30D: {
     rule_id: "NCC_72_WRITTEN_NOTICE_30D",
+    kind: "obligation",
+    persist: true,
     obligation:
       "If a variation deferring or reducing obligations for more than 90 days is agreed, send written notice of the contract changes",
     deadline_days: 30,
@@ -57,6 +70,30 @@ export const RULES: Record<string, Rule> = {
     authority: "National Credit Code s 72 / s 73",
     staff_prompt: "If a variation over 90 days is agreed, written notice is due within 30 days.",
     unverifiableInCall: true,
+  },
+
+  /* ---------- request: low bar, no legal claim, prompts a question ---------- */
+
+  HARDSHIP_REQUEST: {
+    rule_id: "HARDSHIP_REQUEST",
+    kind: "request",
+    persist: true,
+    obligation:
+      "Customer has asked to change their repayments. Establish whether this is a timing problem or an inability to pay",
+    deadline_days: null,
+    deadline_from: null,
+    authority: "National Credit Code s 72 (threshold question)",
+    staff_prompt:
+      "Customer has asked to change their repayments. Ask whether they can recover in the near term — if not, this is a hardship notice and the 21-day clock starts.",
+    satisfiedBy: [
+      // Discharged by the staff member actually asking the threshold question,
+      // or by going straight to the hardship process.
+      /\b(when|how\s+soon|how\s+long)\b.*\b(back|recover|paid|work|sorted|able)\b/i,
+      /\bis\s+(this|that)\s+(going\s+to\s+be\s+)?(ongoing|longer\s+term|a\s+one[- ]off)/i,
+      /\bhas\s+something\s+changed\b/i,
+      /hardship\s+(provision|process|notice|application)/i,
+      /\bcomfortable\s+that\b.*\bmanageable\b/i,
+    ],
   },
 };
 

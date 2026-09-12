@@ -1,0 +1,19 @@
+{
+  "call_id": "call_004",
+  "scenario": "explicit_deferral_request_no_inability",
+  "notes": "The bridging case between the two tiers, and the same situation as eval/cases.json c02. The customer explicitly asks to move a payment and states a near-term recovery. That IS a hardship request — the staff member must establish whether it is timing or inability — and it is NOT a statutory notice, so no 21-day clock starts. Detector must emit HARDSHIP_REQUEST and no obligation. Here the staff member asks the threshold question, so the request resolves satisfied.",
+  "duration_ms": 71800,
+  "turns": [
+    { "speaker": "staff", "start_ms": 0, "end_ms": 4600, "text": "Meridian Home Loans, this is Priya. Can I get your name and the address on the loan?" },
+    { "speaker": "customer", "start_ms": 5000, "end_ms": 10400, "text": "Owen Brackley, 62 Tarrant Avenue, Reservoir." },
+    { "speaker": "staff", "start_ms": 10800, "end_ms": 14200, "text": "Thanks Owen. What can I help with?" },
+    { "speaker": "customer", "start_ms": 14600, "end_ms": 23100, "text": "Any chance we can push the payment back a couple of weeks? I get paid on the twentieth and it's just landed awkwardly this month." },
+    { "speaker": "staff", "start_ms": 23500, "end_ms": 29800, "text": "I can look at that. Before I do — is this a one-off, or has something changed with your income?" },
+    { "speaker": "customer", "start_ms": 30200, "end_ms": 41600, "text": "One-off. Work's fine, same hours, same pay. I had a car rego and an excess land in the same fortnight and it just cleaned me out." },
+    { "speaker": "staff", "start_ms": 42000, "end_ms": 48300, "text": "And from next month you're comfortable that the normal repayment is manageable?" },
+    { "speaker": "customer", "start_ms": 48700, "end_ms": 54200, "text": "Yeah, no dramas. It's genuinely just this one month." },
+    { "speaker": "staff", "start_ms": 54600, "end_ms": 65400, "text": "Then I'll move this month's debit to the twenty-second and note the account. Nothing further will go out to you in the meantime." },
+    { "speaker": "customer", "start_ms": 65800, "end_ms": 69200, "text": "Perfect. Thanks for sorting that." },
+    { "speaker": "staff", "start_ms": 69600, "end_ms": 71800, "text": "No worries. Anything else?" }
+  ]
+}

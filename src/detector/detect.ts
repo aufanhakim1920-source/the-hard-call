@@ -29,6 +29,8 @@ function makeFlag(
   return {
     flag_id: `f_${call_id.replace(/^call_/, "")}_${String(seq).padStart(2, "0")}`,
     call_id,
+    kind: rule.kind,
+    persist: rule.persist,
     rule_id,
     raised_at: ref(raisedAt),
     obligation: rule.obligation,
@@ -108,16 +110,53 @@ export async function detect(
   const mode = opts.mode ?? "rules";
   const { call_id, turns } = transcript;
 
-  const notices = await adjudicate(turns, findCandidates(turns), mode, opts.adjudicator);
+  const candidates = findCandidates(turns);
+  const notices = await adjudicate(turns, candidates, mode, opts.adjudicator);
   const flags: Flag[] = [];
   let seq = 1;
+
+  /* ---- request tier: low bar, fires before any legal claim is possible ----
+   *
+   * An explicit ask to change the repayment always qualifies, even alongside a
+   * stated near-term recovery ("push it back, I get paid on the 20th") — that
+   * is a real request and still not a statutory notice.
+   *
+   * Difficulty language on its own also qualifies, UNLESS the customer has
+   * settled the question themselves by stating a near-term recovery and asking
+   * for nothing. There is no threshold question left to ask in that case.
+   */
+  const firstNoticeAt = notices.length > 0 ? notices[0].turn.start_ms : Infinity;
+  const requestCandidate = candidates.find(
+    (c) =>
+      (c.hasRequest || (c.hasDifficulty && c.verdict !== "delay")) &&
+      // Only worth raising if it precedes the notice. A request and a notice on
+      // the same turn is one event, not two prompts on screen at once.
+      c.turn.start_ms < firstNoticeAt
+  );
+  let request: Flag | undefined;
+  if (requestCandidate) {
+    request = makeFlag(
+      call_id,
+      "HARDSHIP_REQUEST",
+      requestCandidate.turn,
+      requestCandidate.hasRequest ? 0.88 : 0.72,
+      seq++
+    );
+    flags.push(request);
+  }
 
   if (notices.length > 0) {
     // Debounce: one notice per call, raised at the first qualifying turn.
     const first = notices[0];
     const conf = confidenceFor(first);
 
-    flags.push(makeFlag(call_id, "NCC_72_ORAL_NOTICE", first.turn, conf, seq++));
+    const notice = makeFlag(call_id, "NCC_72_ORAL_NOTICE", first.turn, conf, seq++);
+    flags.push(notice);
+
+    // A request that turned into a notice is one story, not two events.
+    if (request && request.raised_at.start_ms <= notice.raised_at.start_ms) {
+      request.superseded_by = notice.flag_id;
+    }
 
     const inform = makeFlag(call_id, "ABA_INFORM_HARDSHIP_PROVISIONS", first.turn, conf, seq++);
     const asked = turns.find(
@@ -154,10 +193,15 @@ export class LiveDetector {
   private turns: Turn[] = [];
   private emitted = new Set<string>();
 
-  constructor(
-    private call_id: string,
-    private opts: { mode?: Mode; adjudicator?: Adjudicator } = {}
-  ) {}
+  private call_id: string;
+  private opts: { mode?: Mode; adjudicator?: Adjudicator };
+
+  // Fields assigned explicitly rather than via constructor parameter
+  // properties: this repo's tsconfig sets erasableSyntaxOnly (TS1294).
+  constructor(call_id: string, opts: { mode?: Mode; adjudicator?: Adjudicator } = {}) {
+    this.call_id = call_id;
+    this.opts = opts;
+  }
 
   async push(turn: Turn): Promise<Flag[]> {
     this.turns.push(turn);

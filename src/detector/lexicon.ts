@@ -34,6 +34,20 @@ export const DIFFICULTY: RegExp[] = [
   /\blow\s+on\s+funds\b/i,
   /\bstrapped\b/i,
   /\bmoney\s+problems\b/i,
+  // Added after cross-checking eval/cases.json. Each of these is a real way
+  // customers phrase inability, and none of them fire on any hard negative in
+  // that set — verified by eval/cross-check-cases.ts.
+  /\bcan'?t\s+keep\s+up\b/i,
+  /\bcan'?t\s+do\s+(the\s+)?(full\s+)?(amount|it)\b/i,
+  /\bno\s+way\s+I\s+can\s+pay\b/i,
+  /\bhaven'?t\s+got\s+it\b/i,
+  /\bnothing\s+left\b/i,
+  /\bgoing\s+to\s+miss\s+(this|the)\s+(one|payment|repayment)\b/i,
+  /\bcleaned\s+me\s+out\b/i,
+  /\bbehind\s+at\s+the\s+moment\b/i,
+  /\bthings?\s+(are|is)\s+(pretty\s+|a\s+bit\s+)?tight\b/i,
+  /\b(month|fortnight|week)'?s?\s+going\s+to\s+be\s+tight\b/i,
+  /\bmoney'?s\s+stretched\b/i,
 ];
 
 /** Signals that the problem runs past the near term. */
@@ -67,6 +81,28 @@ export const RECOVERY: RegExp[] = [
   /\bnext\s+month\s+the\s+normal\s+repayment\s+is\s+manageable\b/i,
 ];
 
+/**
+ * Explicit asks to change the repayment. These are what make a `request` event,
+ * and the bar is deliberately low — the consequence is one clarifying question,
+ * so a false positive is cheap. Note these fire even when the customer states a
+ * near-term recovery: "push it back, I get paid on the 20th" is a real request
+ * and still not a statutory notice.
+ */
+export const REQUEST_ASK: RegExp[] = [
+  /\bpush\s+(the\s+)?(payment|repayment|it)\s*back\b/i,
+  /\b(any\s+chance|is\s+there\s+any\s+way|any\s+way)\b/i,
+  /\bpause\s+(it|the\s+(payment|repayment|loan))\b/i,
+  /\b(need|want)\s+(a\s+bit\s+)?more\s+time\b/i,
+  /\bcan\s+it\s+wait\b/i,
+  /\bpay\s+half\b/i,
+  /\bcatch\s+the\s+rest\s+up\b/i,
+  /\bsomething\s+we\s+can\s+work\s+out\b/i,
+  /\b(hold\s+off|defer|skip)\s+(the\s+)?(payment|repayment|it|this\s+one)\b/i,
+  /\bmove\s+(the\s+)?(payment|repayment)\b/i,
+  /\bextension\b/i,
+  /\btill\s+the\s+next\s+one\b/i,
+];
+
 function matches(text: string, patterns: RegExp[]): string[] {
   const hits: string[] = [];
   for (const p of patterns) {
@@ -96,7 +132,10 @@ export function classifyTurn(turns: Turn[], index: number): Candidate | null {
   if (turn.speaker !== "customer") return null;
 
   const difficulty = matches(turn.text, DIFFICULTY);
-  if (difficulty.length === 0) return null;
+  const request = matches(turn.text, REQUEST_ASK);
+  // A turn is only worth looking at if the customer either signalled difficulty
+  // meeting the repayment, or asked to change it.
+  if (difficulty.length === 0 && request.length === 0) return null;
 
   const mediumTerm = matches(turn.text, MEDIUM_TERM);
   const window = contextWindow(turns, index);
@@ -105,7 +144,9 @@ export function classifyTurn(turns: Turn[], index: number): Candidate | null {
     .flatMap((t) => matches(t.text, RECOVERY));
 
   let verdict: Candidate["verdict"];
-  if (recovery.length > 0 && mediumTerm.length === 0) {
+  if (difficulty.length === 0) {
+    verdict = "unclear"; // an ask with no stated difficulty settles nothing
+  } else if (recovery.length > 0 && mediumTerm.length === 0) {
     verdict = "delay"; // stated near-term recovery, no long-run signal
   } else if (mediumTerm.length > 0 && recovery.length === 0) {
     verdict = "inability"; // clear on both halves of the test
@@ -115,11 +156,12 @@ export function classifyTurn(turns: Turn[], index: number): Candidate | null {
 
   return {
     turn,
-    hasDifficulty: true,
+    hasDifficulty: difficulty.length > 0,
     hasMediumTerm: mediumTerm.length > 0,
     hasRecoveryNearby: recovery.length > 0,
+    hasRequest: request.length > 0,
     verdict,
-    matched: { difficulty, mediumTerm, recovery },
+    matched: { difficulty, mediumTerm, recovery, request },
   };
 }
 
