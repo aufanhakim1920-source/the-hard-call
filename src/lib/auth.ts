@@ -39,6 +39,29 @@ function fromUser(user: User | null): Partial<AuthState> {
   };
 }
 
+// When the project has anonymous sign-ins switched off, every page load asks
+// again and every load logs a red 422 in the console — which reads as a broken
+// app to anyone who opens dev tools during a demo. Remember the refusal for
+// half an hour: long enough to stay quiet through a session, short enough that
+// switching the toggle on starts working without anyone clearing storage.
+const OFF_KEY = "the-hard-call:anon-off-until";
+const OFF_FOR_MS = 30 * 60 * 1000;
+
+function anonKnownOff(): boolean {
+  try {
+    return Number(localStorage.getItem(OFF_KEY) ?? 0) > Date.now();
+  } catch {
+    return false;
+  }
+}
+function rememberAnonOff() {
+  try {
+    localStorage.setItem(OFF_KEY, String(Date.now() + OFF_FOR_MS));
+  } catch {
+    /* private mode: ask again next load, that is fine */
+  }
+}
+
 let booted = false;
 async function boot() {
   if (booted || !supabase) return;
@@ -46,10 +69,13 @@ async function boot() {
   const { data } = await supabase.auth.getSession();
   if (data.session?.user) {
     set(fromUser(data.session.user));
+  } else if (anonKnownOff()) {
+    set({ status: "local", user: null, email: null, error: null });
   } else {
     const { data: anon, error } = await supabase.auth.signInAnonymously();
     if (error || !anon.user) {
       // Anonymous sign-ins are off on this project: stay local, no fuss.
+      rememberAnonOff();
       set({ status: "local", user: null, email: null, error: null });
     } else {
       set(fromUser(anon.user));
@@ -112,7 +138,13 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
-    // Back to guest, not to a dead end.
+    // Back to guest, not to a dead end. Signing out is a deliberate act, so
+    // ask again even if guests were refused earlier.
+    try {
+      localStorage.removeItem(OFF_KEY);
+    } catch {
+      /* nothing cached */
+    }
     const { data } = await supabase.auth.signInAnonymously();
     set(fromUser(data.user ?? null));
   }, []);

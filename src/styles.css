@@ -621,6 +621,10 @@ select.field option {
 }
 .inputs .type input.field {
   flex: 1;
+  /* A flex item's min-width is auto, i.e. min-content. An <input> carries one
+     from its size attribute, so without this the typing box refuses to shrink
+     and pushes the page sideways on a narrow screen. Same trap as a bare 1fr. */
+  min-width: 0;
 }
 .inputs .type select.field {
   width: 118px;
@@ -1486,6 +1490,7 @@ select.field option {
   }
   .inputs .type {
     grid-column: 1 / -1;
+    min-width: 0;
   }
   .inputs .btn {
     justify-content: center;
@@ -1498,6 +1503,15 @@ select.field option {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px;
+  }
+  /* The other half of the same trap: a zero floor on the TRACK is not enough
+     while the ITEM still carries its own min-content width. An <input> gets one
+     from its size attribute (~203px), which pushed the page 41px wide on a
+     288px screen. min-width: 0 lets it shrink with its column. */
+  .setup input.field,
+  .setup select.field {
+    min-width: 0;
+    width: 100%;
   }
   .setup .label {
     grid-column: 1 / -1;
@@ -1658,11 +1672,42 @@ select.field option {
   }
 }
 
-/* The phone top bar is exactly TWO rows: the controls, then the tabs.
-   Measured before this rule: three rows, 116px, with the sound button alone
-   on a row of its own and "Saved here only" truncated to "Saved here o…".
-   Every control keeps its accessible name — only the visible words go. */
-@media (max-width: 760px) {
+/* The narrow top bar is exactly TWO rows: the controls, then the tabs.
+   Measured before this rule: three rows, 116px at 375px, with the sound button
+   alone on a row of its own and "Saved here only" truncated to "Saved here o…".
+   Every control keeps its accessible name — only the visible words go.
+
+   940px, not 760: the bar's full-width content measures ~930px, so between the
+   phone rules and that width it simply ran off the side of the window — 177px
+   of sideways scroll at 768. The breakpoint is the bar's own width, measured,
+   not a device name. */
+@media (max-width: 940px) {
+  .wordmark {
+    white-space: nowrap;
+    font-size: 0;
+    gap: 0;
+    margin-right: 2px;
+  }
+  .wordmark svg {
+    width: 22px;
+    height: 22px;
+  }
+  .tab {
+    white-space: nowrap;
+  }
+  .topbar .spacer {
+    display: none;
+  }
+  .status-dot .small {
+    display: none;
+  }
+  .acct-panel {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    top: calc(var(--topbar) + 8px);
+    width: auto;
+  }
   .topbar {
     height: auto;
     flex-wrap: wrap;
