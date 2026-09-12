@@ -374,3 +374,35 @@ uses, is *"the same call, handled two ways"*.
 
 **Generalises to:** an A/B demo has to vary the thing you are claiming to change. Ours varied the
 display and held the behaviour fixed, which is the one arrangement that can never show a difference.
+
+## A legal flag now has to quote the customer
+
+The request tier is built: a hint raises `ask-about-hardship`, which prompts the worker to ask and
+carries no clock, no deadline and no authority. Only a stated inability over a period becomes a notice.
+
+It emits under its **own key**, deliberately. The engine refuses to fire a key already on screen, so a
+shared key would have let a hint at turn 2 cancel the statutory notice at turn 4 — a hint silently
+eating the legal flag. That is tested turn by turn rather than argued.
+
+**And the notice now requires a checkable quote.** The model must copy the customer's own sentence
+saying they cannot meet the repayments, and code verifies that sentence appears in the turn being
+judged.
+
+That was not a preference. Asking the model to report a fact rather than a verdict made it report on
+more turns, and it began inflating the period from circumstances — firing **15.7 s and 18.7 s early**
+on two fixtures. The quote requirement caught a specific trick: it reached back three turns for "I
+don't think I'm going to make the next one" — a line it had itself classified as a *single payment*
+when it was said — and re-served it as a period because the picture had since got darker.
+
+| | before | after |
+|---|---|---|
+| precision | 1.000 | **1.000** |
+| recall | 0.738 | 0.690 |
+| notice timing, 3 fixtures | one **28.5 s early** | **all three exact** |
+
+Recall fell and we took the trade. **Firing a statutory clock 28 seconds early is the worst error this
+system can make** — it starts an obligation on words the customer had not yet said. Two cases moved
+from notice to request under the new rule; they are open questions for the rules owner, not relabelled.
+
+**The pattern, for the third time on this project:** when wording will not hold a rule, make the model
+produce something *checkable* and let code check it. First a classification, now a quotation.
