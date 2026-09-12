@@ -177,15 +177,29 @@ const liveMic = [
   { id: "u2", speaker: "unknown", t: 2, text: "I can't make the repayments, not for a while." },
 ];
 
-test("an inferred speaker can still raise a tip, but never a notice", async () => {
-  // laural's speaker_confidence contract. This case used to fire the notice: the
-  // newest line arrives "unknown", the model guesses "customer", and the guess
-  // became the label. c19 in cases.json is the line that makes that dangerous —
-  // a STAFF line offering hardship options, read as the customer, would start a
-  // 21-day clock on the bank's own words. An inferred turn raises no notice.
-  assert.deepEqual(await keys([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "customer" }), []);
-  assert.deepEqual(await keys([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "worker" }), []);
-  // The coaching is not thrown away with it: a tip costs nobody a clock.
+test("an inferred speaker raises a request, never a notice", async () => {
+  // laural's contract, with aufan's tier: at most a request. The newest line
+  // arrives "unknown", the model guesses "customer", and the guess became the
+  // label — c19 in cases.json is the line that makes that dangerous, a STAFF
+  // line offering hardship options which as a "customer" turn would start a
+  // 21-day clock on the bank's own words. So the sign still reaches the worker
+  // as a prompt, and carries no clock.
+  const { body } = await run([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "customer" });
+  assert.deepEqual(body.signs.map((x) => x.key), ["hardship-request"], "the worker still gets the prompt");
+  const [raised] = body.signs;
+  assert.equal(raised.kind, "tip", "a request, not an obligation");
+  assert.equal(raised.dueDate, undefined, "no clock starts on a guess");
+  assert.equal(raised.dueDays, undefined);
+  assert.equal(raised.dueLabel, undefined, "the live card announces any due date it is given");
+  assert.ok(raised.askNext, "the point of a request is that the worker asks");
+  assert.ok(raised.detail, "a request says what it is, since there is no deadline to show");
+
+  // Quoting only a worker line is not a customer request either.
+  const staff = await run([hardship()], { transcript: liveMic, newLineId: "u2", speaker: "worker" });
+  assert.equal(staff.body.signs[0].kind, "tip");
+  assert.equal(staff.body.signs[0].dueDate, undefined);
+
+  // A tip was never a notice, so it is untouched.
   assert.deepEqual(
     await keys([jobLoss()], { transcript: liveMic, newLineId: "u2", speaker: "customer" }),
     ["job-loss"],
@@ -202,7 +216,9 @@ test("a turn already marked inferred is not laundered by a later known turn", as
     { id: "c1", speaker: "customer", speakerConfidence: "inferred", t: 1, text: "I can't make the repayments, not for a while." },
     { id: "c2", speaker: "customer", t: 2, text: "Anyway, that is where I am at." },
   ];
-  assert.deepEqual(await keys([hardship()], { transcript: marked, newLineId: "c2", speaker: "customer" }), []);
+  const { body } = await run([hardship()], { transcript: marked, newLineId: "c2", speaker: "customer" });
+  assert.equal(body.signs[0].kind, "tip", "the words are still only on a guessed turn");
+  assert.equal(body.signs[0].dueDate, undefined);
 });
 
 test("the answer says how the speaker was decided", async () => {

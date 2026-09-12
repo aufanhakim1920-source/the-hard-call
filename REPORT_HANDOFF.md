@@ -193,27 +193,31 @@ Still open, deliberately not touched here:
   meaning ("what the worker ticked"). The comparison can read low for reasons
   that have nothing to do with the worker.
 
-## ⚠ The ground-truth correction below contradicts README.md
+## Resolved: the relabelling was reverted, and aufan's reading was better
 
-Read this before acting on the next section. README.md line 156 already covers
-the same seven cases and reaches the opposite conclusion:
+The section that used to sit here flagged that seven corrected `cases.json`
+expectations contradicted README line 156. `77d20fe` settles it, and against
+me. **The seven expectations are restored to exactly what aufan measured** —
+`eval/cases.json` now carries main's 41 cases verbatim plus the three new
+`inform-hardship-provisions` ones.
 
-> **7 of the 8 misses are cases we had labelled wrongly against the actual law**
-> ... **They were left alone.** Editing the test until it agrees with the code is
-> how a gate stops meaning anything.
+Aufan's reading is not "the labels are wrong" and it is not "the labels are
+right and the engine is wrong". It is a third thing that is better than either:
 
-Aufan found the same seven, chose deliberately to leave them, and published that
-choice in the judge-facing README as an integrity claim. The correction below
-overrides it, so README.md is now inconsistent with `eval/cases.json` on both
-the case count (40 vs 44) and the "left alone" claim. The README was not edited.
+> every one of the 11 misses is a hardship-request, not one a statutory notice.
+> Under the two-tier rule those are requests: a hint that should prompt the
+> worker, starting no clock. The recall number is sitting exactly where the
+> unbuilt tier is. Nothing was relabelled.
 
-The README's principle is right: editing a test until it agrees with the code
-destroys the gate. The argument for the change is that these labels were moved
-to agree with the AUTHORITY — `docs/hardship-flag-rules.md` and
-`fixtures/expected/expected_flags.json` — not with the code, and the code
-follows the same authority. A reviewer could fairly read that as the same move,
-which is why it is flagged rather than assumed, PR #5 is still a draft, and the
-three ways out are listed there.
+So the cases were labelled correctly all along — as **requests** — and the
+engine could not fire them because the request tier did not exist. Setting them
+to expect nothing, as I had, erases the signal that the tier is missing. The
+recall number pointing at the gap is more useful than a recall number that
+looks better. Kept from that commit of mine: the `existingKeys` plumbing in
+`run.mjs` and its unsatisfiable-case warning, and c42/c43/c44.
+
+Everything below this line about the corrections themselves is superseded and
+kept only as the record of a wrong call.
 
 ## The eval was scoring the engine against the wrong ground truth
 
@@ -447,3 +451,48 @@ right often enough to be worth showing at all. None of the tests here say
 anything about that — they test what the code does with an attribution, not
 how good the attribution is. 32 offline tests touch this contract; 7 of them
 fail against the previous code.
+
+## An inferred turn now raises a request, not nothing
+
+`77d20fe` built the request/notice tier and mapped a request onto `kind: "tip"`
+— a live prompt that starts no clock. That is exactly the tier laural's
+`speaker_confidence` rule needed and which did not exist when it went in, so
+`flags.ts` no longer drops a legal sign on an uncertain turn. It downgrades it.
+
+`tierOf()` now answers in three steps:
+
+| supporting turn | tier | what the worker sees |
+|---|---|---|
+| a **known** customer turn | notice | gold legal card, clock, deadline row |
+| **any not-known** turn | request | prompt card, `askNext`, no clock, no deadline |
+| **known staff turns only** | none | nothing |
+
+The middle row is the change. Dropping the sign cost the worker the prompt as
+well as the clock, which was the price of not having the tier. A request keeps
+the prompt and logs nothing as owed: no `dueDate`, and no `dueLabel`/`dueDays`
+either, since the live card announces any due date it is handed. Its `detail`
+says so in the worker's terms rather than leaving an empty card.
+
+The third row is not the second. Not knowing who spoke is not the same as
+knowing it was staff, so which way the model's guess landed does not matter — a
+request carries no clock, so the cheaper error is to ask. But a turn we *know*
+was staff gets nothing at all, because a request there would imply the customer
+asked for something they did not. That is `c19`.
+
+Practice is unaffected: two streams, attribution known by construction, notices
+as before. So is the demo — the type box has a "Who said it" control, so the
+1:12 paste is a known turn, and there is a test asserting its gold card, 21 days
+and today+21 survive all of this.
+
+## One number is now stale, on purpose
+
+`eval/cases.json` has **44** cases; the published run in `eval/results.json` and
+`public/eval-results.json` has **n: 41**, because c42/c43/c44 were added after
+aufan re-measured. Nothing is wrong with the published numbers — they describe
+the 41 cases they were run on — but the suite is ahead of them, which is the
+same class of mismatch `77d20fe` set out to remove.
+
+`npm run eval` regenerates both artifacts and needs a key, which this machine
+does not have. Until someone re-runs it, quote the published table as a run of
+41 cases, not as a run of the suite. A partial run cannot make this worse: a
+`--limit` run now publishes nothing.

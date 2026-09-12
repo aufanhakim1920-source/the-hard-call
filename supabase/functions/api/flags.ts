@@ -193,21 +193,35 @@ Today's date: ${today}`;
         text: flatten(l.text),
       };
     });
-    const evidenceOk = (s: ModelSign) => {
+    const quoted = (s: ModelSign) => {
       const quote = flatten(s.evidence ?? "");
-      if (!quote) return false;
-      const said = spoken.filter((line) => line.text.includes(quote));
-      if (!said.length) return false;
-      if (signDef(s.key)?.kind !== "legal") return true;
-      // A legal duty arises from what the CUSTOMER said, and only from a turn we
-      // actually know the speaker of. Two ways a guess corrupts the record, both
-      // raised by laural: a staff line read as the customer starts a 21-day
-      // clock on the bank's own words — c19, "if you're in hardship there are
-      // options", is exactly that line — and a customer line read as staff marks
-      // a duty handled that nobody handled. Every legal sign we raise carries a
-      // clock, so it is a notice, and an inferred turn may never raise a notice.
-      // Practice mode has two streams and stays "known", so it is unaffected.
-      return said.some((line) => line.speaker !== "worker" && line.confidence === "known");
+      return quote ? spoken.filter((line) => line.text.includes(quote)) : [];
+    };
+    const evidenceOk = (s: ModelSign) => quoted(s).length > 0;
+
+    // What tier a legal sign can reach, in three steps. A duty arises from what
+    // the CUSTOMER said, and only from a turn we know the speaker of. Two ways a
+    // guess corrupts the record, both laural's: a staff line read as the
+    // customer starts a 21-day clock on the bank's own words — c19, "if you're
+    // in hardship there are options", is exactly that line — and a customer line
+    // read as staff marks a duty handled that nobody handled.
+    //
+    //   a known customer turn  -> notice. Practice is always here: two streams,
+    //                             so attribution is known by construction.
+    //   any not-known turn     -> at most a request. Not knowing who spoke is
+    //                             not the same as knowing it was staff, so it
+    //                             does not matter which way the guess landed:
+    //                             prompt the worker and log nothing. A request
+    //                             carries no clock, so the cheaper error is to
+    //                             ask — laural's threshold scaling with the
+    //                             consequence.
+    //   known staff turns only -> nothing. Here we DO know the customer never
+    //                             said it, and a request would imply they asked
+    //                             for something they did not.
+    const tierOf = (s: ModelSign): "notice" | "request" | "none" => {
+      const said = quoted(s);
+      if (said.some((l) => l.speaker !== "worker" && l.confidence === "known")) return "notice";
+      return said.some((l) => l.confidence !== "known") ? "request" : "none";
     };
 
     const seen = new Set<string>();
@@ -227,20 +241,35 @@ Today's date: ${today}`;
     const hardshipOnRecord = existing.has("hardship-request") || seen.has("hardship-request");
     const signs = kept
       .filter((s) => s.key !== "inform-hardship-provisions" || hardshipOnRecord)
+      // Only staff said it, and we know that: no notice and no request either.
+      .filter((s) => signDef(s.key)?.kind !== "legal" || tierOf(s) !== "none")
       .map((s) => {
         const def = signDef(s.key)!;
-        const dueDate = def.dueDays ? addDays(today, def.dueDays) : undefined;
+        // laural: an inferred turn may raise at most a REQUEST and never a
+        // notice. aufan's tier maps a request onto kind "tip" — a live prompt
+        // that starts no clock — so the sign is DOWNGRADED rather than dropped.
+        // The worker still gets asked to ask; nothing is logged as owed. This
+        // used to drop the sign entirely, which was the stopgap before the tier
+        // existed: it cost the worker the prompt as well as the clock.
+        const tier = def.kind === "legal" ? tierOf(s) : "notice";
+        const request = tier === "request";
+        const kind = request ? ("tip" as const) : def.kind;
+        const dueDate = !request && def.dueDays ? addDays(today, def.dueDays) : undefined;
         return {
           key: s.key,
-          kind: def.kind,
+          kind,
           title: s.title || def.label,
-          detail: def.kind === "legal" && dueDate ? "" : s.detail,
+          detail: request
+            ? "Ask this to confirm it. Nothing is logged as owed until the speaker is confirmed."
+            : def.kind === "legal" && dueDate ? "" : s.detail,
           askNext: s.askNext,
           evidence: s.evidence,
           confidence: Math.max(0, Math.min(1, s.confidence)),
           dueDate,
-          dueLabel: def.dueLabel,
-          dueDays: def.dueDays,
+          // No clock on a request, so no label and no count of days either:
+          // the live card announces a due date whenever one is present.
+          dueLabel: request ? undefined : def.dueLabel,
+          dueDays: request ? undefined : def.dueDays,
           source: def.source,
         };
       });

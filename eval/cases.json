@@ -12,8 +12,10 @@
       "speaker": "customer",
       "text": "Yeah look, I'm a bit behind at the moment, things are pretty tight."
     },
-    "expect": [],
-    "note": "Informal register ('a bit behind', 'pretty tight') with no duration and no statement of inability. Per docs/hardship-flag-rules.md this register is the signal to START LISTENING, then ask 'inability, or delay?' — it is not the trigger on its own. Was expected to fire; the engine was right not to."
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "The classic 'a bit behind' with no ask and no reason. NCC s72 needs no magic words."
   },
   {
     "id": "c02",
@@ -28,8 +30,10 @@
       "speaker": "customer",
       "text": "Any chance we can push the payment back a couple of weeks? I get paid on the twentieth."
     },
-    "expect": [],
-    "note": "A named near-term recovery: a specific payday, a fortnight. This is the non-trigger the rules doc spells out and the same shape as fixtures call_002, where firing is called the single most important failure to avoid. Was expected to fire; expecting it contradicted the ground truth."
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "Asking for more time is a hardship notice even with no reason given."
   },
   {
     "id": "c03",
@@ -45,9 +49,10 @@
       "text": "Yeah, my hours got cut at work so this month's going to be tight. Can it wait till the next one?"
     },
     "expect": [
+      "hardship-request",
       "job-loss"
     ],
-    "note": "Reduced hours is an income change, so job-loss stands. 'This month' plus 'can it wait till the next one' is a single payment with an implied recovery, not an inability over the medium term."
+    "note": "Reduced hours is an income change, and 'can it wait' is the request."
   },
   {
     "id": "c04",
@@ -138,9 +143,10 @@
       "text": "Dad passed away three weeks ago and the funeral's cleaned me out. I'm going to miss this one too."
     },
     "expect": [
+      "hardship-request",
       "bereavement"
     ],
-    "note": "A death plus 'I'm going to miss this one too' — a cause and a single payment. The rules doc needs a period; a cause on its own starts no clock. Bereavement is the right flag here."
+    "note": "A death plus an expected missed payment."
   },
   {
     "id": "c09",
@@ -156,9 +162,10 @@
       "text": "The floods took the whole ground floor, we're staying at my sister's. There's no way I can pay this month."
     },
     "expect": [
+      "hardship-request",
       "disaster"
     ],
-    "note": "Displacement by flood is a disaster flag. 'No way I can pay this month' is one payment, and no period or recovery is stated either way, so it is not yet a notice. ARGUABLE: a flood is not a near-term recovery, and the next turn usually settles it. Raise with Laural before the freeze."
+    "note": "Displaced by flood plus inability to pay."
   },
   {
     "id": "c10",
@@ -200,8 +207,10 @@
       "speaker": "customer",
       "text": "Could I just pay half this month and catch the rest up next month?"
     },
-    "expect": [],
-    "note": "'Pay half this month and catch the rest up next month' states the recovery inside the same sentence. A near-term timing gap, not an inability. Was expected to fire."
+    "expect": [
+      "hardship-request"
+    ],
+    "note": "A partial payment request is a change to repayments."
   },
   {
     "id": "c12",
@@ -600,9 +609,10 @@
       "text": "I put it all on the pokies, mate. There's nothing left this fortnight."
     },
     "expect": [
+      "hardship-request",
       "gambling"
     ],
-    "note": "Gambling is the right flag. 'Nothing left this fortnight' is one fortnight — a single payment with no period, so no notice yet. ARGUABLE for the same reason as c09."
+    "note": "Pokies plus nothing left for the missed payment."
   },
   {
     "id": "c35",
