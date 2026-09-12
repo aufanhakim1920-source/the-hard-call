@@ -506,7 +506,8 @@ select.field option {
   padding: 8px 8px;
   margin: 0 -8px;
   border-radius: 8px;
-  animation: lineIn 260ms var(--ease-out) both;
+  opacity: 1;
+  animation: lineIn 260ms var(--ease-out);
   transition: background 600ms;
 }
 .ln.flash {
@@ -655,7 +656,8 @@ select.field option {
   border: 1px solid var(--gold-line);
   background: transparent;
   color: var(--cream);
-  animation: signIn 380ms var(--ease-back) both;
+  opacity: 1;
+  animation: signIn 380ms var(--ease-back);
   transition:
     background 300ms var(--ease-out),
     border-color 300ms var(--ease-out),
@@ -783,13 +785,15 @@ select.field option {
   align-items: center;
   gap: 6px;
 }
+/* The sign's entrance moves it; it never fades it in.
+   A background tab freezes a running animation at frame 0, and a frozen
+   opacity:0 would hide the one element the whole product exists to show.
+   Motion is decoration here — visibility is not negotiable. */
 @keyframes signIn {
   from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.97);
+    transform: translateY(14px) scale(0.97);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -857,7 +861,8 @@ select.field option {
   max-width: 900px;
   margin: 0 auto;
   padding: 28px 20px 60px;
-  animation: lineIn 320ms var(--ease-out) both;
+  opacity: 1;
+  animation: lineIn 320ms var(--ease-out);
 }
 .report .top {
   display: flex;
@@ -988,7 +993,8 @@ select.field option {
   gap: 8px;
   margin-top: 8px;
   flex-wrap: wrap;
-  animation: lineIn 200ms var(--ease-out) both;
+  opacity: 1;
+  animation: lineIn 200ms var(--ease-out);
 }
 .correct-form input.field {
   flex: 1;
@@ -1223,7 +1229,8 @@ select.field option {
   border-radius: 8px;
   font-size: 13px;
   z-index: 40;
-  animation: lineIn 220ms var(--ease-out) both;
+  opacity: 1;
+  animation: lineIn 220ms var(--ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1238,7 +1245,8 @@ select.field option {
 
 /* ---------- motion: views arrive, they do not appear ---------- */
 .view {
-  animation: viewIn 260ms var(--ease-out) both;
+  opacity: 1;
+  animation: viewIn 260ms var(--ease-out);
 }
 @keyframes viewIn {
   from {
@@ -1546,7 +1554,8 @@ select.field option {
   border-radius: var(--r-card);
   padding: 14px 16px 16px;
   z-index: 40;
-  animation: panelIn 220ms var(--ease-out) both;
+  opacity: 1;
+  animation: panelIn 220ms var(--ease-out);
   transform-origin: top right;
 }
 @keyframes panelIn {
