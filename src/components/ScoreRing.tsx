@@ -17,10 +17,11 @@ function token(el: Element, name: string): string {
   return getComputedStyle(el).getPropertyValue(name).trim();
 }
 
-export function ScoreRing({ score, size = 132, label = "score" }: { score: number; size?: number; label?: string }) {
+export function ScoreRing({ score, size = 132, label = "score", unverified = false }: { score: number; size?: number; label?: string; unverified?: boolean }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const num = useRef<HTMLSpanElement | null>(null);
-  const target = Math.max(0, Math.min(100, Math.round(score)));
+  // An unverified score is withheld, not shown as zero: no lit ticks, no number.
+  const target = unverified ? 0 : Math.max(0, Math.min(100, Math.round(score)));
 
   useLayoutEffect(() => {
     const c = canvas.current;
@@ -55,7 +56,7 @@ export function ScoreRing({ score, size = 132, label = "score" }: { score: numbe
         ctx.stroke();
         ctx.restore();
       }
-      n.textContent = String(Math.round(target * p));
+      n.textContent = unverified ? "—" : String(Math.round(target * p));
     };
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -73,17 +74,17 @@ export function ScoreRing({ score, size = 132, label = "score" }: { score: numbe
     draw(0);
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [target, size]);
+  }, [target, size, unverified]);
 
   return (
-    <div className="rv-ring" style={{ width: size, height: size }} role="img" aria-label={`${label} ${target} out of 100`}>
+    <div className="rv-ring" style={{ width: size, height: size }} role="img" aria-label={unverified ? "score not verified" : `${label} ${target} out of 100`}>
       <canvas ref={canvas} className="rv-ring-canvas" style={{ width: size, height: size }} aria-hidden="true" />
       <div className="rv-ring-read">
         <div className="rv-ring-value" style={{ fontSize: Math.round(size * 0.27) }}>
-          <span ref={num}>0</span>
+          <span ref={num}>—</span>
           <span className="rv-unit">/100</span>
         </div>
-        <div className="rv-label">{label}</div>
+        <div className="rv-label">{unverified ? "not verified" : label}</div>
       </div>
     </div>
   );

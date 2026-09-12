@@ -222,3 +222,11 @@
   font-size: 13px;
   color: var(--grey);
 }
+
+/* A verdict the transcript could not support: dimmer than missed, never gold. */
+.rv-bar-row.unverified .rv-bar-verdict {
+  color: var(--text-muted, #9aa3ad);
+}
+.rv-bar-fill.unverified {
+  background: rgba(154, 163, 173, 0.1);
+}

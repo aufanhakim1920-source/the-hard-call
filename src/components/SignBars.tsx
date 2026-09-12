@@ -6,7 +6,7 @@ import "./report-visuals.css";
 // low-opacity gold fill whose width is the verdict, the stamp and the title
 // sitting on top in normal flow. Handled rows carry a 2px gold leading edge.
 
-const WIDTH: Record<Verdict, number> = { handled: 100, partly: 55, missed: 18 };
+const WIDTH: Record<Verdict, number> = { handled: 100, partly: 55, missed: 18, unverified: 8 };
 
 export function SignBars({ items }: { items: ReportItem[] }) {
   const [grown, setGrown] = useState(false);

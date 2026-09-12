@@ -48,7 +48,7 @@ export interface Session {
   scenarioExpected?: string[];
 }
 
-export type Verdict = "handled" | "partly" | "missed";
+export type Verdict = "handled" | "partly" | "missed" | "unverified";
 
 export interface ReportItem {
   signId: string;
@@ -57,6 +57,7 @@ export interface ReportItem {
   kind: SignKind;
   verdict: Verdict;
   note: string;
+  evidence?: { lineId: string; offsetMs: number }[];
 }
 
 export interface Deadline {
@@ -78,6 +79,8 @@ export interface Report {
   missedByAI: string[];
   tip: string;
   score: number;
+  scoreUnverified?: boolean;
+  unverified?: number;
   caught: number;
   handled: number;
   partly: number;

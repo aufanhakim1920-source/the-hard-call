@@ -104,7 +104,7 @@ export function CallTimeline({ session, report }: { session: Session; report: Re
           const px = x(s.t);
           const cx = Math.round(px);
           const verdict = verdictOf(s);
-          const missed = verdict === "missed";
+          const missed = (verdict === "missed" || verdict === "unverified");
           const labelX = Math.min(Math.max(cx, 22), width - 22);
           const tri = `${cx - MARK_HALF},${Y_MARK_BASE} ${cx + MARK_HALF},${Y_MARK_BASE} ${cx},${Y_MARK_APEX}`;
           return (
