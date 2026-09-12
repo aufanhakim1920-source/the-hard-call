@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { postScenario } from "../lib/api";
-import { fmtDate, fmtWhen } from "../lib/dates";
+import { fmtDate, fmtWhen, parseISO } from "../lib/dates";
 import { levelLabel, pickVoice, scenarioFailure, scenarioFault } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
@@ -13,7 +13,9 @@ import { ReportLedger } from "./ReportLedger";
 import { Toast } from "./Toast";
 import { ResponseTimes } from "./ResponseTimes";
 import { ScoreRing } from "./ScoreRing";
+import { daysBetween, ledger } from "./report-math";
 import "./report-visuals.css";
+import "./report-lead.css";
 
 /**
  * How the call ran, and how the card was built — said once, above every number.
@@ -47,6 +49,104 @@ function RunNote({ report }: { report: Report }) {
           Everything below was recorded during the call itself, and no score is given.
         </p>
       )}
+    </div>
+  );
+}
+
+const COUNTS = ["none", "One", "Two", "Three", "Four", "Five", "Six"];
+
+/**
+ * What the call cost, said before what the call was made of.
+ *
+ * The pitch is the same call twice, side by side, and the two cards used to
+ * differ in the first second by one digit: "0 of 3" against "4 of 4". Both led
+ * with the customer's name — identical on both — and the word carrying the
+ * legal consequence was a 10px grey chart key.
+ *
+ * This is the miss count at display size, in the state colour, with the
+ * statutory clock named in words. It does not repeat the ledger below it: that
+ * one is the composition of the call, this one is the consequence.
+ *
+ * Everything here is counted off the items and the calendar. A verdict the
+ * transcript could not support is NEVER folded into "missed" — on a card where
+ * nothing could be checked this renders nothing at all, because a confident
+ * "0 missed" on an unjudged call is a claim the call cannot support.
+ */
+function hasVerdict(report: Report): boolean {
+  const l = ledger(report.items);
+  return l.total > 0 && l.unknown !== l.total;
+}
+
+function Verdict({ report, aside }: { report: Report; aside?: ReactNode }) {
+  const l = ledger(report.items);
+  if (!hasVerdict(report)) return null;
+
+  const legal = report.items.filter((i) => i.kind === "legal");
+  const legalMissed = legal.filter((i) => i.verdict === "missed");
+  // The clock belongs to the sign, so it is looked up by the sign's own key
+  // rather than by position — a call can carry two obligations and only one
+  // of them be the missed one.
+  const clock =
+    report.deadlines.find((d) => legalMissed.some((i) => i.key === d.key)) ??
+    report.deadlines.find((d) => legal.some((i) => i.key === d.key));
+  const days = clock ? daysBetween(report.at, parseISO(clock.date).getTime()) : 0;
+  const clause = clock
+    ? ` a reply is due ${fmtDate(clock.date)}, ${days} ${days === 1 ? "day" : "days"} from this call`
+    : "";
+  const many = (n: number) => COUNTS[n] ?? String(n);
+
+  if (l.missed > 0) {
+    return (
+      <div className="rc-verdict">
+        <span className="rc-v-fig" aria-hidden="true">
+          <b>{l.missed}</b>
+          <i>missed</i>
+        </span>
+        {aside && <div className="rc-v-aside">{aside}</div>}
+        <p className="rc-v-say">
+          {l.missed === l.total
+            ? `Not one of the ${l.total} signs raised on this call was answered.`
+            : `${l.missed} of the ${l.total} signs raised on this call ${l.missed === 1 ? "was" : "were"} never answered.`}{" "}
+          {legalMissed.length > 0 ? (
+            <>
+              <b>
+                {many(legalMissed.length)} {legalMissed.length === 1 ? "is a legal obligation" : "are legal obligations"}
+              </b>
+              {clause ? <>{" —"}{clause}, and the worker never addressed it.</> : ", and the worker never addressed it."}
+            </>
+          ) : (
+            "None of them started a legal clock."
+          )}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rc-verdict clean">
+      <span className="rc-v-fig" aria-hidden="true">
+        <b>0</b>
+        <i>missed</i>
+      </span>
+      {aside && <div className="rc-v-aside">{aside}</div>}
+      <p className="rc-v-say">
+        {l.unknown > 0
+          ? `Nothing was missed on this call. ${many(l.unknown)} of the ${l.total} judgements could not be checked against the transcript, so ${l.unknown === 1 ? "it is" : "they are"} counted neither way.`
+          : `All ${l.total} signs raised on this call were answered while it was still live.`}{" "}
+        {legal.length > 0 && (
+          <>
+            <b>{legal.length === 1 ? "The legal one was answered too" : `All ${legal.length} legal ones were answered too`}</b>
+            {clause ? (
+              <>
+                {" —"}
+                {clause}.
+              </>
+            ) : (
+              "."
+            )}
+          </>
+        )}
+      </p>
     </div>
   );
 }
@@ -86,6 +186,8 @@ export function ReportCard({
   // a number out of 100. Newest first, as the store keeps them.
   const previous = store.reports.filter((r) => r.mode === report.mode && r.callId !== report.callId);
   const phone = useMedia(PHONE);
+  // The ring only moves into the lead when there IS a lead to move it into.
+  const ringInLead = phone && hasVerdict(report);
   const [correcting, setCorrecting] = useState<string | null>(null);
   const [cKind, setCKind] = useState<LessonKind>("not-a-sign");
   const [cText, setCText] = useState("");
@@ -214,9 +316,18 @@ export function ReportCard({
         <div className="spacer" style={{ flex: 1 }} />
         {/* On a phone the ring was spending ~250px of the first screen, and on
             most calls it spends it saying "not verified". It shrinks rather
-            than leading with nothing. */}
-        <ScoreRing score={report.score} unverified={report.scoreUnverified} size={phone ? 92 : 132} />
+            than leading with nothing — and on a phone it moves down beside the
+            miss count, so the demoted reading stops being the first one. It
+            stays here when there is no verdict to sit beside. */}
+        {(!phone || !ringInLead) && <ScoreRing score={report.score} unverified={report.scoreUnverified} size={phone ? 92 : 132} />}
       </div>
+
+      {/* The consequence first, then why the call ran the way it did, then the
+          composition. Reading order is importance order. */}
+      <Verdict
+        report={report}
+        aside={ringInLead ? <ScoreRing score={report.score} unverified={report.scoreUnverified} size={92} /> : null}
+      />
 
       <RunNote report={report} />
 

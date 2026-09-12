@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { motionOff } from "../lib/a11y";
+import type { CSSProperties } from "react";
 import { daysUntil, fmtDate, parseISO } from "../lib/dates";
 import type { Report } from "../lib/types";
 import { daysBetween, localISO } from "./report-math";
 import "./report-visuals.css";
+import "./report-deadline.css";
 
 // The most consequential number on the card was a sentence: "Reply due Sat 3
 // Oct". Here the statutory window has a shape — the call at the left, the
@@ -13,20 +13,7 @@ import "./report-visuals.css";
 //
 // Every number is counted from the call and the calendar. Nothing is modelled.
 
-const GROW_MS = 820;
-
 export function DeadlineTrack({ report }: { report: Report }) {
-  const [grown, setGrown] = useState(() => motionOff() || document.hidden);
-  useEffect(() => {
-    if (grown) return;
-    const raf = requestAnimationFrame(() => setGrown(true));
-    const safety = window.setTimeout(() => setGrown(true), GROW_MS + 200);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(safety);
-    };
-  }, [grown]);
-
   if (report.deadlines.length === 0) return null;
 
   const rows = report.deadlines.map((d) => {
@@ -45,11 +32,13 @@ export function DeadlineTrack({ report }: { report: Report }) {
         <span>this call → the deadline</span>
       </div>
 
-      {rows.map(({ d, total, left, elapsed }) => {
+      {rows.map(({ d, total, left, elapsed }, i) => {
         const overdue = left < 0;
         const unit = overdue ? (left === -1 ? "day overdue" : "days overdue") : left === 0 ? "due today" : left === 1 ? "day left" : "days left";
         return (
-          <div className={"rv-dl-row" + (overdue ? " overdue" : "")} key={d.key + d.date}>
+          // Clocks arrive in the order they are listed, 70ms apart — the same
+          // staging the rest of the card reads in.
+          <div className={"rv-dl-row" + (overdue ? " overdue" : "")} key={d.key + d.date} style={{ "--rv-i": i } as CSSProperties}>
             <div className="rv-dl-head">
               <div className="rv-label">{d.label}</div>
               <div className="rv-dl-title">{d.title}</div>
@@ -58,11 +47,26 @@ export function DeadlineTrack({ report }: { report: Report }) {
             <div className="rv-dl-mid">
               {/* The fill is the time LEFT, not the time gone: it starts full
                   and empties as the window closes, which is the direction a
-                  person already reads a clock running out. */}
+                  person already reads a clock running out.
+
+                  It does not grow. It used to animate `width` from 0 to its
+                  length, which relaid out the row on every frame of an 820ms
+                  trip — and, measured, left the bar at zero length for the
+                  whole trip whenever the frames did not come. On the row that
+                  carries a statutory deadline, "no time left" is not a subtler
+                  picture, it is the wrong one. The length is true on the first
+                  frame and the row rises into place instead, the same arrival
+                  the ledger's split bar takes.
+
+                  Past the date there is no time left, so "time left" would be a
+                  zero-width bar and the row would draw nothing at all — the
+                  hatch the stylesheet keeps for exactly this case never once
+                  appeared. An overdue window is a SPENT one: the hatch covers
+                  it end to end, which cannot be misread as time in hand. */}
               <div className="rv-dl-track" aria-hidden="true">
                 <i
                   className="rv-dl-left"
-                  style={{ left: pct(elapsed), width: grown ? pct(Math.max(0, total - elapsed)) : "0%" }}
+                  style={overdue ? { left: "0%", width: pct(total) } : { left: pct(elapsed), width: pct(Math.max(0, total - elapsed)) }}
                 />
                 <i className="rv-dl-now" style={{ left: pct(elapsed) }} />
                 <i className="rv-dl-due" style={{ left: pct(total) }} />

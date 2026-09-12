@@ -1,0 +1,140 @@
+/* The card's first reading: how many signs went unanswered.
+
+   Measured against the two cards the pitch puts side by side — the same call
+   coached and silent — the top of the card read almost identically on both.
+   Same customer name at 24px, same ring frame, same full-width bar under the
+   same fraction. In the first second the only glyph that differed was the
+   leading digit of "0 of 3" against "4 of 4", and the word that carries the
+   legal consequence ("missed") was 10px uppercase grey, the smallest type in
+   the region.
+
+   So the consequence gets the display size and the state colour, and the
+   composition keeps the fraction directly below it. The two readings are
+   complements, not a repeat: this one is what it costs, the ledger is what the
+   call was made of.
+
+   --ok and --bad are the card's existing state pair — already carried on the
+   verdict chips, already measured on both grounds. No new hue was introduced,
+   and colour is never the only carrier: the count and the word "missed" say
+   the same thing in greyscale. */
+
+.rc-verdict {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 24px;
+  margin: 0 0 22px;
+  /* Transform only, and it starts 8px low rather than invisible — frozen at
+     frame 0 in a throttled tab this reads correctly. See the vault note
+     "An Entrance Must Not Gate Visibility". */
+  animation: rcLead 300ms var(--ease-out) both;
+}
+@keyframes rcLead {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.rc-v-fig {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+.rc-v-fig b {
+  font-family: var(--mono);
+  /* Big text goes LIGHTER, the same rule the rest of the card follows. */
+  font-weight: 300;
+  font-size: clamp(46px, 7vw, 62px);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bad);
+}
+.rc-v-fig i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bad);
+}
+.rc-verdict.clean .rc-v-fig b,
+.rc-verdict.clean .rc-v-fig i {
+  color: var(--ok);
+}
+
+.rc-v-say {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  /* The strong text colour, never an alpha over it — the same 0.75 measured
+     8.56:1 on one surface here and 3.93:1 on another. */
+  color: var(--cream);
+  max-width: 56ch;
+  min-width: 0;
+}
+/* The clause that carries the legal consequence, so it is not lost inside a
+   sentence a judge will not finish reading. */
+.rc-v-say b {
+  font-weight: 600;
+  color: var(--bad);
+}
+.rc-verdict.clean .rc-v-say b {
+  font-weight: 600;
+  color: var(--cream);
+}
+
+/* The phone puts the figure and the score ring on one row and drops the
+   sentence beneath them, because on a 375px screen the ring was taking a row
+   of its own ABOVE the finding — the reading the research deliberately demoted,
+   read first. The breakpoint is 760px to the pixel, because that is where
+   `PHONE` in useMedia decides to hand the ring over; a CSS breakpoint that
+   disagreed with it by even a pixel would leave the ring in a column that no
+   longer exists. */
+@media (max-width: 760px) {
+  .rc-verdict {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 14px;
+  }
+  .rc-v-say {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  .rc-v-aside {
+    justify-self: end;
+    align-self: center;
+  }
+}
+
+/* The two largest text settings reflow the sentence to full width — at 21px
+   body a 56ch measure beside a 62px figure does not fit a 900px card. Scoped
+   above the phone breakpoint so it cannot undo the row the ring sits in. The
+   sentence grows with them too, the same 14 → 16 step the run note takes; a
+   lead that ignored the text-size control would be the one line on the card
+   that did. */
+@media (min-width: 761px) {
+  :root[data-text="2"] .rc-verdict,
+  :root[data-text="3"] .rc-verdict {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}
+:root[data-text="2"] .rc-v-say,
+:root[data-text="3"] .rc-v-say {
+  font-size: 17px;
+}
+
+/* The global rules squash transition-duration, not animation, and never a
+   delay — so this is zeroed by name. */
+:root.reduce-motion .rc-verdict {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rc-verdict {
+    animation: none;
+  }
+}

@@ -1,0 +1,37 @@
+/* How the deadline track arrives.
+
+   The bar used to be the arrival: it animated `width` from 0 to the length of
+   the window, 820ms. Two faults, both measured on this card.
+
+   The cheap one is layout — `width` relays out the row on every frame, twice
+   over when a call carries two clocks.
+
+   The expensive one is that a bar which has to move in order to be right is
+   wrong until it gets there. Sampled on a page that was visible but not
+   compositing, the bar sat at zero length past 2000ms and never arrived: the
+   transition needs frames exactly as `requestAnimationFrame` does, and the
+   component's own guard only catches `document.hidden`. On the row carrying a
+   statutory reply date, a bar reading "no time left" is not a subtler picture.
+
+   So the length is true on the first frame and the ROW arrives instead —
+   transform only, 7px low at frame 0, correct even frozen there. Same rvRise
+   the ledger's split bar uses; it is declared in report-visuals.css.
+   See the vault note "An Entrance Must Not Gate Visibility". */
+
+.rv-dl-row {
+  animation: rvRise 320ms var(--ease-out) both;
+  animation-delay: calc(var(--rv-i, 0) * 70ms);
+}
+
+/* The global reduce-motion rules squash transition-duration, not animation,
+   and never a delay — so both are zeroed here by name. */
+:root.reduce-motion .rv-dl-row {
+  animation: none;
+  animation-delay: 0ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-dl-row {
+    animation: none;
+    animation-delay: 0ms;
+  }
+}
