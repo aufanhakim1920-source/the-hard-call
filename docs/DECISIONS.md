@@ -451,3 +451,33 @@ coached run gave 95 and then 90. The board prints both fractions and both column
 what is true: that the scores are not repeatable, that the two calls raised different numbers of
 signs, that a degraded call was never judged at all. **Subtracting two numbers that are not repeatable
 produces a number that means nothing.**
+
+## The live engine is the only one that counts, and it had never been tested
+
+Every number up to this point — twelve demo runs, a fifteen-finding sweep, every eval figure — came
+from a **local** API on port 8787 running a different model from the deployed one. And a structural
+fact nobody had written down: **merging to `main` does not update what a judge talks to.** The site
+ships automatically from GitHub Actions; the edge function ships by hand.
+
+Checked against the live URL and the deployed function:
+
+| | result |
+|---|---|
+| `/health` | `ok`, **2 keys armed**, `gemini-flash-latest` |
+| a hint → a request, no clock | **5 of 5** |
+| a stated inability → the statutory notice | **2 of 2** |
+| the demo's own key line, in context | **3 of 3** |
+| live site | current — Calls tab present, zero sideways scroll, no unexpected console errors |
+
+**One real demo risk, and it is a timing one.** The engine makes one call per finished sentence and
+**serialises them**, because each call needs to know which signs are already on screen or it would fire
+duplicates. Each call takes about two seconds. At 2× speed the lines arrive every two to three seconds,
+so the queue runs behind the transcript and **the legal sign can land after the final line**. It does
+land — and ending the call waits for the queue, so the report card always contains it — but a presenter
+who says "and there's the legal sign" too early will be pointing at nothing.
+
+The demo script says: do not end the call until the sign is on screen. The serialisation is not a bug
+to fix; it is what keeps the de-duplication correct.
+
+**One empty result in seven**, on the first call after the function had been idle. Every repeat was
+correct. Warm the engine with one call before demoing.
