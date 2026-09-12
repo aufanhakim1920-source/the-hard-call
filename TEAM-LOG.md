@@ -4,6 +4,8 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 08:58 | aufanhakim1920-source | design | [the view entrance cost 6px of scroll and captured every fixed child](../../commit/b268edc2753f6dad5288fa3da842645ef2755756) | styles.css | +24 / -10 |
+| 13 Sept, 08:57 | aufanhakim1920-source | live call | [a letter key could end a live call from inside Settings](../../commit/b17ae0cc75bef56d0cf998840cf7e8f156f72d66) | CallScreen.tsx, TopBar.tsx, topbar.css | +79 / -3 |
 | 13 Sept, 08:40 | aufanhakim1920-source | other | [the 23 colours, the phantom contrast failures, and the card that showed the wrong answer first](../../commit/0a0038aba002b7ed0df42e6a29dca98e6446a84f) | DECISIONS.md | +61 / -0 |
 | 13 Sept, 08:38 | aufanhakim1920-source | design | [23 failing colours, and a report card that showed the wrong answer first](../../commit/4ed051fe863e4f1781e780e0ac28e27d94936c01) | ReportLedger.tsx, ResponseTimes.tsx, report-visuals.css +1 | +228 / -73 |
 | 13 Sept, 08:30 | aufanhakim1920-source | other | [what the list lift was actually doing, and how to measure motion in a hidden pane](../../commit/048448588fc6daba9ca35a142dd1133853e3db60) | DECISIONS.md | +47 / -0 |
