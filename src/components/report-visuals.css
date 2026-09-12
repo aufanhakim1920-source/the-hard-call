@@ -1219,3 +1219,130 @@
 .reduce-transparency .cmp-bar > i.answered {
   background-color: var(--ink-3);
 }
+
+/* ---------- building a practice customer: the wait, and the failure ----------
+   The model call takes several seconds and can fail, and both used to show as
+   nothing more than a disabled button. Neither state gets a 1px box: the panel
+   is a step in the ground with one gold rule down its left, the same device the
+   practice cards use for what a level asks of you.
+
+   The bar moves by TRANSFORM only, and never by opacity — a running animation
+   in a throttled tab is frozen at its first keyframe, and a keyframe that
+   starts at `opacity: 0` pins the element invisible. That cost this project a
+   bug once already. */
+.rv-build {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border-left: 2px solid var(--gold-line);
+  background: rgba(154, 163, 173, 0.06);
+  border-radius: 0 var(--r-ctl) var(--r-ctl) 0;
+  max-width: 68ch;
+}
+.rv-build.failed {
+  border-left-color: var(--bad);
+}
+.rv-build-say {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cream);
+}
+.rv-build.failed .rv-build-say {
+  color: var(--bad);
+}
+.rv-build-sec {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--grey);
+}
+/* The server's own words, kept so a failure can be diagnosed, sized so they
+   never read as the message. */
+.rv-build-raw {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--grey);
+  overflow-wrap: anywhere;
+}
+.rv-build-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* One thing moving, and you can point at it: a single gold sweep in a channel.
+   Not a percentage — we do not know how long the model will take, and a bar
+   that claims to know is a lie the wait will expose. */
+.rv-build-bar {
+  height: 2px;
+  margin: 0 0 10px;
+  background: var(--line);
+  overflow: hidden;
+  border-radius: 2px;
+}
+.rv-build-bar i {
+  display: block;
+  height: 100%;
+  width: 34%;
+  background: var(--gold);
+  transform: translateX(-110%);
+  animation: rvSweep 1500ms var(--ease-io) infinite;
+}
+@keyframes rvSweep {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+:root.reduce-motion .rv-build-bar i {
+  animation: none;
+  width: 100%;
+  transform: none;
+}
+
+/* ---------- the fiction is the claim, so it gets said on the card ----------
+   A judge has to take "de-identified" on faith unless the screen says what was
+   done. Ground and weight separate it, not a border box. */
+.rv-fiction {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: var(--gold-dim);
+  border-radius: var(--r-ctl);
+  max-width: 68ch;
+}
+.rv-fiction p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.rv-fiction p + p {
+  margin-top: 6px;
+}
+.rv-fiction strong {
+  color: var(--cream);
+}
+:root[data-text="2"] .rv-fiction p,
+:root[data-text="3"] .rv-fiction p,
+:root[data-text="2"] .rv-build-say,
+:root[data-text="3"] .rv-build-say {
+  font-size: 15px;
+}
+
+/* The same claim, one line, on a customer that is already in Practice. */
+.scen .why .rv-made-up {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--grey);
+}
+.scen .why .rv-made-up strong {
+  color: var(--text-2);
+  font-weight: 500;
+}

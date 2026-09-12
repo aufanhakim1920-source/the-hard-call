@@ -4,6 +4,8 @@ import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { AGENT_ID } from "../lib/practice";
 import type { Scenario } from "../lib/types";
+// The only stylesheet this agent owns; the two classes it needs live there.
+import "./report-visuals.css";
 
 export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const store = useStore();
@@ -69,6 +71,15 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                     leaves the worker with no idea what to do differently. This
                     is the same rule, said to the person who has to act on it. */}
                 <div className="ask-of-you">{levelAsk(s.level)}</div>
+                {/* The card said "from your call", which is exactly the half
+                    that worries a privacy-minded reader. Say the other half
+                    here, where the invented person is. */}
+                {s.source === "generated" && (
+                  <p className="rv-made-up">
+                    <strong>Invented.</strong> Built from one of your calls with a new name and job and every number changed, and approved by a
+                    person before it appeared here. The real call was never stored.
+                  </p>
+                )}
               </div>
               <div className="foot">
                 <span className="stats2">{p ? `${p} ${p === 1 ? "go" : "goes"} · best ${b}` : "not tried yet"}</span>

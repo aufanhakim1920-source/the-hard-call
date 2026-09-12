@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { postScenario } from "../lib/api";
 import { fmtDate, fmtWhen } from "../lib/dates";
-import { levelLabel, pickVoice } from "../lib/scenarios";
+import { levelLabel, pickVoice, scenarioFailure, scenarioFault } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { PHONE, useMedia } from "../lib/useMedia";
@@ -91,8 +91,18 @@ export function ReportCard({
   const [cText, setCText] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [building, setBuilding] = useState(false);
+  const [buildSec, setBuildSec] = useState(0);
   const [draft, setDraft] = useState<Scenario | null>(null);
-  const [buildErr, setBuildErr] = useState<string | null>(null);
+  const [buildErr, setBuildErr] = useState<{ say: string; raw?: string } | null>(null);
+
+  // A model call of several seconds behind a disabled button reads as a dead
+  // screen, and this one is the third act of the pitch. Count the seconds out
+  // loud so the wait is visibly a wait rather than a hang.
+  useEffect(() => {
+    if (!building) return;
+    const t = window.setInterval(() => setBuildSec((n) => n + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [building]);
 
   const say = (t: string) => {
     setToast(t);
@@ -115,9 +125,18 @@ export function ReportCard({
   const buildScenario = async () => {
     if (!session) return;
     setBuilding(true);
+    setBuildSec(0);
     setBuildErr(null);
     try {
       const s = await postScenario(session, report);
+      const fault = scenarioFault(s);
+      if (fault) {
+        // Never draw a half-invented customer. Blank fields on a person's card
+        // read as a real caller with nothing to say, and `expectedSigns` coming
+        // back undefined took the whole screen down.
+        setBuildErr({ say: `No practice customer was built. ${fault}`, raw: JSON.stringify(s).slice(0, 200) });
+        return;
+      }
       setDraft({
         id: uid("sc"),
         name: s.name,
@@ -139,7 +158,8 @@ export function ReportCard({
         plays: 0,
       });
     } catch (e) {
-      setBuildErr(e instanceof Error ? e.message : String(e));
+      const raw = e instanceof Error ? e.message : String(e);
+      setBuildErr({ say: scenarioFailure(raw), raw });
     } finally {
       setBuilding(false);
     }
@@ -329,7 +349,7 @@ export function ReportCard({
             the call still does. A dead button would be worse than no button. */}
         {session && (
           <button className="btn" onClick={() => void buildScenario()} disabled={building || Boolean(draft)}>
-            {building ? "Building…" : "Turn this into a practice customer"}
+            {building ? `Building… ${buildSec}s` : draft ? "Built — it is below" : "Turn this into a practice customer"}
           </button>
         )}
         {onCompare && (
@@ -340,8 +360,39 @@ export function ReportCard({
         <button className="btn ghost" onClick={() => void copy()}>
           Copy report
         </button>
-        {buildErr && <span className="warn">{buildErr}</span>}
       </div>
+
+      {/* The wait and the failure both used to be nothing: a button that said
+          "Building…" for several seconds, and a 12px line of the server's own
+          error text at the end of a row of buttons. Both get a panel under the
+          control that started them — the space is made first and the words
+          arrive in it, the same open the rest of the build uses. */}
+      {building && (
+        <div className="rv-build" role="status">
+          <div className="rv-build-bar">
+            <i />
+          </div>
+          <p className="rv-build-say">
+            Reading this call and inventing a customer who tests the same thing — new name, new job, new numbers.
+          </p>
+          <p className="rv-build-sec">{buildSec}s elapsed · usually 5–15</p>
+        </div>
+      )}
+
+      {buildErr && (
+        <div className="rv-build failed" role="alert">
+          <p className="rv-build-say">{buildErr.say}</p>
+          {buildErr.raw && <p className="rv-build-raw">{buildErr.raw}</p>}
+          <div className="rv-build-acts">
+            <button className="btn sm" onClick={() => void buildScenario()}>
+              Try again
+            </button>
+            <button className="btn ghost sm" onClick={() => setBuildErr(null)}>
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {draft && (
         <div className="card" style={{ marginTop: 18 }}>
@@ -360,9 +411,19 @@ export function ReportCard({
           <p className="small muted" style={{ margin: "0 0 12px" }}>
             Why this one: {draft.whyThisOne}
           </p>
+          {/* The privacy claim was a six-word label above the name, which asks a
+              room to take the whole de-identification story on faith. Say what
+              was actually done, on the card, next to the invented person. */}
+          <div className="rv-fiction">
+            <p>
+              <strong>This person does not exist.</strong> The call was read once to build them and was never stored. The model was told to invent a
+              new name and a new job, and to change the age, the suburb and every number — only the shape of the situation is kept.
+            </p>
+            <p>Nothing below is saved anywhere until you approve it, and only the invented customer is saved — never the real call.</p>
+          </div>
           {store.scenarios.some((s) => s.id === draft.id) ? (
             <div className="actions" style={{ marginTop: 0 }}>
-              <span className="badge">approved</span>
+              <span className="badge">approved by you</span>
               {onPractice && (
                 <button className="btn gold" onClick={() => onPractice({ ...draft, approved: true })}>
                   Practise it now

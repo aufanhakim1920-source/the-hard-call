@@ -298,7 +298,7 @@ textarea {
 }
 .btn.danger:hover {
   border-color: #b56b5b;
-  color: #e7a89b;
+  color: var(--bad);
 }
 .btn kbd {
   font-family: var(--mono);
@@ -440,7 +440,7 @@ select.field option {
 }
 .chip.live {
   border-color: rgba(217, 83, 79, 0.6);
-  color: #e7a89b;
+  color: var(--bad);
 }
 .call-head .clock {
   font-family: var(--mono);
@@ -666,7 +666,7 @@ select.field option {
   border-radius: 3px;
 }
 .warn {
-  color: #e7a89b;
+  color: var(--bad);
   font-size: 12px;
 }
 
@@ -990,7 +990,7 @@ select.field option {
   color: #9fc9a8;
 }
 .stat .delta.down {
-  color: #e7a89b;
+  color: var(--bad);
 }
 .report .summary {
   font-family: var(--serif);
@@ -1108,7 +1108,7 @@ select.field option {
   color: var(--gold-2);
 }
 .deadline-row .left.over {
-  color: #e7a89b;
+  color: var(--bad);
 }
 .deadline-row .what b {
   display: block;
