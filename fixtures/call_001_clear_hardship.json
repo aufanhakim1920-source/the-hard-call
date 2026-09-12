@@ -1,0 +1,31 @@
+{
+  "call_id": "call_001",
+  "scenario": "clear_hardship_handled_well",
+  "notes": "Happy path. Customer gives an unmistakable oral hardship notice. Staff member recognises it, names the hardship process, and sets the 21-day expectation. Detector MUST fire.",
+  "duration_ms": 181400,
+  "turns": [
+    { "speaker": "staff", "start_ms": 0, "end_ms": 5200, "text": "Thanks for calling Meridian Home Loans, you're speaking with Priya. Can I grab your name to start?" },
+    { "speaker": "customer", "start_ms": 5600, "end_ms": 8100, "text": "Yeah, it's Daniel Whitmore." },
+    { "speaker": "staff", "start_ms": 8400, "end_ms": 12900, "text": "Thanks Daniel. And just to verify, can you confirm the property address on the loan?" },
+    { "speaker": "customer", "start_ms": 13200, "end_ms": 17000, "text": "14 Beckwith Street, Coburg. Three-oh-five-eight." },
+    { "speaker": "staff", "start_ms": 17300, "end_ms": 22400, "text": "Perfect, I've got the account in front of me. What can I help you with today?" },
+    { "speaker": "customer", "start_ms": 22800, "end_ms": 31500, "text": "So I got a letter saying the last repayment didn't go through. Which, yeah, I know. I was going to call anyway." },
+    { "speaker": "staff", "start_ms": 31900, "end_ms": 35100, "text": "Okay. Do you want to tell me what's happened?" },
+    { "speaker": "customer", "start_ms": 35500, "end_ms": 47200, "text": "I lost my job. Six weeks ago now. The site got shut down, they let the whole crew go. I've been putting in applications every day but there's nothing going in commercial at the moment, everything's stalled." },
+    { "speaker": "staff", "start_ms": 47600, "end_ms": 50800, "text": "I'm really sorry, Daniel. That's a lot to deal with." },
+    { "speaker": "customer", "start_ms": 51200, "end_ms": 68400, "text": "Yeah. Look, I'll be straight with you. I've got maybe two weeks of savings left and after that I can't make the repayment. Not this month and honestly not for a while. My partner's working but it's part-time, it doesn't cover the mortgage on its own." },
+    { "speaker": "staff", "start_ms": 68900, "end_ms": 74300, "text": "Thank you for telling me. Do you have a sense of when you might be back working?" },
+    { "speaker": "customer", "start_ms": 74700, "end_ms": 86100, "text": "Realistically? Not before the new year. Even then it depends whether the projects come back. So I'm looking at four, five months of not being able to pay the full amount. Maybe longer." },
+    { "speaker": "staff", "start_ms": 86600, "end_ms": 101200, "text": "Okay. Daniel, what you've just told me counts as a hardship notice — that's a formal thing under the National Credit Code, and it means we have to look at whether we can change your loan arrangements. I'm lodging that now while we're on the call." },
+    { "speaker": "customer", "start_ms": 101600, "end_ms": 105400, "text": "Oh. I didn't know that was a thing you could do." },
+    { "speaker": "staff", "start_ms": 105800, "end_ms": 119600, "text": "Most people don't, which is why I'd rather tell you than not. We've got twenty-one days from today to assess it and come back to you with a decision. I'd expect it to be well before that, but twenty-one days is the outside limit." },
+    { "speaker": "customer", "start_ms": 120000, "end_ms": 124800, "text": "And in the meantime, what happens? Do they start, you know, default stuff?" },
+    { "speaker": "staff", "start_ms": 125200, "end_ms": 137400, "text": "No. While a hardship application is open the collections activity pauses. I'm putting a hold on the account now so nothing automated goes out to you while we're assessing." },
+    { "speaker": "customer", "start_ms": 137800, "end_ms": 142300, "text": "Right. Okay. That's — yeah, that's a relief actually." },
+    { "speaker": "staff", "start_ms": 142700, "end_ms": 154900, "text": "There are a few options we can look at — pausing repayments for a period, or moving to interest-only for a while. I'll need a bit of information from you about income and expenses to work out which one fits." },
+    { "speaker": "customer", "start_ms": 155300, "end_ms": 159100, "text": "Yeah, I can get that together. How do I send it?" },
+    { "speaker": "staff", "start_ms": 159500, "end_ms": 171200, "text": "I'll email you a form today. And Daniel — if you'd rather not do this on your own, free financial counselling is available and they can deal with us on your behalf. No cost to you." },
+    { "speaker": "customer", "start_ms": 171600, "end_ms": 176400, "text": "I might take that. Thanks. I didn't really know where to start with this." },
+    { "speaker": "staff", "start_ms": 176800, "end_ms": 181400, "text": "That's what the call's for. I'll get that email out within the hour." }
+  ]
+}
