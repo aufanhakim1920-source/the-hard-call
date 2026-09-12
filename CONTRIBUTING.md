@@ -2,6 +2,14 @@
 
 `main` is always deployable — it is what the judges open. Nobody commits straight to it.
 
+## Before you write a line: `npm run team`
+
+```bash
+npm run team
+```
+
+One screen: what landed on `main` while you were away, which pull requests are open (and which have conflicts), how far each `part/` branch is ahead, and whether anything of yours is uncommitted or unpushed. Run it when you sit down and again before you say something is finished — it is how four people avoid building on yesterday's main.
+
 ## One branch per part
 
 | Branch | Part | Files you own |
