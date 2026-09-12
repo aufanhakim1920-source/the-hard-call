@@ -11,8 +11,16 @@ import type { Deadline, Lesson, Report, Scenario, Store } from "./types";
 
 type Row = Record<string, unknown>;
 
-function reportRow(r: Report): Row {
-  return {
+// Whether this session may write the verification metadata columns. The reports
+// table was created in the Supabase dashboard rather than from this repo, so a
+// client cannot know whether they exist — and PostgREST rejects the WHOLE
+// upsert on an unknown column, which would stop every report syncing. The first
+// rejection turns them off for the session and the row goes up in its legacy
+// shape. supabase/migrations/0001_report_metadata.sql adds them.
+let reportMetadata = true;
+
+function reportRow(r: Report, withMetadata = reportMetadata): Row {
+  const row: Row = {
     id: r.callId,
     mode: r.mode,
     customer: r.customer,
@@ -30,6 +38,23 @@ function reportRow(r: Report): Row {
     model: r.model,
     at: new Date(r.at).toISOString(),
   };
+  if (!withMetadata) return row;
+  return {
+    ...row,
+    // Derived only as a fallback for cards written before these fields existed.
+    score_unverified: r.scoreUnverified ?? !hasVerifiedReportScore(r),
+    unverified: r.unverified ?? r.items.filter((i) => i.verdict === "unverified").length,
+    degraded: r.degraded ?? false,
+    degraded_reason: r.degradedReason ?? null,
+    coaching: r.coaching ?? null,
+  };
+}
+
+/** A rejection about the columns themselves, not about this row's contents. */
+function missingColumn(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  if (error.code === "PGRST204" || error.code === "42703") return true;
+  return /column .* does not exist|could not find the .* column/i.test(error.message ?? "");
 }
 function reportFrom(x: Row): Report {
   const report: Report = {
@@ -51,11 +76,21 @@ function reportFrom(x: Row): Report {
     at: new Date(String(x.at)).getTime(),
     deadlines: [],
   };
+  // Absent (a legacy row, or a table without the columns) is not false: the
+  // field was never recorded, so it stays undefined and the reader falls back
+  // to the item verdicts, exactly as before these columns existed.
+  const degraded = x.degraded === undefined || x.degraded === null ? undefined : Boolean(x.degraded);
+  const reason = x.degraded_reason === "quota" || x.degraded_reason === "unreachable" ? x.degraded_reason : undefined;
+  const coaching = x.coaching === undefined || x.coaching === null ? undefined : Boolean(x.coaching);
+  const withDegraded = { ...report, degraded };
   return {
-    ...report,
-    scoreUnverified: !hasVerifiedReportScore(report),
+    ...withDegraded,
+    degradedReason: degraded ? reason : undefined,
+    coaching,
+    // A stored count is still checked against the items it claims to describe.
     unverified: report.items.filter((item) => item.verdict === "unverified").length,
     handled: report.items.filter((item) => item.verdict === "handled").length,
+    scoreUnverified: !hasVerifiedReportScore(withDegraded),
   };
 }
 function deadlineRow(d: Deadline): Row {
@@ -159,6 +194,21 @@ export function onSync(l: (s: SyncState) => void): () => void {
   };
 }
 
+/**
+ * Upserts the reports, and if the table turns out to have no columns for the
+ * verification metadata, writes them again without it. A schema that has not
+ * caught up must cost the extra fields, never the reports.
+ */
+async function upsertReports(reports: Report[], uid: string): Promise<{ error?: { message: string } | null }> {
+  const client = supabase!;
+  const rows = (withMetadata: boolean) => reports.map((r) => ({ ...reportRow(r, withMetadata), user_id: uid }));
+  const first = await client.from("reports").upsert(rows(reportMetadata));
+  if (!first.error || !reportMetadata || !missingColumn(first.error)) return first;
+  reportMetadata = false;
+  console.warn("sync: the reports table has no verification metadata columns; writing the legacy row shape", first.error.message);
+  return client.from("reports").upsert(rows(false));
+}
+
 async function push(store: Store) {
   const auth = getAuth();
   const scope = getStoreScope();
@@ -170,7 +220,7 @@ async function push(store: Store) {
     const uid = auth.user.id;
     const withUser = (rows: Row[]) => rows.map((r) => ({ ...r, user_id: uid }));
     const jobs: PromiseLike<{ error?: { message: string } | null }>[] = [];
-    if (store.reports.length) jobs.push(supabase.from("reports").upsert(withUser(store.reports.map(reportRow))));
+    if (store.reports.length) jobs.push(upsertReports(store.reports, uid));
     if (store.deadlines.length) jobs.push(supabase.from("deadlines").upsert(withUser(store.deadlines.map(deadlineRow))));
     if (store.lessons.length) jobs.push(supabase.from("lessons").upsert(withUser(store.lessons.map(lessonRow))));
     const generated = store.scenarios.filter((s) => s.source === "generated");

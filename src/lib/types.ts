@@ -103,9 +103,11 @@ export interface Report {
   /** Which mode the call ran in. False = the worker was given nothing live, so
       a low score measures the gap, not a worker ignoring prompts.
       ⚠ Read it as `coaching === false`, never as `!coaching`: absent means the
-      mode was not recorded (a card pulled from the server, which has no column
-      for it yet). Cards already in this browser are backfilled true on load —
-      coaching was the only mode that existed when they were written. */
+      mode was not recorded. Cards already in this browser are backfilled true
+      on load — coaching was the only mode that existed when they were written.
+      A card pulled from the server carries it once
+      supabase/migrations/0001_report_metadata.sql has run; before that the
+      column does not exist and the field comes back absent. */
   coaching?: boolean;
 }
 

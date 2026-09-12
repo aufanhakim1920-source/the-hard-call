@@ -295,3 +295,34 @@ Expect `hardship-request` recall to rise from 0.533 with no engine change,
 because seven of its recorded misses were correct refusals. What is genuinely
 new and unmeasured is c42/c43/c44 — whether the model gets the ABA tip's timing
 right — and whether c09 and c34 hold up once Laural has ruled on them.
+
+## Report metadata now survives the cloud
+
+Picking up the item `docs/sync-isolation.md` listed as remaining: the report
+card's verification metadata round-trips. `scoreUnverified`, `unverified`,
+`degraded`, `degradedReason` and `coaching` were dropped on push, so a card
+pulled on a second device could not say why its write-up was missing — the
+"One thing for next time" box disappeared rather than naming the quota, which
+undid the degraded-card work two commits earlier.
+
+The reports table was made in the Supabase dashboard, not from this repo, and
+PostgREST rejects the whole upsert on one unknown column. So the client finds
+out by being refused: the first rejection naming a column turns the extra
+fields off for the session and the rows go up in their legacy shape. A schema
+that has not caught up costs the metadata, never the reports.
+
+`supabase/migrations/0001_report_metadata.sql` adds the five columns —
+additive, idempotent, all nullable, safe to apply while the current build is
+live, and no RLS change since the own-rows policies are row-level. **It is the
+first migration in this repo and has not been applied anywhere.** The rest of
+the schema still exists only in the dashboard, which is why a client has to
+probe for columns at all; giving the whole schema a baseline migration is
+separate work and someone else's call before the freeze.
+
+Absent stays absent: a pre-migration row leaves `degraded` and `coaching`
+undefined and the reader falls back to item verdicts, and `unverified` and
+`handled` are still recomputed from the items rather than trusted.
+
+See `docs/sync-isolation.md` for the detail and the three tests. Still
+unverified: the real Supabase schema, an actual two-device round trip, and the
+401 on the deployed anon key recorded in the PR description.
