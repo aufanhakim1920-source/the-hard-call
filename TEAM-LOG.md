@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 08:40 | aufanhakim1920-source | other | [the 23 colours, the phantom contrast failures, and the card that showed the wrong answer first](../../commit/0a0038aba002b7ed0df42e6a29dca98e6446a84f) | DECISIONS.md | +61 / -0 |
 | 13 Sept, 08:38 | aufanhakim1920-source | design | [23 failing colours, and a report card that showed the wrong answer first](../../commit/4ed051fe863e4f1781e780e0ac28e27d94936c01) | ReportLedger.tsx, ResponseTimes.tsx, report-visuals.css +1 | +228 / -73 |
 | 13 Sept, 08:30 | aufanhakim1920-source | other | [what the list lift was actually doing, and how to measure motion in a hidden pane](../../commit/048448588fc6daba9ca35a142dd1133853e3db60) | DECISIONS.md | +47 / -0 |
 | 13 Sept, 08:29 | aufanhakim1920-source | report | [a lifted row was see-through for its whole trip](../../commit/820e262bfcf1619d88d86e6bcca03b590b54f979) | Deadlines.tsx, clear-history.css, motion.ts | +176 / -56 |
