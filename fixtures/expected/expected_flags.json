@@ -42,8 +42,9 @@
       },
       {
         "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
-        "trigger_turn_start_ms": 103200,
-        "why": "Customer directly asks whether a process exists. Staff answers vaguely and steers back to the informal arrangement without naming the hardship provisions.",
+        "trigger_turn_start_ms": 45000,
+        "escalated_at_ms": 103200,
+        "why": "The duty to inform arises with the hardship notice at 45000, so that is where the flag is raised. At 103200 the customer directly asks whether a process exists, which escalates the same obligation rather than creating a new one — staff answers vaguely at 111000 and returns to the informal arrangement without naming the provisions.",
         "obligation": "Tell the customer hardship provisions exist under the National Credit Code",
         "deadline_days": null,
         "authority": "ABA industry guideline — Banks' financial difficulty programs"
