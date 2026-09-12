@@ -1,0 +1,37 @@
+name: Team log
+
+# Every push to main appends what changed to TEAM-LOG.md — who did it, when,
+# which part, and the files. Nobody has to write it; it is just there, and the
+# judges can see who built what.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: teamlog
+  cancel-in-progress: false
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Append the new commits
+        run: node .github/scripts/teamlog.mjs "${{ github.event.before }}" "${{ github.sha }}"
+      - name: Commit the log if it changed
+        run: |
+          if [ -n "$(git status --porcelain TEAM-LOG.md)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add TEAM-LOG.md
+            git commit -m "log: update team log [skip ci]"
+            git push
+          else
+            echo "nothing to log"
+          fi

@@ -87,7 +87,7 @@ Hosting: the site is static on **GitHub Pages** (built by `.github/workflows/pag
 
 ## Team
 
-Four people, four parts — see [CONTRIBUTING.md](CONTRIBUTING.md) for the branch plan.
+Four people, four parts — see [CONTRIBUTING.md](CONTRIBUTING.md) for the branch plan, and [TEAM-LOG.md](TEAM-LOG.md) for who changed what (written automatically on every push).
 
 ## Sources
 

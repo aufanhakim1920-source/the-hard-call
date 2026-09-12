@@ -36,6 +36,14 @@ If `main` moved while you were working: `git pull origin main` on your branch, f
 - **No AI attribution on commits.** Plain messages, your name as author.
 - Commit messages: `area: what changed` — `live: ...`, `practice: ...`, `report: ...`, `engine: ...`, `pitch: ...`.
 
+## The team log writes itself
+
+Every push to `main` appends a row to [TEAM-LOG.md](TEAM-LOG.md): when, who, which part, what the commit said, the files, and the lines changed. Nobody types it — a GitHub Action does it — and the judges can see who built what.
+
+Two things make your row read well:
+- **Commit messages start with your part**: `live:`, `practice:`, `report:`, `engine:`, `accounts:`, `design:`, `pitch:`. Without a prefix the log guesses from the files you touched.
+- **Say what changed, not that you changed it.** `practice: Frank keeps his voice between goes` beats `fix stuff`.
+
 ## Running locally
 
 ```bash
