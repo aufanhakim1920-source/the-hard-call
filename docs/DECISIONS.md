@@ -481,3 +481,26 @@ to fix; it is what keeps the de-duplication correct.
 
 **One empty result in seven**, on the first call after the function had been idle. Every repeat was
 correct. Warm the engine with one call before demoing.
+
+## A privacy claim belongs on the screen, not in the pitch
+
+Turning a finished call into a practice customer is the third act of the product, and it works: the
+call is read once, the model is told to invent a new name and job and change the age, suburb and every
+number, and **nothing is saved until a person approves it**. A real run turned "Sarah M., home loan,
+casual retail" into a primary school teacher named Emily Smith, and the next run into a part-time
+retail assistant with a different surname and age.
+
+None of that was visible. A judge had to take it on faith. **The card says it now** — that this person
+does not exist, and what was actually done to make sure of it. The wording was checked against the
+edge function before it was written, so it is true rather than generous.
+
+**A failure said nothing a worker could read.** This is the only model call on that screen with no
+local fallback, and its error surfaced as the server's own words — `/api/scenario failed (429)` — in a
+12 px line at the end of a row of buttons, in a colour measuring **1.73:1** on the light ground. A
+quota failure in front of a judge would have looked like a button that simply did nothing. Quota, a
+refused key, an unreachable server and an incomplete customer now each get a sentence, and every one
+of them ends by saying the call and its report card are untouched.
+
+That colour turned out to be **five** hardcoded literals, one of them behind "Report failed" — so a
+report failure was near-invisible on the light ground too. All five were one token away from correct.
+**Third time this project has been bitten by a colour chosen for one ground and used on both.**
