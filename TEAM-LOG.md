@@ -4,6 +4,10 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 19:36 | TronJuan | engine | [Update gemini.ts](../../commit/26fa92fbd3b5c26ca0e21e74d2a8666e4dfac5b8) | gemini.ts | +1 / -1 |
+| 12 Sept, 19:35 | TronJuan | engine | [Update gemini.ts](../../commit/376e4599bcc4b9e3a1a89368773c06c0272c5e6e) | gemini.ts | +1 / -1 |
+| 12 Sept, 19:20 | LAJ | other | [Update transcript-schema.md](../../commit/7b799ad4a7cf36635b3e7a813ac395cc12d67117) | transcript-schema.md | +2 / -2 |
+| 12 Sept, 19:17 | aufanhakim1920-source | engine | [the hardship flag is a legal test, not a vocabulary match](../../commit/bcd16585b991bc28aef7887cbb98c96ce6a72c77) | fixture-results.json, fixtures.mjs, results.json +5 | +770 / -168 |
 | 12 Sept, 18:51 | laj07 | other | [Add transcript schema, 3 call fixtures, expected flags and hardship rules](../../commit/b1b12f7e833277dd3d0a8a8d57b7e9663c8f4617) | hardship-flag-rules.md, transcript-schema.md, call_001_clear_hardship.json +4 | +451 / -0 |
 | 12 Sept, 19:02 | aufanhakim1920-source | design | [a sign's entrance moves it, never fades it — a frozen animation in a background tab was pinning it invisible](../../commit/729bdaed2836e1130dc01b130ed2ee153413fcd8) | styles.css | +19 / -10 |
 | 12 Sept, 18:55 | aufanhakim1920-source | design | [accessibility mode — bigger text, higher contrast, less motion, spoken and screen-reader announcements, skip link; clearer sign-in wording](../../commit/fe74a4a5354e67555cec160680013ec855d4da13) | App.tsx, Accessibility.tsx, Account.tsx +5 | +451 / -7 |
