@@ -726,4 +726,16 @@
     ],
     "note": "Income change but explicitly not asking for relief. Tests hardship over-firing on the word 'laid off'."
   }
+  {
+  "id": "c41",
+  "direction": "outbound",
+  "context": [
+    { "speaker": "worker", "text": "Hi, it's the bank calling about the payment that didn't go through last week — is now an okay time to chat?" }
+  ],
+  "line": { "speaker": "customer", "text": "Oh yeah, sorry about that. Don't worry about it, I'll be fine in a month." },
+  "expect": [
+    "hardship-request"
+  ],
+  "note": "Deflects with no explicit ask or statement of current inability — implies things aren't fine right now but volunteers no request and no reason. Confirmed on the live engine (gemini-flash-latest) not to fire. Keep as a hard negative unless the team decides an implied-but-brushed-off inability should still count under NCC s72."
+}
 ]
