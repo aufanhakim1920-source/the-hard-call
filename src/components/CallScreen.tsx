@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useA11y } from "../lib/a11y";
 import { fmtClock } from "../lib/dates";
-import { DEMO_SCRIPT } from "../lib/demoScript";
+import { demoScriptFor } from "../lib/demoScript";
 import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
 import { play, setCallMode } from "../lib/sfx";
@@ -91,6 +91,8 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   }, [phone, newestSign, signCount, coaching]);
   const speedRef = useRef(speed);
   speedRef.current = speed;
+  const coachingRef = useRef(coaching);
+  coachingRef.current = coaching;
   const typeRef = useRef<HTMLInputElement>(null);
 
   // Demo mode: the script plays through the real engine.
@@ -106,14 +108,20 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     let cancelled = false;
     let timer = 0;
     let i = 0;
+    // Which worker: the one who had the signs, or the one who did not. The
+    // customer's words are identical in both, so the engine raises the same
+    // signs at the same moments and the only variable is what was done about
+    // them. Read once at mount — flipping the setting mid-call would splice two
+    // different workers into one transcript.
+    const script = demoScriptFor(coachingRef.current);
     const step = () => {
-      if (cancelled || i >= DEMO_SCRIPT.length) return;
-      const line = DEMO_SCRIPT[i];
+      if (cancelled || i >= script.length) return;
+      const line = script[i];
       timer = window.setTimeout(() => {
         if (cancelled) return;
         addLine(line.text, line.speaker);
         i += 1;
-        if (i >= DEMO_SCRIPT.length) setDemoDone(true);
+        if (i >= script.length) setDemoDone(true);
         else step();
       }, (line.gap * 1000) / speedRef.current);
     };
