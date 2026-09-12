@@ -509,3 +509,29 @@ of them ends by saying the call and its report card are untouched.
 That colour turned out to be **five** hardcoded literals, one of them behind "Report failed" — so a
 report failure was near-invisible on the light ground too. All five were one token away from correct.
 **Third time this project has been bitten by a colour chosen for one ground and used on both.**
+
+## The deterministic detector is wired, and it is not yet load-bearing
+
+The sign engine's legal tier goes through a model, so it can be throttled. The
+detector merged from `part/detection` reaches the same conclusion from a word
+list, in the browser, with no network call — which is why it now runs first on
+every line, mapped onto the keys this app already draws so the same obligation
+cannot produce two cards.
+
+What was measured rather than assumed:
+
+| check | result |
+|---|---|
+| agreement with `eval/cases.json` | 40 / 41 |
+| cases where it fires and the case expects silence | 0 |
+| its own fixtures | 4 / 4 |
+| **signs raised on the demo call with `/api/flags` forced to 429** | **0, from 23 blocked model calls** |
+
+The last row is the one that matters. The fallback is real code on a real path
+and it produces nothing on the call we actually demonstrate, because the demo's
+phrasing — "Just a few months without the full payment" — pairs a period with an
+implied inability and matches no entry in the lexicon.
+
+**So the claim that the legal half cannot be rate-limited stays out of the pitch
+until that line raises a sign.** A fallback that has never been seen to fire is
+a story, not a feature.
