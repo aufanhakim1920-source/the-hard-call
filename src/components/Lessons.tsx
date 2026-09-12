@@ -3,12 +3,19 @@ import { fmtWhen } from "../lib/dates";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import type { LessonKind } from "../lib/types";
+import { Select } from "./Select";
 
 const KIND_LABEL: Record<LessonKind, string> = {
   "not-a-sign": "Not a sign",
   "missed-sign": "Missed sign",
   wording: "Wording",
 };
+
+const KIND_OPTIONS = [
+  { value: "missed-sign", label: "It should flag…" },
+  { value: "not-a-sign", label: "It should not flag…" },
+  { value: "wording", label: "Word it like…" },
+];
 
 export function Lessons() {
   const store = useStore();
@@ -28,11 +35,7 @@ export function Lessons() {
         What a manager has corrected. Every lesson is sent to the engine with every call from then on, so the team's judgement becomes the AI's.
       </p>
       <form className="form-row" onSubmit={add}>
-        <select className="field" value={kind} onChange={(e) => setKind(e.target.value as LessonKind)}>
-          <option value="missed-sign">It should flag…</option>
-          <option value="not-a-sign">It should not flag…</option>
-          <option value="wording">Word it like…</option>
-        </select>
+        <Select value={kind} onChange={(v) => setKind(v as LessonKind)} options={KIND_OPTIONS} label="What kind of lesson" />
         <input className="field" placeholder='e.g. "a customer asking to move the due date by a week is a hardship request"' value={text} onChange={(e) => setText(e.target.value)} />
         <button className="btn gold" type="submit">
           Add lesson

@@ -2109,3 +2109,267 @@ select.field option {
   transition-duration: 1ms !important;
   scroll-behavior: auto !important;
 }
+
+/* ---------- the picker: one listbox everywhere a native <select> used to be ----------
+   Aufan, on the Lessons page: "still a lot like the drop down not smooth".
+   A native select opens the OS list, which no stylesheet reaches and which has
+   no palette and no motion. Everything below is built from the same tokens as
+   the rest of the chrome, so every accessibility setting reaches it for free.
+   No colour literal appears in this section — a literal is what made every
+   worker line invisible the first time this app grew a light ground. */
+.sel {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  /* A flex or grid item's min-width is auto, i.e. min-content, and it will not
+     shrink below its widest option. Same trap as a bare 1fr grid track. */
+  min-width: 0;
+  max-width: 100%;
+}
+.sel-trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  text-align: left;
+  font-size: 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  background: transparent;
+  color: var(--cream);
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-out), background 140ms var(--ease-out);
+}
+.sel-trigger:hover {
+  border-color: var(--gold-line);
+}
+.sel[data-open="true"] .sel-trigger {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+}
+/* One cell, two children stacked: the value that shows, and a copy of every
+   label that only reserves width. */
+.sel-label-box {
+  display: grid;
+  min-width: 0;
+}
+.sel-label-box > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.sel-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sel-sizer {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+.sel-sizer > span {
+  display: block;
+  white-space: nowrap;
+}
+.sel-caret {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  color: var(--grey);
+  transition: transform 200ms var(--ease-out), color 160ms var(--ease-out);
+}
+.sel-caret::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 1px;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+.sel-trigger:hover .sel-caret {
+  color: var(--cream);
+}
+/* The control answers the click itself, not only the popup. */
+.sel[data-open="true"] .sel-caret {
+  transform: rotate(180deg);
+  color: var(--gold-2);
+}
+
+/* Fixed, measured off the trigger: no ancestor's overflow can clip it and
+   opening it never widens the page. */
+.sel-pop {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  overflow: hidden;
+  color: var(--cream);
+  animation: selPopDown 190ms var(--ease-out) both;
+  transform-origin: top center;
+}
+.sel-pop.up {
+  animation-name: selPopUp;
+  transform-origin: bottom center;
+}
+/* ⚠️ Transform only. A running animation whose clock is frozen in a throttled
+   tab pins the element at its `from` keyframe and overrides its own opacity, so
+   `from { opacity: 0 }` here would be a popup that never appears. */
+@keyframes selPopDown {
+  from {
+    transform: translateY(-7px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes selPopUp {
+  from {
+    transform: translateY(7px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+/* The exit may fade — it is leaving, and a frozen exit costs nothing. */
+.sel-pop.closing {
+  pointer-events: none;
+  animation: selPopOut 130ms var(--ease-out) both;
+}
+@keyframes selPopOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.99);
+  }
+}
+.sel-list {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The space is made first, then the rows arrive in it. */
+.sel-opt {
+  padding: 8px 10px 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  animation: selOptIn 200ms var(--ease-out) both;
+  animation-delay: calc(var(--d, 0) * 16ms);
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+@keyframes selOptIn {
+  from {
+    transform: translateX(-7px);
+  }
+  to {
+    transform: none;
+  }
+}
+.sel-pop.closing .sel-opt {
+  animation: none;
+}
+.sel-opt.on {
+  background: var(--gold-dim);
+}
+/* The chosen row is marked by a leading edge and a weight, never by hue alone —
+   the same device the report card uses for a handled sign. */
+.sel-opt.is {
+  box-shadow: inset 2px 0 0 var(--gold);
+  color: var(--gold-2);
+  font-weight: 600;
+}
+/* Measured, not eyeballed: the light ground's gold #8A5E1C reads 4.91 on the
+   page but only 4.48 on this popup's own surface — under AA. So on cream the
+   gold stays in the leading edge (4.48 is fine for a graphic) and the row keeps
+   the ink for its words. */
+:root[data-theme="light"] .sel-opt.is {
+  color: var(--cream);
+  box-shadow: inset 2px 0 0 var(--gold-2);
+}
+
+/* where the picker sits in each row */
+.form-row .sel {
+  flex: none;
+}
+.inputs .type .sel {
+  flex: none;
+  width: 118px;
+}
+
+/* --- accessibility settings reach it like everything else --- */
+.big-targets .sel-trigger {
+  min-height: 46px;
+}
+.big-targets .sel-opt {
+  padding: 13px 12px 13px 14px;
+}
+.high-contrast .sel-trigger,
+.high-contrast .sel-pop {
+  border-width: 2px;
+}
+/* Nothing here blurs, but a wash over text is the same complaint: make the
+   surfaces and the highlight solid. */
+.reduce-transparency .sel-trigger {
+  background: var(--ink-2);
+}
+.reduce-transparency .sel[data-open="true"] .sel-trigger,
+.reduce-transparency .sel-opt.on {
+  background: var(--ink-3);
+}
+.line-spacing .sel-opt,
+.line-spacing .sel-value {
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+}
+/* The options are words being read, so they take the text size. */
+:root[data-text="1"] .sel-trigger,
+:root[data-text="1"] .sel-opt {
+  font-size: 15px;
+}
+:root[data-text="2"] .sel-trigger,
+:root[data-text="2"] .sel-opt {
+  font-size: 16px;
+}
+:root[data-text="3"] .sel-trigger,
+:root[data-text="3"] .sel-opt {
+  font-size: 18px;
+}
+/* A delay survives `animation-duration: 1ms`, so it has to be zeroed by name. */
+.reduce-motion .sel-opt {
+  animation-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sel-opt {
+    animation-delay: 0ms !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .sel-trigger {
+    min-height: 40px;
+  }
+  .setup .sel {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+  .inputs .type .sel {
+    width: 112px;
+  }
+}

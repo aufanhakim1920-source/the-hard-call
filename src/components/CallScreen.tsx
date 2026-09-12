@@ -8,9 +8,20 @@ import { useSpeech } from "../lib/speech";
 import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
 import { PHONE, useMedia } from "../lib/useMedia";
+import { Select } from "./Select";
 import { Sheet, type Detent } from "./Sheet";
 import { SignStack } from "./SignStack";
 import { Transcript } from "./Transcript";
+
+const DIRECTION_OPTIONS = [
+  { value: "outbound", label: "Bank rang them" },
+  { value: "inbound", label: "They rang the bank" },
+];
+
+const SPEAKER_OPTIONS = [
+  { value: "customer", label: "Customer" },
+  { value: "worker", label: "Worker" },
+];
 
 export interface CallProps {
   mode: Mode;
@@ -154,10 +165,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             <span className="label">Call with</span>
             <input className="field" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} aria-label="Customer name" />
             <input className="field" value={customer.product} onChange={(e) => setCustomer({ ...customer, product: e.target.value })} aria-label="Product" />
-            <select className="field" value={customer.direction} onChange={(e) => setCustomer({ ...customer, direction: e.target.value as Customer["direction"] })} aria-label="Direction">
-              <option value="outbound">Bank rang them</option>
-              <option value="inbound">They rang the bank</option>
-            </select>
+            <Select value={customer.direction} onChange={(v) => setCustomer({ ...customer, direction: v as Customer["direction"] })} options={DIRECTION_OPTIONS} label="Direction" />
           </div>
         ) : (
           <div className="who">
@@ -265,10 +273,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                   {speech.listening ? "Listening" : "Listen"}
                 </button>
                 <form className="type" onSubmit={submitTyped}>
-                  <select className="field" value={typedAs} onChange={(e) => setTypedAs(e.target.value as Speaker)} aria-label="Who said it">
-                    <option value="customer">Customer</option>
-                    <option value="worker">Worker</option>
-                  </select>
+                  <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
                   <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
                 </form>
                 {onDemo && !started && (
