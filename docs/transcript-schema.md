@@ -35,7 +35,7 @@ What the detector emits. One per obligation triggered.
 {
   "flag_id": "f_001",
   "call_id": "call_001",
-  "turn_ref": { "speaker": "customer", "start_ms": 51200 },
+  "raised_at": { "speaker": "customer", "start_ms": 51200 },
   "rule_id": "NCC_72_ORAL_NOTICE",
   "obligation": "Assess hardship notice and notify the decision",
   "deadline_days": 21,
@@ -46,7 +46,7 @@ What the detector emits. One per obligation triggered.
 }
 ```
 
-`turn_ref` points into the transcript instead of copying the customer's words, so the sensitive utterance is never duplicated into the flag store.
+`raised_at` points into the transcript instead of copying the customer's words, so the sensitive utterance is never duplicated into the flag store.
 
 ## The privacy rule, in one line
 
