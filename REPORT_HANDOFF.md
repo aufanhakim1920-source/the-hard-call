@@ -192,3 +192,76 @@ Still open, deliberately not touched here:
   previous call whose stored `handled` may have been written under the old
   meaning ("what the worker ticked"). The comparison can read low for reasons
   that have nothing to do with the worker.
+
+## The eval was scoring the engine against the wrong ground truth
+
+`eval/results.json` (gemini-2.5-flash, 40 cases) records `hardship-request` at
+recall **0.533** — 15 support, 8 true positives, **7 false negatives**. Read
+against `docs/hardship-flag-rules.md`, seven of those eight recorded failures
+are the eval's expectations being wrong, not the engine.
+
+The rules doc is explicit. It triggers on "inability to meet obligations over
+the **medium term**, a problem they cannot resolve **within about 6 months**".
+It does **not** trigger on "temporary difficulty with a stated near-term
+recovery". `fixtures/expected/expected_flags.json` says the same thing harder:
+on call_002 firing is "a false positive and the single most important failure to
+avoid". The cases still expected a fire on exactly that shape.
+
+Corrected, each with the reason in its `note`:
+
+| Case | The customer's words | Was | Now |
+|---|---|---|---|
+| c01 | "a bit behind… things are pretty tight" | hardship-request | — |
+| c02 | "push the payment back a couple of weeks? I get paid on the twentieth" | hardship-request | — |
+| c03 | "hours got cut… can it wait till the next one?" | + hardship-request | job-loss |
+| c08 | "the funeral's cleaned me out. I'm going to miss this one too" | + hardship-request | bereavement |
+| c09 | "the floods took the ground floor… no way I can pay this month" | + hardship-request | disaster |
+| c11 | "pay half this month and catch the rest up next month" | hardship-request | — |
+| c34 | "put it all on the pokies… nothing left this fortnight" | + hardship-request | gambling |
+
+c01 is the informal register the ABA trains staff on, with no duration and no
+statement of inability — the doc makes that register the signal to start
+listening, not the trigger. c02 and c11 state the recovery inside the same
+sentence. c03, c08 and c34 are a cause plus a single payment.
+
+**c09 and c34 are arguable and marked so in their notes.** A flood or a wiped-out
+fortnight names no recovery either, and the turn after usually settles it. They
+are scored as single payments here because that is what the customer actually
+said about the repayments. Raise both with Laural before the freeze.
+
+The eighth recorded failure, **c24** (a few hours without power scored as
+`disaster`), is a real engine false positive and was left alone.
+
+`eval/cases.json` is nominally in this part but TronJuan has been editing it —
+please read this table before the next tuning pass, because the recall number
+moves for reasons that have nothing to do with the model.
+
+**`eval/results.json` now predates the correction and must not be quoted.** Re-run
+`npm run eval` with a key; the per-key recall for `hardship-request` should rise
+without the engine changing at all, because seven of its "misses" were correct
+refusals.
+
+### inform-hardship-provisions was unscoreable, not merely unscored
+
+It sat at `support: 0` because `eval/run.mjs` hardcoded `existingKeys: []`, and
+the ABA duty only exists once a notice has been raised — its precondition could
+not be written down. A case may now carry `existingKeys` and `lessons`, and
+`run.mjs` warns when a case expects the tip with no notice on record.
+
+Three cases added: c42 fires (fixtures call_003 at 103200ms — the customer asks
+outright and the worker substitutes a file note), c43 must not fire (same
+question, no notice yet), c44 must not fire (the worker has already named the
+process and offered to lodge it). Without c44 the engine could score well by
+always firing the tip once a notice exists.
+
+### The transcript is evidence, not instructions
+
+`flags.ts` now carries the guard `report.ts` has had since the verdicts work,
+and it is the endpoint that reads the customer's words on every sentence.
+Manager `lessons` are no longer introduced as rules that "override your
+defaults": they refine wording and caution, they cannot remove the legal tests,
+and nothing in them can make the model fire a sign the words do not support.
+`eval/flags.test.mjs` asserts the guard is present with and without lessons,
+that a lesson still reaches the model, and that a lesson instructing the model
+to ignore the period test and invent evidence still produces no sign — the
+gates, not the prompt, are what hold that.
