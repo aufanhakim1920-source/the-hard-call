@@ -101,6 +101,31 @@ ${lessons.length ? `\nLessons from this team's manager (these override your defa
 Return JSON only.`;
 }
 
+/**
+ * Case, curly quotes and punctuation differ between what the model echoes back
+ * and what the transcript holds, so quotes are compared on a flattened form.
+ * Anything that still fails to match is a quote the call never contained.
+ */
+/**
+ * A real calendar day, not merely the right shape. "2026-13-45" passes a regex
+ * and then makes addDays() throw, which returned a 502 and cost that sentence
+ * every sign it had found. The round trip also catches 30 February.
+ */
+function validISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const d = new Date(value + "T00:00:00Z");
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
+}
+
+function flatten(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\u2018\u2019\u02bc]/g, "'")
+    .replace(/[^a-z0-9']+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export async function handle(req: Request): Promise<Response> {
   const pre = preflight(req);
   if (pre) return pre;
@@ -115,7 +140,7 @@ export async function handle(req: Request): Promise<Response> {
   const newLine = lines.find((l) => l.id === body.newLineId) ?? lines[lines.length - 1];
   if (!newLine) return json(req, 400, { error: "no lines" });
   const existing = new Set(body.existingKeys ?? []);
-  const today = /^\d{4}-\d{2}-\d{2}$/.test(body.todayISO ?? "") ? body.todayISO : new Date().toISOString().slice(0, 10);
+  const today = validISODate(body.todayISO ?? "") ? body.todayISO : new Date().toISOString().slice(0, 10);
 
   const transcript = lines
     .map((l) => `${l.id === newLine.id ? ">>" : "  "} [${l.speaker}] ${l.text}`)
@@ -142,11 +167,55 @@ Today's date: ${today}`;
     // laural's fixtures: eval/fixtures.mjs.
     const periodOk = (s: ModelSign) => s.key !== "hardship-request" || s.period === "months_or_open_ended";
 
+    // The evidence gate. report.ts already refuses a judgement whose cited line
+    // does not exist (_shared/reportItems.ts); here the model's quote was taken
+    // on trust, so an invented sentence could carry a legal sign onto the screen
+    // and then be saved as a lesson from the report card. A sign that cannot
+    // produce words the call actually contained is not a sign.
+    //
+    // Matched against every line in the window, not only the newest: the ABA
+    // tip fires on what the worker did NOT say, so the words that made its duty
+    // live are usually an earlier turn. Matched line by line, so a quote cannot
+    // be stitched across two speakers' turns.
+    // Whose words these are. The live screen sends a new line as "unknown" and
+    // patches the speaker from this same answer, so the newest line is read the
+    // same way here — otherwise every sign on a live microphone line would look
+    // unattributed and be thrown away.
+    const spoken = lines.map((l) => ({
+      speaker: l.id === newLine.id && l.speaker === "unknown" ? data.speaker ?? "unknown" : l.speaker,
+      text: flatten(l.text),
+    }));
+    const evidenceOk = (s: ModelSign) => {
+      const quote = flatten(s.evidence ?? "");
+      if (!quote) return false;
+      const said = spoken.filter((line) => line.text.includes(quote));
+      if (!said.length) return false;
+      // A legal duty arises from what the CUSTOMER said. Worker lines are sent
+      // so the model has context, and the prompt says they almost never trigger
+      // a sign — but nothing enforced it, so a worker paraphrasing ("so you
+      // can't pay for a few months?") could start the 21-day clock from the
+      // bank's own mouth. A legal sign whose words exist ONLY in worker lines is
+      // dropped. "unknown" is left alone: it is not proof of either speaker.
+      return signDef(s.key)?.kind !== "legal" || said.some((line) => line.speaker !== "worker");
+    };
+
     const seen = new Set<string>();
-    const signs = (data.signs ?? [])
+    const kept = (data.signs ?? [])
       .filter((s) => s && SIGN_KEYS.includes(s.key) && !existing.has(s.key) && s.confidence >= 0.6)
       .filter(periodOk)
-      .filter((s) => (seen.has(s.key) ? false : (seen.add(s.key), true)))
+      .filter(evidenceOk)
+      .filter((s) => (seen.has(s.key) ? false : (seen.add(s.key), true)));
+
+    // The order gate. The ABA duty to mention hardship provisions only exists
+    // once a hardship notice has been raised, and the taxonomy says so — but a
+    // prompt rule cannot survive the line above it: periodOk drops the
+    // hardship-request out of this very answer and left its dependent tip
+    // standing, which put "tell them the hardship process exists" on screen for
+    // a process nobody had started. Decided here, after the drop, so it does
+    // not depend on the order the model happened to list the signs in.
+    const hardshipOnRecord = existing.has("hardship-request") || seen.has("hardship-request");
+    const signs = kept
+      .filter((s) => s.key !== "inform-hardship-provisions" || hardshipOnRecord)
       .map((s) => {
         const def = signDef(s.key)!;
         const dueDate = def.dueDays ? addDays(today, def.dueDays) : undefined;

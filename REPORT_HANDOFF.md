@@ -119,3 +119,76 @@ cloud metadata round-tripping remains a separate integration task.
 and a coaching-on/off prompt-invariance test. Identical transcript evidence
 must receive identical model inputs regardless of the coaching switch. This
 is an offline regression check, not a claim about actual model accuracy.
+
+## Live flag gates — for the live-call owner
+
+The `/api/flags` request and response shapes are unchanged. What changed is
+which signs survive, so the live screen can now receive fewer signs for the
+same model answer. Two deterministic gates were added in `api/flags.ts`,
+alongside the existing hardship `period` gate:
+
+- **Order.** `inform-hardship-provisions` is dropped unless a hardship notice
+  is already on screen (`existingKeys`) or fires in the same answer. The
+  taxonomy always said the ABA duty only exists once a notice has been raised,
+  but that was prompt text only: the period gate drops the `hardship-request`
+  out of an answer and left the dependent tip standing, which put "tell them
+  the hardship process exists" on screen for a process nobody had started.
+  Decided after the drop, so the result does not depend on the order the model
+  listed the signs in.
+- **Evidence.** A sign whose `evidence` quote cannot be found in the transcript
+  window is dropped. `report.ts` already refused a judgement citing a line that
+  does not exist; the flag engine took the model's quote on trust, so an
+  invented sentence could carry a legal sign onto the screen and then be saved
+  as a lesson from the report card. Comparison is case-, punctuation- and
+  curly-quote-insensitive, matched line by line so a quote cannot be stitched
+  across two turns. Matched against the whole window rather than the newest
+  line, because the ABA tip fires on what the worker did NOT say.
+- **Speaker.** A LEGAL sign whose quote exists only in worker lines is dropped,
+  because a statutory duty arises from what the customer said. The prompt
+  already said worker lines almost never trigger a sign, but nothing enforced
+  it, so a worker paraphrasing ("so you can't pay for a few months?") could
+  start the 21-day clock from the bank's own mouth. Tips may still quote the
+  worker. The newest line is attributed from the same answer's `speaker` field,
+  exactly as the live screen patches it, so a sign on a live microphone line —
+  which arrives as `unknown` — is not thrown away; a line that stays `unknown`
+  is left alone, since it is not proof of either speaker.
+
+Dropping the sign is deliberate rather than blanking `evidence`: the live
+screen renders the quote as an unconditional button, so an empty string would
+leave an empty control there. A sign that cannot produce words the call
+actually contained is not a sign.
+
+`eval/flags.test.mjs` covers both gates offline with Gemini mocked, the way
+`report.test.mjs` does. Until now nothing exercised `api/flags.ts` without a
+Gemini key — `eval/run.mjs` and `eval/fixtures.mjs` both exit early without
+one — so the period gate, the single most legally consequential line in the
+file, had no regression cover on a machine without credentials. These tests
+assert what the code does with a model answer, including answers the real model
+should never give; they say nothing about model accuracy.
+
+Run the whole offline suite with `node --test eval/*.test.mjs`.
+
+`todayISO` is now checked for a real calendar day rather than the right shape.
+`2026-13-45` passed the regex, made `addDays` throw, and returned a 502 that
+cost that sentence every sign it had found; an unusable date falls back to the
+server's own date instead.
+
+On the report card, a degraded result no longer renders an empty "One thing for
+next time" box, and the copied report drops the bare `Tip:` line. A titled empty
+box read as the coach having nothing to say about the call, rather than as the
+write-up being unavailable.
+
+Still open, deliberately not touched here:
+
+- `flags.ts` has no "treat transcript text as evidence, never as instructions"
+  guard, which `report.ts` does have, and manager `lessons` are injected as
+  rules that override defaults.
+- `inform-hardship-provisions` has no case in `eval/cases.json`, while
+  `fixtures/expected/expected_flags.json` requires it for call_003 at 103200ms
+  and `eval/fixtures.mjs` already maps its rule id. The gate above is now
+  tested; the model's accuracy on that key still is not.
+- `handled` now means "verified handled" everywhere, including rows restored
+  from the cloud, but the report card's delta still compares it against a
+  previous call whose stored `handled` may have been written under the old
+  meaning ("what the worker ticked"). The comparison can read low for reasons
+  that have nothing to do with the worker.
