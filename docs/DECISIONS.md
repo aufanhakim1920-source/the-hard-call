@@ -304,3 +304,41 @@ Two more of the same family, both fixed: a `transform` keyframe ending on `none`
 a toast for its whole entrance (**183 px off**, only while moving), and a list reorder cannot be
 animated by a transition at all — it changes node order, not a property, so a ticked deadline
 teleported until it was given a FLIP.
+
+## Choosing the model: precision over recall, on purpose
+
+Measured on the same 41 cases, same run:
+
+| | `gemini-2.5-flash` | **`gemini-flash-latest`** (deployed) |
+|---|---|---|
+| precision | 0.97 | **1.00** |
+| recall | 0.81 | **0.74** |
+| p50 latency | 1.89 s | **1.71 s** |
+
+We kept the lower-recall model deliberately. **A false notice starts a 21-day clock the bank does not
+owe** and puts a customer into a hardship process they never asked for. A miss costs a prompt the
+worker did not get. The two errors are not symmetrical, so the metric that matters is not symmetrical
+either. 2.5-flash catches one more hardship case and pays for it with a false positive on "the storm
+knocked our power out".
+
+**And the recall number is not what it looks like.** Every one of the 11 misses is a
+`hardship-request` — not one is a statutory notice. Under the two-tier rule those are *requests*: a
+hint that should prompt the worker to ask, starting no clock and stored nowhere. The engine already
+detects them; the legal gate correctly refuses to call them notices, and until the request tier exists
+there is nowhere to put them. **That recall figure is the shape of an unbuilt feature, not a quality
+problem** — which is worth saying out loud rather than quietly reporting the better-looking model.
+
+---
+
+## A tier that only exists in the docs will be dropped at a boundary
+
+The transcript adapter hard-coded `kind: "legal"` on every incoming flag. So a request — a live prompt
+that starts no clock — was silently promoted to an obligation the moment it crossed into the report.
+
+Proved end to end: a call with **no obligation at all** came back reporting `caught: 1`, which reads as
+the worker having missed something that was never owed.
+
+The adapter now carries an explicit `tier`, defaulting to `notice` so any caller predating the field
+behaves exactly as before, and `caught` counts obligations only — in the server and the browser
+fallback alike. **An agreement written in a document is not implemented until the type system carries
+it across every boundary.**
