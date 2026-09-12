@@ -7,6 +7,11 @@ import { actions, useStore } from "../lib/store";
 import type { LessonKind, Report, ReportItem, Scenario, Session } from "../lib/types";
 import { uid } from "../lib/types";
 
+function evidenceTime(ms: number) {
+  const seconds = Math.floor(ms / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 function Delta({ now, prev, invert }: { now: number; prev?: number; invert?: boolean }) {
   if (prev === undefined) return <div className="delta">first call in this mode</div>;
   const d = now - prev;
@@ -97,7 +102,7 @@ export function ReportCard({
   const copy = async () => {
     const lines = [
       `The Hard Call — report card, ${fmtWhen(report.at)}`,
-      `${report.customer} · ${report.mode} · score ${report.score}`,
+      `${report.customer} · ${report.mode} · score ${report.scoreUnverified ? "not verified" : report.score}`,
       report.summary,
       ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
       ...report.deadlines.map((d) => `${d.label} ${fmtDate(d.date)} — ${d.title}`),
@@ -123,8 +128,8 @@ export function ReportCard({
         </div>
         <div className="spacer" style={{ flex: 1 }} />
         <div className="score">
-          <b>{report.score}</b>
-          <span>/ 100</span>
+          <b>{report.scoreUnverified ? "—" : report.score}</b>
+          <span>{report.scoreUnverified ? "Not verified" : "/ 100"}</span>
         </div>
       </div>
 
@@ -147,6 +152,7 @@ export function ReportCard({
       </div>
 
       <p className="summary">{report.summary}</p>
+      {!!report.unverified && <p className="muted small">{report.unverified} item(s) could not be verified from the transcript. These are not counted as missed.</p>}
 
       <div className="verdicts">
         {report.items.map((i) => (
@@ -155,6 +161,10 @@ export function ReportCard({
             <div>
               <div className="t">{i.title}</div>
               <div className="n">{i.note}</div>
+              {i.evidence?.map((e) => {
+                const line = session.lines.find((l) => l.id === e.lineId && l.speaker === "worker");
+                return <div className="n" key={e.lineId}><b className="mono">{evidenceTime(e.offsetMs)}</b> · {line ? `Worker: “${line.text}”` : "Worker evidence unavailable in this session."}</div>;
+              })}
               <div className="acts">
                 {correcting === i.signId ? (
                   <form
