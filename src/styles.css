@@ -1633,3 +1633,8 @@ select.field option {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.report .rv-timeline,
+.report .rv-bars {
+  margin: 6px 0 22px;
+}

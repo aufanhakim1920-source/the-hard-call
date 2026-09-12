@@ -7,6 +7,9 @@ import { actions, useStore } from "../lib/store";
 import type { LessonKind, Report, ReportItem, Scenario, Session } from "../lib/types";
 import { uid } from "../lib/types";
 import { useCountUp } from "../lib/useCountUp";
+import { CallTimeline } from "./CallTimeline";
+import { ScoreRing } from "./ScoreRing";
+import { SignBars } from "./SignBars";
 
 function Delta({ now, prev, invert }: { now: number; prev?: number; invert?: boolean }) {
   if (prev === undefined) return <div className="delta">first call in this mode</div>;
@@ -128,10 +131,7 @@ export function ReportCard({
           </span>
         </div>
         <div className="spacer" style={{ flex: 1 }} />
-        <div className="score">
-          <b>{report.score}</b>
-          <span>/ 100</span>
-        </div>
+        <ScoreRing score={report.score} />
       </div>
 
       <div className="stats">
@@ -152,7 +152,11 @@ export function ReportCard({
         </div>
       </div>
 
+      <CallTimeline session={session} report={report} />
+
       <p className="summary">{report.summary}</p>
+
+      <SignBars items={report.items} />
 
       <div className="verdicts">
         {report.items.map((i) => (

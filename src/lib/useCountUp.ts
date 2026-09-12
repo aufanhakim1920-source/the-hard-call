@@ -7,10 +7,12 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3.2);
 export function useCountUp(to: number, ms = 700, delay = 0): number {
   const [v, setV] = useState(0);
   useEffect(() => {
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (typeof window !== "undefined" && (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden)) {
       setV(to);
       return;
     }
+    // A hidden tab gets no animation frames; never leave the number at 0.
+    const safety = window.setTimeout(() => setV(to), ms + delay + 150);
     let raf = 0;
     let start = 0;
     const tick = (now: number) => {
@@ -24,7 +26,10 @@ export function useCountUp(to: number, ms = 700, delay = 0): number {
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(safety);
+    };
   }, [to, ms, delay]);
   return v;
 }
