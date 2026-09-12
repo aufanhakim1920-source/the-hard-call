@@ -725,7 +725,7 @@
       "job-loss"
     ],
     "note": "Income change but explicitly not asking for relief. Tests hardship over-firing on the word 'laid off'."
-  }
+  },
   {
   "id": "c41",
   "direction": "outbound",
