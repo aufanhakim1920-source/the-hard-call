@@ -116,7 +116,9 @@ export function ReportCard({
       report.summary,
       ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
       ...report.deadlines.map((d) => `${d.label} ${fmtDate(d.date)} — ${d.title}`),
-      `Tip: ${report.tip}`,
+      // No model write-up means no tip. A bare "Tip:" pasted into a case note
+      // reads as advice that went missing, rather than one that was never given.
+      ...(report.tip.trim() ? [`Tip: ${report.tip}`] : []),
     ];
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
@@ -133,7 +135,7 @@ export function ReportCard({
           <span className="label">Report card · {report.mode}</span>
           <h1>{report.customer}</h1>
           <span className="muted small">
-            {fmtWhen(report.at)} · {Math.round(report.durationSec / 60)} min {report.durationSec % 60} s · judged by {report.model}
+            {fmtWhen(report.at)} · {Math.floor(report.durationSec / 60)} min {report.durationSec % 60} s · judged by {report.model}
           </span>
         </div>
         <div className="spacer" style={{ flex: 1 }} />
@@ -241,10 +243,21 @@ export function ReportCard({
         </div>
       )}
 
-      <div className="tip-box">
-        <div className="label">One thing for next time</div>
-        {report.tip}
-      </div>
+      {/* A degraded card carries no tip, and a titled empty box reads as the
+          coach having nothing to say about the call. Say why instead. */}
+      {report.tip.trim() ? (
+        <div className="tip-box">
+          <div className="label">One thing for next time</div>
+          {report.tip}
+        </div>
+      ) : report.degraded ? (
+        <div className="tip-box">
+          <div className="label">One thing for next time</div>
+          {report.degradedReason === "quota"
+            ? "Not available: the AI service returned a quota or rate-limit error. The records above were kept by the call itself."
+            : "Not available: the AI could not be reached. The records above were kept by the call itself."}
+        </div>
+      ) : null}
 
       <div className="actions">
         <button className="btn gold" onClick={onNew}>
