@@ -1,7 +1,7 @@
+import type { CSSProperties } from "react";
 import type { Report } from "../lib/types";
 import { useCountUp } from "../lib/useCountUp";
 import { ledger } from "./report-math";
-import { useGrown } from "./use-grown";
 import "./report-visuals.css";
 
 // "3 of 4 answered" instead of four percentages. Natural frequencies — whole
@@ -14,13 +14,15 @@ import "./report-visuals.css";
 // dotted slot. All three survive greyscale and high contrast, and the accent
 // is spent on the one thing the worker still has to fix.
 
-const COUNT_MS = 620;
+// Only the NUMERATOR counts. How many signs were raised was never in question
+// — it is the whole the fraction is read against — and counting it up put
+// "0 of 0", then "2 of 3", then the truth on screen in the first half second.
+// A denominator that moves makes every intermediate frame a different claim.
+const COUNT_MS = 420;
 
 export function ReportLedger({ report, previous }: { report: Report; previous: Report[] }) {
   const l = ledger(report.items);
-  const grown = useGrown();
   const nAnswered = useCountUp(l.answered, COUNT_MS);
-  const nTotal = useCountUp(l.total, COUNT_MS);
 
   if (l.total === 0) {
     return <p className="rv-empty">No signs were raised on this call, so there is nothing to score.</p>;
@@ -53,14 +55,14 @@ export function ReportLedger({ report, previous }: { report: Report; previous: R
           <span className="sr-only">{sentence}</span>
           {nothingJudged ? (
             <span aria-hidden="true">
-              <b>{nTotal}</b>
+              <b>{l.total}</b>
               <em>signs raised · none verified</em>
             </span>
           ) : (
             <span aria-hidden="true">
               <b>{nAnswered}</b>
               <i>of</i>
-              <b>{nTotal}</b>
+              <b>{l.total}</b>
               <em>signs answered</em>
             </span>
           )}
@@ -68,10 +70,12 @@ export function ReportLedger({ report, previous }: { report: Report; previous: R
         <AnsweredHistory report={report} previous={previous} />
       </div>
 
+      {/* True widths on the first frame — the bar rises into place, it does not
+          inflate from zero. See the arrival note at the top of the stylesheet. */}
       <div className="rv-whole" aria-hidden="true">
-        {l.answered > 0 && <span className="rv-seg answered" style={{ width: grown ? pct(l.answered) : "0%" }} />}
-        {l.missed > 0 && <span className="rv-seg missed" style={{ width: grown ? pct(l.missed) : "0%" }} />}
-        {l.unknown > 0 && <span className="rv-seg unknown" style={{ width: grown ? pct(l.unknown) : "0%" }} />}
+        {l.answered > 0 && <span className="rv-seg answered" style={{ width: pct(l.answered) }} />}
+        {l.missed > 0 && <span className="rv-seg missed" style={{ width: pct(l.missed) }} />}
+        {l.unknown > 0 && <span className="rv-seg unknown" style={{ width: pct(l.unknown) }} />}
       </div>
 
       <div className="rv-keys" aria-hidden="true">
@@ -113,7 +117,6 @@ const HIST_MAX = 5;
 const HIST_H = 32;
 
 function AnsweredHistory({ report, previous }: { report: Report; previous: Report[] }) {
-  const grown = useGrown(1100);
   const earlier = previous.slice(0, HIST_MAX).reverse();
   const all = [...earlier, report].map((r) => ({ r, l: ledger(r.items) })).filter((x) => x.l.total > 0);
   if (all.length < 2) return null;
@@ -133,7 +136,7 @@ function AnsweredHistory({ report, previous }: { report: Report; previous: Repor
             <span
               className={"rv-hist-bar" + (here ? " here" : "")}
               key={x.r.callId + i}
-              style={{ height: grown ? h : 0 }}
+              style={{ height: h, "--rv-i": i } as CSSProperties}
               title={`${x.l.answered} of ${x.l.total} answered`}
             />
           );

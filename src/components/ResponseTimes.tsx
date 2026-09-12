@@ -15,9 +15,15 @@ import "./report-visuals.css";
 // empty lane, because a zero-width bar would read as "answered instantly" and
 // a full-width one as "took forever". Neither is known, so neither is drawn.
 
-const GROW_MS = 760;
+const GROW_MS = 620;
+// The lanes arrive one at a time, top to bottom. Simultaneous arrival is the
+// one arrangement in which four durations cannot be compared as they land.
+const STAGGER_MS = 90;
 
 export function ResponseTimes({ session, report }: { session: Session; report: Report }) {
+  const gaps = responseGaps(session, report);
+  const lanes = gaps.length;
+
   // Grown at first paint when there will be no frames to watch: reduced motion,
   // or a hidden tab. The timeout is the second net — a bar stuck at 0% is not a
   // subtler bar, it is a wrong number.
@@ -25,15 +31,16 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
   useEffect(() => {
     if (grown) return;
     const raf = requestAnimationFrame(() => setGrown(true));
-    const safety = window.setTimeout(() => setGrown(true), GROW_MS + 200);
+    // Long enough to clear the LAST lane's delay as well as its own duration —
+    // a net that fires before the slowest thing it is protecting is not a net.
+    const safety = window.setTimeout(() => setGrown(true), GROW_MS + lanes * STAGGER_MS + 200);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(safety);
     };
-  }, [grown]);
+  }, [grown, lanes]);
 
-  const gaps = responseGaps(session, report);
-  if (gaps.length === 0) return null;
+  if (lanes === 0) return null;
 
   const measured = gaps.filter((g) => g.gapMs !== undefined).map((g) => g.gapMs as number);
   const axis = niceSpan(measured.length > 0 ? Math.max(...measured) : 10000);
@@ -52,7 +59,7 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
       </div>
 
       <div className="rv-rt-rows">
-        {gaps.map(({ item, gapMs }) => {
+        {gaps.map(({ item, gapMs }, i) => {
           const has = gapMs !== undefined;
           return (
             <div className={"rv-rt-row " + item.verdict + (has ? "" : " none")} key={item.signId}>
@@ -62,7 +69,20 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
               </div>
               <div className="rv-rt-track" aria-hidden="true">
                 <i className="rv-rt-fire" />
-                {has && <i className="rv-rt-bar" style={{ width: grown ? `${Math.min(100, ((gapMs as number) / axis) * 100)}%` : "0%" }} />}
+                {/* Final width on the first frame; only the scale moves, so the
+                    row is never laid out again while the bar sweeps. */}
+                {has && (
+                  <i
+                    className="rv-rt-bar"
+                    style={
+                      {
+                        width: `${Math.min(100, ((gapMs as number) / axis) * 100)}%`,
+                        "--grow": grown ? 1 : 0,
+                        "--rv-d": `${i * STAGGER_MS}ms`,
+                      } as CSSProperties
+                    }
+                  />
+                )}
               </div>
               <div className="rv-rt-value">
                 {has ? (

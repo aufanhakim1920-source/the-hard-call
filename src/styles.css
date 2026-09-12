@@ -12,6 +12,19 @@
   --gold-2: #dcb373;
   --gold-dim: rgba(199, 156, 90, 0.14);
   --gold-line: rgba(199, 156, 90, 0.55);
+  /* --- what sits ON the gold fill. ---
+     --gold is the one colour that does NOT invert between the grounds, so the
+     thing drawn on top of it must not invert either. These were `var(--ink)`,
+     and --ink IS cream on the light ground: the primary button, the skip link,
+     the legal sign's buttons and the sheet counter were all cream on gold at
+     2.18:1. Ink on gold is 6.56:1 on both grounds. */
+  --on-gold: #1c1f24;
+  --on-gold-line: rgba(28, 31, 36, 0.62); /* 3.17:1 on gold — WCAG 1.4.11 */
+  /* The hover fill, carrying --on-gold on top of it. */
+  --gold-hi: var(--gold-2); /* ink on #DCB373 is 8.45:1 */
+  /* Gold as TEXT on the --gold-dim tint (the tab badge). The tint is not the
+     page, so it gets its own measurement. */
+  --gold-on-tint: var(--gold-2); /* 6.62:1 on the tinted ground */
   --line: rgba(154, 163, 173, 0.16);
   --line-2: rgba(154, 163, 173, 0.34);
   --ok: #9fc9a8; /* 8.97:1 on ink */
@@ -90,7 +103,7 @@ textarea {
 }
 ::selection {
   background: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
 :focus-visible {
   outline: 2px solid var(--gold);
@@ -197,7 +210,7 @@ textarea {
   padding: 0 5px;
   border-radius: 9px;
   background: var(--gold-dim);
-  color: var(--gold-2);
+  color: var(--gold-on-tint);
   font-family: var(--mono);
   font-size: 11px;
   line-height: 18px;
@@ -278,11 +291,11 @@ textarea {
 .btn.gold {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
 .btn.gold:hover {
-  background: var(--gold-2);
-  border-color: var(--gold-2);
+  background: var(--gold-hi);
+  border-color: var(--gold-hi);
 }
 .btn.ghost {
   border-color: transparent;
@@ -309,8 +322,8 @@ textarea {
   color: var(--grey);
 }
 .btn.gold kbd {
-  border-color: rgba(28, 31, 36, 0.35);
-  color: rgba(28, 31, 36, 0.75);
+  border-color: var(--on-gold-line);
+  color: var(--on-gold);
 }
 .rec-dot {
   width: 8px;
@@ -340,9 +353,12 @@ textarea.field {
   padding: 8px 10px;
   resize: vertical;
 }
+/* A placeholder is text a person has to read. The literal here was grey at 0.6
+   — 3.31:1 on the dark field and 1.65:1 on the light one, because the alpha was
+   chosen against one ground and the field is translucent over both. */
 input.field::placeholder,
 textarea.field::placeholder {
-  color: rgba(154, 163, 173, 0.6);
+  color: var(--grey);
 }
 input.field:focus,
 select.field:focus,
@@ -556,7 +572,7 @@ select.field option {
 .ln .meta .time {
   font-family: var(--mono);
   font-size: 11px;
-  color: rgba(154, 163, 173, 0.6);
+  color: var(--grey);
 }
 .ln .text {
   font-size: 15px;
@@ -578,7 +594,10 @@ select.field option {
 .ln mark {
   background: linear-gradient(transparent 62%, var(--gold-dim) 62%);
   color: inherit;
-  box-shadow: inset 0 -2px 0 var(--gold);
+  /* --gold-2, not --gold: the underline is the mark, and plain gold is 2.18:1
+     on cream. This reads 8.45:1 on ink and 4.91:1 on cream, so the ground
+     override that used to patch it with a literal is gone. */
+  box-shadow: inset 0 -2px 0 var(--gold-2);
   border-radius: 1px;
   padding: 0 1px;
 }
@@ -587,11 +606,11 @@ select.field option {
   vertical-align: middle;
 }
 .ln.interim .text {
-  color: rgba(154, 163, 173, 0.7);
+  color: var(--text-3);
 }
 .ln.interim .text::after {
   content: "▍";
-  color: var(--gold);
+  color: var(--gold-2);
   animation: blink 1s steps(2) infinite;
 }
 @keyframes blink {
@@ -705,13 +724,17 @@ select.field option {
     repeating-linear-gradient(135deg, rgba(28, 31, 36, 0.05) 0 2px, transparent 2px 8px),
     var(--gold);
   border-color: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
+/* A handled sign is stood down, not switched off — the words still say which
+   obligation it was and when it was answered. The old treatment dimmed it
+   twice: --grey on the sunken ground is 4.08:1 on cream before any opacity,
+   and 0.9 on top took it to 3.45:1. The ground and the quieter token carry the
+   "done" reading now; nothing is faded. */
 .sign.done {
   background: var(--ink-3);
   border-color: var(--line);
-  color: var(--grey);
-  opacity: 0.9;
+  color: var(--text-2);
 }
 .sign .head {
   display: flex;
@@ -806,9 +829,22 @@ select.field option {
   opacity: 1;
   text-decoration: underline;
 }
+/* Opacity is a colour chosen blind: it composites against whatever happens to
+   be behind it, so the same 0.75 reads 8.56:1 on the plain card and 3.93:1 on
+   the gold legal one. The quiet tiers keep their fade only where there is
+   headroom for it. On the two cards that bring their own ground the hierarchy
+   is carried by size and weight instead, which survives both grounds:
+   ink on the legal card is 6.05:1, and 4.81:1 inside its ask panel. */
+.sign.legal .kind,
+.sign.legal .quote,
+.sign.legal .ask small,
+.sign.done .kind,
+.sign.done .quote {
+  opacity: 1;
+}
 .sign.legal .btn {
-  border-color: rgba(28, 31, 36, 0.4);
-  color: var(--ink);
+  border-color: var(--on-gold-line);
+  color: var(--on-gold);
 }
 .sign.legal .btn:hover {
   background: rgba(28, 31, 36, 0.12);
@@ -987,7 +1023,7 @@ select.field option {
   margin-top: 6px;
 }
 .stat .delta.up {
-  color: #9fc9a8;
+  color: var(--ok);
 }
 .stat .delta.down {
   color: var(--bad);
@@ -1507,7 +1543,7 @@ select.field option {
 .sheet-count.on {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
 .sheet-title {
   flex: 1;
@@ -1979,7 +2015,7 @@ select.field option {
   top: -60px;
   z-index: 60;
   background: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
   padding: 10px 16px;
   border-radius: var(--r-ctl);
   font-weight: 600;
@@ -2107,7 +2143,7 @@ select.field option {
 }
 .a11y-row.on .a11y-knob {
   transform: translateX(16px);
-  background: var(--ink);
+  background: var(--on-gold);
 }
 .a11y-text {
   display: flex;
@@ -2145,7 +2181,7 @@ select.field option {
 }
 .a11y-seg button.on {
   background: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
   font-weight: 600;
 }
 
@@ -2245,6 +2281,14 @@ select.field option {
      go: anything dimmer than about 5:1 fails. */
   --text-3: rgba(28, 31, 36, 0.66);
   --sheet-weave: rgba(28, 31, 36, 0.05);
+  /* --gold-2 darkens to #8A5E1C here so it can be TEXT on cream (4.91:1). As a
+     hover FILL under ink it is only 2.91:1, so the gold button deepens instead
+     of darkening all the way: ink on #B98741 is 5.20:1. */
+  --gold-hi: #b98741;
+  /* And on the tab badge's --gold-dim tint the ground is rgb(225,215,199), not
+     the page — #8A5E1C drops from 4.91:1 to 3.99:1 there. #7A5214 reads
+     4.84:1, and is the same value the high-contrast light ground already uses. */
+  --gold-on-tint: #7a5214;
 }
 :root[data-theme="light"] body::before {
   opacity: 0.035;
@@ -2264,32 +2308,17 @@ select.field option {
 :root[data-theme="light"] .signs {
   background: rgba(28, 31, 36, 0.05);
 }
-:root[data-theme="light"] .sign.legal {
-  color: #1c1f24;
-}
-:root[data-theme="light"] .a11y-row.on .a11y-knob,
-:root[data-theme="light"] .a11y-seg button.on {
-  color: #1c1f24;
-}
-/* Two faults in the switch, both only visible on cream, both found by
-   measuring rather than looking:
-   1. The blanket .a11y-track rule above lands after `.a11y-row.on .a11y-track`
-      and ties on specificity, so the ON fill — the strongest signal a switch
-      has — was being erased on this ground. Position and border still carried
-      the state, but far more faintly than on the dark one.
-   2. The knob is `--ink`, and --ink IS cream here: cream on gold measures
-      2.18:1, the same failure the vault recorded for gold as text. The part
-      that carries the state needs 3:1 (WCAG 1.4.11), so it goes to real ink
-      on gold, 6.56:1. */
+/* One real fault left in the switch, and it is a cascade one rather than a
+   colour one: the blanket .a11y-track rule above lands after
+   `.a11y-row.on .a11y-track` and ties on specificity, so the ON fill — the
+   strongest signal a switch has — was being erased on this ground.
+   (The knob and the segment label used to be patched back to ink here too.
+   That was the same bug in three places: `var(--ink)` on a gold fill, where
+   --ink is cream on this ground and measures 2.18:1. They all read --on-gold
+   now and need no ground-specific patch.) */
 :root[data-theme="light"] .a11y-row.on .a11y-track {
   background: var(--gold);
   border-color: var(--gold);
-}
-:root[data-theme="light"] .a11y-row.on .a11y-knob {
-  background: #1c1f24;
-}
-:root[data-theme="light"] .ln .text mark {
-  box-shadow: inset 0 -2px 0 #8a5e1c;
 }
 
 /* --- higher contrast (works on either ground) --- */

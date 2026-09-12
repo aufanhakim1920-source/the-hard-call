@@ -12,6 +12,49 @@
    on cream and is only ever a tint (--gold-dim) or a fill with ink on top.
    Tokens only. No boxes: hairlines, channels and gaps do the separating. */
 
+/* ---------- how this card arrives ----------
+
+   Heer & Robertson measured STAGED transitions as read more accurately than
+   simultaneous ones. The card arrives in the order it is read — the fraction,
+   then the split, then the answer times one lane at a time — instead of one
+   undifferentiated 900ms swell where every chart moves at once.
+
+   Two rules came out of applying that here:
+
+   1. Only the chart whose growth MEANS something grows. An answer-time bar
+      sweeping out from the fire line is a duration elapsing, which is what the
+      number under it says. The ledger's split bar growing from zero is not a
+      reading at all — it is "0 of 4" held on screen for 820ms, and the card is
+      meant to be grasped in about two seconds. That bar is true on its first
+      frame now and arrives by rising into place.
+
+   2. Nothing moves by width or height. Those relay out the row on every frame,
+      and four answer lanes, three ledger segments and a history strip all
+      reflowing together was the most expensive thing this card did.
+
+   --grow is a REGISTERED property so a scale and its counter-scale read the
+   same interpolated number on every frame — that is what keeps the 2px leading
+   edge exactly 2px the whole way across. Unregistered, it is a plain variable,
+   the transition is skipped and every chart simply arrives finished: the
+   failure mode of a decoration is "less pretty", never "not there". */
+@property --grow {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* An entrance moves an element that is ALREADY VISIBLE. Frozen at frame 0 in a
+   throttled tab this reads correctly, 7px low — never absent, never zero.
+   See the vault note "An Entrance Must Not Gate Visibility". */
+@keyframes rvRise {
+  from {
+    transform: translateY(7px);
+  }
+  to {
+    transform: none;
+  }
+}
+
 /* ---------- shared plate ---------- */
 .rv-label {
   font-family: var(--mono);
@@ -30,7 +73,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--grey);
-  opacity: 0.8;
 }
 .rv-facts {
   display: flex;
@@ -174,10 +216,14 @@
   gap: 2px;
   height: 14px;
   margin-bottom: 11px;
+  animation: rvRise 320ms var(--ease-out) both;
 }
+/* No transition. The three segments are at their true widths on the first
+   frame, so the boundary between answered and missed never moves — which is
+   the one thing a part-to-whole bar is read for. They used to inflate
+   independently, so every boundary slid and there was nothing to track. */
 .rv-seg {
   min-width: 0;
-  transition: width 820ms var(--ease-out);
 }
 /* Three treatments, not three hues: a tint with an edge, a solid, and an empty
    dashed slot. All three survive greyscale and the high-contrast setting. */
@@ -223,9 +269,11 @@
   font-size: 12px;
   color: var(--cream);
 }
+/* No fade. --grey is already the quiet tier and the bold count beside it is
+   --cream; 0.72 on top took this to 2.92:1 on the light ground, which is a
+   colour nobody chose — it is what the alpha happened to composite to. */
 .rv-key em {
   font-style: normal;
-  opacity: 0.72;
 }
 .rv-key em::before {
   content: "· ";
@@ -246,11 +294,15 @@
   gap: 5px;
   border-bottom: 1px solid var(--line-2);
 }
+/* Five calls in order, so they arrive in order: 60ms apart, left to right,
+   ending on this one. The heights are correct from the first frame — a
+   benchmark that starts flat is a benchmark that lies for a second. */
 .rv-hist-bar {
   width: 8px;
   flex: none;
   background: var(--line-2);
-  transition: height 900ms var(--ease-out);
+  animation: rvRise 300ms var(--ease-out) both;
+  animation-delay: calc(var(--rv-i, 0) * 60ms);
 }
 .rv-hist-bar.here {
   background: var(--gold-2);
@@ -339,15 +391,37 @@
   width: 2px;
   background: var(--gold-2);
 }
+/* The one bar on this card whose growth is the reading: it sweeps out from the
+   fire line, and the distance it covers IS the duration printed beside it. The
+   lanes go one at a time, top to bottom, so four durations are compared in the
+   order they are listed rather than all landing at once.
+   It is at its FINAL width from the first frame and only the scale moves, so
+   nothing in the row is laid out again while it runs. */
 .rv-rt-bar {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  width: 0;
   background: var(--gold-dim);
-  border-right: 2px solid var(--gold-2);
-  transition: width 760ms var(--ease-out);
+  transform: scaleX(var(--grow));
+  transform-origin: left center;
+  transition: --grow 620ms var(--ease-out) var(--rv-d, 0ms);
+}
+/* The leading edge is where the answer landed on the axis, so it has to stay a
+   crisp 2px at every point of the sweep. It was a border-right, which scaleX
+   would have squashed to a hairline; as a counter-scaled cap it reads the SAME
+   interpolated --grow as its parent, so the two cancel exactly, frame by
+   frame. The clamp only keeps the division finite at the start. */
+.rv-rt-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 2px;
+  background: var(--gold-2);
+  transform: scaleX(calc(1 / max(var(--grow), 0.02)));
+  transform-origin: right center;
 }
 .rv-rt-value {
   grid-area: value;
@@ -432,13 +506,19 @@
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
+/* --grow is registered with an initial value of 1, so this is a no-op until
+   DeadlineTrack passes it; the width transition is what animates today. That
+   component belongs to another lane — the one-line change that moves this bar
+   off a layout animation is in the handover note. */
 .rv-dl-left {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 0;
   background: var(--gold-dim);
-  transition: width 820ms var(--ease-out);
+  transform: scaleX(var(--grow));
+  transform-origin: left center;
+  transition: width 820ms var(--ease-out), --grow 820ms var(--ease-out);
 }
 .rv-dl-now {
   position: absolute;
@@ -568,10 +648,13 @@
   stroke-width: 1;
   opacity: 0.8;
 }
+/* 0.55 measured 2.20:1 on cream. These are the marks that say where a sign
+   fired and where an unverified answer landed — WCAG 1.4.11 wants 3:1 for a
+   graphic that carries meaning, and 0.8 reads 4.64:1 on ink, 3.38:1 on cream. */
 .rv-tl-from {
   stroke: var(--gold-2);
   stroke-width: 1;
-  opacity: 0.55;
+  opacity: 0.8;
 }
 .rv-tl-ans {
   stroke: var(--cream);
@@ -590,7 +673,7 @@
 }
 .rv-tl-drop.unver {
   stroke: var(--grey);
-  opacity: 0.6;
+  opacity: 0.8;
 }
 .rv-tl-missed {
   fill: var(--gold-2);
@@ -1345,4 +1428,24 @@
 .scen .why .rv-made-up strong {
   color: var(--text-2);
   font-weight: 500;
+}
+
+/* The global rules squash every transition and animation to 1ms but leave the
+   DELAY alone — and a staged arrival is built out of delays. Without this a
+   reduced-motion reader would watch an invisible 340ms wait before the last
+   answer lane appeared. Both switches, because the app's own one does not set
+   the media query. */
+.reduce-motion .rv-whole,
+.reduce-motion .rv-hist-bar,
+.reduce-motion .rv-rt-bar {
+  animation-delay: 0ms !important;
+  transition-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-whole,
+  .rv-hist-bar,
+  .rv-rt-bar {
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
 }
