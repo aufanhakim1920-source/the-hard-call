@@ -56,16 +56,30 @@ function evidenceTime(ms: number) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+/**
+ * `session` is optional, and its absence is the normal case for any card older
+ * than the call that produced it.
+ *
+ * The transcript is deliberately never stored — that is the privacy promise, not
+ * an oversight — so a card reopened from the call list has its verdicts, its
+ * ledger, its deadlines and its tip, and cannot have the timeline, the answer
+ * times or the worker's quoted words. Those three are dropped rather than drawn
+ * empty, and the card says why once, in plain words.
+ */
 export function ReportCard({
   report,
   session,
   onNew,
   onPractice,
+  onCompare,
 }: {
   report: Report;
-  session: Session;
+  session?: Session;
   onNew: () => void;
-  onPractice: (s: Scenario) => void;
+  onPractice?: (s: Scenario) => void;
+  /** Leaving this screen used to lose it. The card is now one click from the
+      call list, which holds every earlier card and the compare board. */
+  onCompare?: () => void;
 }) {
   const store = useStore();
   // The worker's own earlier calls in this mode — the only honest benchmark for
@@ -87,7 +101,10 @@ export function ReportCard({
 
   const saveCorrection = (item: ReportItem) => {
     if (!cText.trim()) return;
-    const sign = session.signs.find((g) => g.id === item.signId);
+    // Without the session there is no quote to attach. The lesson is still worth
+    // keeping — it is the worker's correction, not the example — so it saves
+    // with no evidence rather than not saving.
+    const sign = session?.signs.find((g) => g.id === item.signId);
     actions.addLesson({ kind: cKind, text: cText.trim(), signKey: item.key, evidence: sign?.evidence });
     setCorrecting(null);
     setCText("");
@@ -96,6 +113,7 @@ export function ReportCard({
   };
 
   const buildScenario = async () => {
+    if (!session) return;
     setBuilding(true);
     setBuildErr(null);
     try {
@@ -184,9 +202,17 @@ export function ReportCard({
 
       <ReportLedger report={report} previous={previous} />
 
-      <ResponseTimes session={session} report={report} />
-
-      <CallTimeline session={session} report={report} />
+      {session ? (
+        <>
+          <ResponseTimes session={session} report={report} />
+          <CallTimeline session={session} report={report} />
+        </>
+      ) : (
+        <p className="rv-empty">
+          The call itself was never stored — no transcript leaves this browser — so the timeline and the answer times
+          exist only on the card that follows a call. The verdicts, the clocks and the tip are kept.
+        </p>
+      )}
 
       {/* A degraded card's "summary" is not a write-up — it is the outage
           notice, which the run note now carries at the top. Printing it again
@@ -208,10 +234,30 @@ export function ReportCard({
             <div>
               <div className="t">{i.title}</div>
               <div className="n">{i.note}</div>
-              {i.evidence?.map((e) => {
-                const line = session.lines.find((l) => l.id === e.lineId && l.speaker === "worker");
-                return <div className="n" key={e.lineId}><b className="mono">{evidenceTime(e.offsetMs)}</b> · {line ? `Worker: “${line.text}”` : "Worker evidence unavailable in this session."}</div>;
-              })}
+              {/* With the call gone, every row would repeat the same sentence
+                  once per timestamp. The times are the part that survived, so
+                  they go on one line and the explanation is said once. */}
+              {!session && i.evidence && i.evidence.length > 0 && (
+                <div className="n">
+                  {i.evidence.map((e, k) => (
+                    <span key={e.lineId}>
+                      {k > 0 && ", "}
+                      <b className="mono">{evidenceTime(e.offsetMs)}</b>
+                    </span>
+                  ))}{" "}
+                  · where the worker answered. The words themselves were never stored.
+                </div>
+              )}
+              {session &&
+                i.evidence?.map((e) => {
+                  const line = session.lines.find((l) => l.id === e.lineId && l.speaker === "worker");
+                  return (
+                    <div className="n" key={e.lineId}>
+                      <b className="mono">{evidenceTime(e.offsetMs)}</b> ·{" "}
+                      {line ? `Worker: “${line.text}”` : "Worker evidence unavailable in this session."}
+                    </div>
+                  );
+                })}
               <div className="acts">
                 {correcting === i.signId ? (
                   <form
@@ -279,9 +325,18 @@ export function ReportCard({
         <button className="btn gold" onClick={onNew}>
           New call
         </button>
-        <button className="btn" onClick={() => void buildScenario()} disabled={building || Boolean(draft)}>
-          {building ? "Building…" : "Turn this into a practice customer"}
-        </button>
+        {/* Building a practice customer reads the call, so it exists only while
+            the call still does. A dead button would be worse than no button. */}
+        {session && (
+          <button className="btn" onClick={() => void buildScenario()} disabled={building || Boolean(draft)}>
+            {building ? "Building…" : "Turn this into a practice customer"}
+          </button>
+        )}
+        {onCompare && (
+          <button className="btn" onClick={onCompare}>
+            Compare with another call
+          </button>
+        )}
         <button className="btn ghost" onClick={() => void copy()}>
           Copy report
         </button>
@@ -308,9 +363,11 @@ export function ReportCard({
           {store.scenarios.some((s) => s.id === draft.id) ? (
             <div className="actions" style={{ marginTop: 0 }}>
               <span className="badge">approved</span>
-              <button className="btn gold" onClick={() => onPractice({ ...draft, approved: true })}>
-                Practise it now
-              </button>
+              {onPractice && (
+                <button className="btn gold" onClick={() => onPractice({ ...draft, approved: true })}>
+                  Practise it now
+                </button>
+              )}
             </div>
           ) : (
             <div className="actions" style={{ marginTop: 0 }}>

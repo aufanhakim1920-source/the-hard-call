@@ -749,3 +749,473 @@
 .reduce-transparency .rv-dl-left {
   background-color: var(--ink-3);
 }
+
+/* ---------- the compare board: two calls on one axis ----------
+   Same vocabulary as the rest of the card, on purpose. The channel is the open
+   one from Instruments 2b (rails and overhung end caps, a tick per sign inside
+   it), and the three fills are the ledger's three: a tint with an edge for
+   answered, the solid signal for missed, an empty dashed slot for a verdict
+   the transcript could not support. Nothing new to learn, and the two charts
+   cannot drift apart.
+
+   The axis is the LARGER of the two sign counts, so a call that raised three
+   signs draws a shorter channel than one that raised four. That difference is
+   a caveat the board has to make, and hiding it by stretching both bars to the
+   same width would be the lie. */
+.cmp {
+  margin: 4px 0 30px;
+}
+.cmp-rows {
+  margin: 12px 0 4px;
+}
+.cmp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) minmax(0, 8.5rem);
+  grid-template-areas: "head track read";
+  align-items: center;
+  gap: 10px 18px;
+  padding: 14px 0;
+}
+.cmp-row + .cmp-row {
+  border-top: 1px solid var(--line);
+}
+.cmp-head {
+  grid-area: head;
+  min-width: 0;
+}
+.cmp-who {
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 3px;
+}
+.cmp-when {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--grey);
+  margin-top: 2px;
+}
+.cmp-track {
+  grid-area: track;
+  position: relative;
+  min-width: 0;
+  height: 18px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background-image: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px var(--cmp-step, 25%));
+}
+.cmp-track::before,
+.cmp-track::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+}
+.cmp-track::before {
+  left: -1px;
+  border-left: 1px solid var(--line-2);
+}
+.cmp-track::after {
+  right: -1px;
+  border-right: 1px solid var(--line-2);
+}
+/* One thing moves per row: the whole bar grows out to the call's sign count.
+   The segments inside keep their proportions the whole way, so the reading
+   never passes through a wrong ratio on its way to the right one. */
+.cmp-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 2px;
+  width: 0;
+  overflow: hidden;
+  transition: width 820ms var(--ease-out);
+}
+.cmp-bar > i {
+  min-width: 0;
+  height: 100%;
+}
+.cmp-read {
+  grid-area: read;
+  min-width: 0;
+  text-align: right;
+}
+.cmp-frac {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0 7px;
+}
+.cmp-frac b {
+  font-family: var(--mono);
+  /* Big goes lighter, like every other number on this card. */
+  font-weight: 300;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+}
+.cmp-frac i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.cmp-sub {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.cmp-sub:first-of-type {
+  margin-top: 5px;
+}
+/* A call with no judgement on it gets words, not a bar. A zero-length channel
+   would read as "answered none of them", which is a different and wrong claim. */
+.cmp-why {
+  /* Named areas create their own -start/-end lines, so the sentence spans the
+     channel and the reading instead of being squeezed into one of them. */
+  grid-column: track-start / read-end;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--grey);
+}
+
+.cmp-notes {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid var(--line);
+  padding-top: 11px;
+  margin-bottom: 22px;
+}
+.cmp-note {
+  margin: 0;
+  max-width: 66ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--grey);
+}
+.cmp-note.key {
+  color: var(--cream);
+}
+
+/* ---------- the two ledgers, sign by sign ----------
+   The union of both calls. A sign only one of them raised keeps its row with an
+   empty slot opposite, because the alternative — dropping it — would make two
+   calls that saw different things look like they saw the same thing. */
+.cmp-signs {
+  border-top: 1px solid var(--line);
+}
+.cmp-sign-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 9rem) minmax(0, 9rem);
+  gap: 8px 14px;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cmp-sign-row.head {
+  padding: 8px 0 7px;
+}
+.cmp-sign-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.cmp-sign-name em {
+  font-style: normal;
+  margin-left: 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-2);
+}
+.cmp-col {
+  text-align: center;
+}
+.cmp-cell {
+  min-width: 0;
+  text-align: center;
+}
+/* The column label travels inside the cell, spoken at every width and drawn
+   only where the header row is too far away to bind to. */
+.cmp-cell-lab {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cmp-v {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+  color: var(--grey);
+}
+.cmp-v.handled {
+  border-color: rgba(159, 201, 168, 0.5);
+  color: var(--ok);
+}
+.cmp-v.partly {
+  border-color: var(--gold-line);
+  color: var(--gold-2);
+}
+.cmp-v.missed {
+  border-color: rgba(217, 83, 79, 0.5);
+  color: var(--bad);
+}
+/* Not raised and not judged are absences, not verdicts, so neither gets a
+   border to sit in. */
+.cmp-v.absent,
+.cmp-v.none {
+  border-color: transparent;
+  background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 5px);
+}
+
+.cmp-keys {
+  margin: 0 0 18px;
+}
+
+/* ---------- the call list ---------- */
+.call-list {
+  margin-top: 30px;
+}
+.call-list-head {
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--line);
+}
+.call-row {
+  display: grid;
+  grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) minmax(0, 10rem) auto;
+  gap: 8px 14px;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+/* A picked row is marked on its leading edge — the accent that means "this one"
+   everywhere else in the app — rather than by drawing a box around it. */
+.call-row.on {
+  box-shadow: inset 2px 0 0 var(--gold-2);
+}
+.call-mode {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.call-mode.coached {
+  color: var(--gold-2);
+}
+.call-open {
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: color 140ms var(--ease-out);
+}
+.call-open b {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+.call-open span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--grey);
+}
+.call-open:hover b {
+  color: var(--gold-2);
+}
+.call-read {
+  min-width: 0;
+  text-align: right;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.call-read b {
+  display: block;
+  font-weight: 400;
+  font-size: 15px;
+}
+.call-read span {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.call-nil {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.back-to-calls {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Below about 680px the three-part row leaves the channel under 150px and the
+   fraction under 90, and neither is readable. Same two-row fold the answer-time
+   rows already use. */
+@media (max-width: 680px) {
+  .cmp-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+    grid-template-areas:
+      "head head"
+      "track read";
+    gap: 10px 14px;
+  }
+  .cmp-frac b {
+    font-size: 26px;
+  }
+  .cmp-sign-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "name name"
+      "a b";
+    gap: 7px 12px;
+  }
+  .cmp-sign-row.head {
+    display: none;
+  }
+  .cmp-sign-name {
+    grid-area: name;
+  }
+  .cmp-cell {
+    text-align: left;
+  }
+  .cmp-cell-lab {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    clip-path: none;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--grey);
+  }
+  .call-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 8rem);
+    gap: 6px 12px;
+  }
+  .call-mode {
+    grid-column: 1 / -1;
+  }
+  .call-read {
+    text-align: right;
+  }
+  .call-row > .btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+/* The words on this board are the argument, so they answer the text-size
+   setting the way the report card's own prose does. The 10px mono ref-labels
+   stay put — those are chrome, and the setting is for the words that matter. */
+:root[data-text="2"] .cmp-note,
+:root[data-text="3"] .cmp-note {
+  font-size: 15px;
+}
+:root[data-text="2"] .cmp-sign-name,
+:root[data-text="3"] .cmp-sign-name,
+:root[data-text="2"] .call-open b,
+:root[data-text="3"] .call-open b {
+  font-size: 16px;
+}
+:root[data-text="2"] .cmp-who,
+:root[data-text="3"] .cmp-who {
+  font-size: 17px;
+}
+:root[data-text="2"] .cmp-v,
+:root[data-text="3"] .cmp-v {
+  font-size: 12px;
+}
+:root[data-text="2"] .cmp-sub,
+:root[data-text="3"] .cmp-sub {
+  font-size: 11px;
+}
+
+/* The largest text sizes fold the same way at any width. */
+:root[data-text="3"] .cmp-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+  grid-template-areas:
+    "head head"
+    "track read";
+}
+:root[data-text="3"] .cmp-sign-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "name name"
+    "a b";
+}
+:root[data-text="3"] .cmp-sign-row.head {
+  display: none;
+}
+:root[data-text="3"] .cmp-sign-name {
+  grid-area: name;
+}
+:root[data-text="3"] .cmp-cell {
+  text-align: left;
+}
+:root[data-text="3"] .cmp-cell-lab {
+  position: static;
+  display: block;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+:root[data-text="2"] .cmp-track,
+:root[data-text="3"] .cmp-track {
+  height: 22px;
+}
+
+.high-contrast .cmp-track {
+  border-top-color: var(--line-2);
+  border-bottom-color: var(--line-2);
+}
+.high-contrast .cmp-v.absent,
+.high-contrast .cmp-v.none {
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+/* A tint fill disappears when transparency is turned down. */
+.reduce-transparency .cmp-bar > i.answered {
+  background-color: var(--ink-3);
+}

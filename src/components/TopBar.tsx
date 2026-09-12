@@ -5,7 +5,7 @@ import { play } from "../lib/sfx";
 import { AccountChip } from "./Account";
 import { AccessibilityPanel } from "./Accessibility";
 
-export type View = "live" | "practice" | "deadlines" | "lessons" | "about";
+export type View = "live" | "calls" | "practice" | "deadlines" | "lessons" | "about";
 
 /**
  * The CallFlag mark: a swallowtail flag knocked out of a disc.
@@ -31,6 +31,9 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
   const openDeadlines = store.deadlines.filter((d) => !d.done).length;
   const tabs: { id: View; label: string; count?: number }[] = [
     { id: "live", label: "Live call" },
+    // Next to Live because it is where the card from the last call goes. Before
+    // this tab existed, navigating away from a report card lost it for good.
+    { id: "calls", label: "Calls", count: store.reports.length },
     { id: "practice", label: "Practice" },
     { id: "deadlines", label: "Deadlines", count: openDeadlines },
     { id: "lessons", label: "Lessons", count: store.lessons.length },
@@ -46,7 +49,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
       // On a phone the strip scrolls; bring the chosen tab fully into view.
       el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
     }
-  }, [view, openDeadlines, store.lessons.length]);
+  }, [view, openDeadlines, store.lessons.length, store.reports.length]);
 
   // The call screen sizes itself as viewport minus the bar, and it used to
   // subtract a fixed 56px. The bar is TWO rows below 980px and taller again at

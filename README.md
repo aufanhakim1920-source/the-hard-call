@@ -61,10 +61,29 @@ customer who hides the real problem until you ask well, and a **learning loop** 
 be turned into a de-identified practice customer, and a manager correcting a sign teaches the engine.
 
 **Coaching can be switched off.** The assistant still listens, still judges, still starts the legal
-clock, and says nothing during the call. Measured on the same scripted call: coaching off gives
-**0 sign cards on screen and 3 signs recorded and judged**, the same deadline, the same score band as
-coaching on. That is both what makes the demo honest and a real rollout path — run it silent for a
-month to measure what is being missed, then turn coaching on.
+clock, and says nothing during the call. That is both a real rollout path — run it silent for a month
+to measure what is being missed, then turn coaching on — and the thing that makes the demo honest.
+
+**The demo runs one customer's call twice: "the same call, handled two ways."** Sarah's lines are
+identical to the character in both, so the engine hears the same thing; the two workers are not. It
+is a dramatisation and we say so — there are two worker scripts in `src/lib/demoScript.ts`, and an
+earlier version with only one proved nothing, because the worker said the same words either way.
+Measured over twelve runs on 13 Sep, seven coached and five silent:
+
+| | Coaching **on** | Coaching **off** |
+|---|---|---|
+| Sign cards on screen during the call | 4 | **0** |
+| Signs recorded and judged | 4 | 3 |
+| Signs missed | **0, every run** | **at least 1, every run** |
+| The statutory notice (NCC s72) | **handled, 7 of 7** | **missed, 5 of 5** |
+| 21-day deadline created | yes | **yes — with nothing on screen** |
+| Score | 95 twice, withheld as unverified five times | 30, 30, 40, 40, 45 |
+
+The score is the least trustworthy row and we do not lead with it: a call the model cannot verify
+from the transcript gets **no score at all** rather than an invented one, which happens more often on
+the *good* run. The row that held without exception is the one the product is about — the sentence
+that starts the legal clock was answered every time the worker could see it and missed every time he
+could not.
 
 ## A hint is not a notice
 
@@ -177,8 +196,9 @@ passing**, and on the clear-hardship call the legal sign fires **0.0 s off** the
 third is an open contract question between two engines, not a defect, and it is written down rather
 than tuned away.
 
-Measured end to end on the live app, not in-process: a sign lands **about 3 seconds** after the
-sentence, and the report card **3.7–6.8 seconds** after the call ends.
+Measured end to end in the browser against the real engine, not in-process: a sign lands **1.7–2.7
+seconds** after the sentence that caused it, and the report card **3.0–3.8 seconds** after the call
+ends (twelve runs, 13 Sep).
 
 ## Privacy, enforced by the schema
 

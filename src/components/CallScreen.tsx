@@ -186,7 +186,12 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     if (!typed.trim()) return;
     addLine(typed, typedAs);
     setTyped("");
-    setTypedAs((s) => (s === "customer" ? "worker" : "customer"));
+    // It used to alternate, on the theory that a call alternates. It does not
+    // reliably, and the cost is asymmetric: typing the customer's sentence while
+    // the box has silently flipped to Worker raises NOTHING. Measured — the same
+    // hardship sentence gave 0 signs in 16s as Worker and the legal sign in 2.7s
+    // as Customer. Anyone typing during questions hits it. It stays where it was
+    // put; the person typing knows who is speaking.
     play("tap");
   };
 
@@ -354,7 +359,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                     </button>
                   ))}
                 </div>
-                <span className="hint">Watch line 7: the worker asks for money instead of answering the sign.</span>
+                <span className="hint">{coaching ? "Watch what the worker does the moment each sign lands." : "Watch line 7: the worker asks for money instead of answering the sign."}</span>
               </>
             )}
             {mode === "practice" && (

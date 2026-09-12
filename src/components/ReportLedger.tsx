@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
-import { motionOff } from "../lib/a11y";
 import type { Report } from "../lib/types";
 import { useCountUp } from "../lib/useCountUp";
 import { ledger } from "./report-math";
+import { useGrown } from "./use-grown";
 import "./report-visuals.css";
 
 // "3 of 4 answered" instead of four percentages. Natural frequencies — whole
@@ -16,24 +15,6 @@ import "./report-visuals.css";
 // is spent on the one thing the worker still has to fix.
 
 const COUNT_MS = 620;
-
-/** Both charts on this card grow once, on arrival. Decided at first paint so a
-    throttled tab (which gets no animation frames) starts finished instead of
-    empty, with a timeout as the second net — the same discipline the score
-    ring and the answer-time rows use. */
-function useGrown(safetyMs = 900): boolean {
-  const [grown, setGrown] = useState(() => motionOff() || document.hidden);
-  useEffect(() => {
-    if (grown) return;
-    const raf = requestAnimationFrame(() => setGrown(true));
-    const safety = window.setTimeout(() => setGrown(true), safetyMs);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(safety);
-    };
-  }, [grown, safetyMs]);
-  return grown;
-}
 
 export function ReportLedger({ report, previous }: { report: Report; previous: Report[] }) {
   const l = ledger(report.items);
