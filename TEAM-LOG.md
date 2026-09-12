@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 18:51 | laj07 | other | [Add transcript schema, 3 call fixtures, expected flags and hardship rules](../../commit/b1b12f7e833277dd3d0a8a8d57b7e9663c8f4617) | hardship-flag-rules.md, transcript-schema.md, call_001_clear_hardship.json +4 | +451 / -0 |
 | 12 Sept, 19:02 | aufanhakim1920-source | design | [a sign's entrance moves it, never fades it — a frozen animation in a background tab was pinning it invisible](../../commit/729bdaed2836e1130dc01b130ed2ee153413fcd8) | styles.css | +19 / -10 |
 | 12 Sept, 18:55 | aufanhakim1920-source | design | [accessibility mode — bigger text, higher contrast, less motion, spoken and screen-reader announcements, skip link; clearer sign-in wording](../../commit/fe74a4a5354e67555cec160680013ec855d4da13) | App.tsx, Accessibility.tsx, Account.tsx +5 | +451 / -7 |
 | 12 Sept, 18:54 | TronJuan | engine | [Update gemini.ts](../../commit/ec838386a99ea6c63f3e2ac55a3defbb436cac6a) | gemini.ts | +1 / -1 |
