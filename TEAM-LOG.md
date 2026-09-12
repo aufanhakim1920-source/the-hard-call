@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 00:19 | aufanhakim1920-source | other | [why the report card leads with a fraction, and the measurement feedback loop](../../commit/e3f4019bc55f130030af92c58be6481926d32b8a) | DECISIONS.md | +42 / -0 |
 | 13 Sept, 00:18 | aufanhakim1920-source | report | [the card leads with a part-to-whole reading, and the product's claim is finally drawn as a duration](../../commit/c9eed6bb188719b60a69abe15605f2da139b73da) | Accessibility.tsx, Account.tsx, CallTimeline.tsx +15 | +1527 / -251 |
 | 13 Sept, 00:07 | aufanhakim1920-source | project + live call | [the 2x button now works, the practice screen stops trapping you, and the pitch artefacts exist](../../commit/cba361b05de93c34c9b187a662c4d541d8177c24) | README.md, DECISIONS.md, DEMO-SCRIPT.md +2 | +468 / -83 |
 | 12 Sept, 23:45 | aufanhakim1920-source | other | [a 401 is not always a bad key - read the error code](../../commit/7fdc53abb812dfc2181038ac541a9f119151974d) | DECISIONS.md | +23 / -0 |
