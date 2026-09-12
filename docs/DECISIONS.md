@@ -342,3 +342,35 @@ The adapter now carries an explicit `tier`, defaulting to `notice` so any caller
 behaves exactly as before, and `caught` counts obligations only — in the server and the browser
 fallback alike. **An agreement written in a document is not implemented until the type system carries
 it across every boundary.**
+
+## The before-and-after demo had nothing to compare
+
+The pitch runs the same call twice — coaching off, then on — and puts the two report cards side by
+side. It did not work, and the reason is embarrassing in hindsight: the demo replays a fixed
+transcript, so **the worker said the same words whether or not he had been prompted**. Measured over
+six runs: 3 of 4 answered coached, 3 of 4 silent, every time. The demo proved the switch worked. It
+never proved the product did.
+
+There are **two worker scripts now and one customer script**. Sarah says exactly the same words in
+both, so the engine raises exactly the same signs at exactly the same moments. The only variable is
+what the worker does about them.
+
+| | coached | silent |
+|---|---|---|
+| score | **95** | **20** |
+| signs caught | 4 | 3 |
+| handled | 3 | 0 |
+| missed | 0 | **3** |
+
+The silent worker is not a caricature — he is doing what people do under pressure, chasing the payment
+he rang about. He asks for part of it this week, pushes for a date straight after she says she was laid
+off, and closes by writing it down: *"I'll put a note on the file and someone will be in touch."* Every
+line is one a real worker says. He simply never offers a repayment change and never mentions that
+hardship assistance exists.
+
+⚠️ **This is a dramatisation and is described as one.** It is two workers handling one call, not a
+recording of the tool changing someone's words live. The honest framing, and the one the demo script
+uses, is *"the same call, handled two ways"*.
+
+**Generalises to:** an A/B demo has to vary the thing you are claiming to change. Ours varied the
+display and held the behaviour fixed, which is the one arrangement that can never show a difference.
