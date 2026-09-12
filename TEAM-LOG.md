@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 18:08 | aufanhakim1920-source | project | [team log writes itself on every push to main](../../commit/57fc5cb8f86d9ed88ef8f75a016fd85129562d25) | teamlog.mjs, teamlog.yml, CONTRIBUTING.md +2 | +150 / -1 |
 | 12 Sept, 17:57 | aufanhakim1920-source | report | [score ring, call timeline, sign bars; count-up safety](../../commit/4a6adf09fadbd4d2e62f7c3b1c8f6c61bd7cc867) | index.html, ReportCard.tsx, useCountUp.ts +1 | +21 / -7 |
 | 12 Sept, 17:55 | aufanhakim1920-source | accounts | [guest-first Supabase auth + sync of reports, deadlines, lessons, practice customers (RLS own rows); phone top bar](../../commit/7ba83a2a155c6642fa69203bb7c8c9054fba8bbf) | package-lock.json, package.json, App.tsx +7 | +741 / -0 |
 | 12 Sept, 17:51 | aufanhakim1920-source | phone | [bottom sheet for signs (momentum + rubber band), tab ink, view motion, count-up; practice: 13-voice roster, 5 customers; dev: local api server](../../commit/7753fdeb96afed235716d2a7e65f150bcb85795d) | api-server.mjs, package.json, App.tsx +16 | +1165 / -30 |
