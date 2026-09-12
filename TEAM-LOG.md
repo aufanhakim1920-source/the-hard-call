@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 19:37 | aufanhakim1920-source | design | [accessibility widened to twelve controls — four text sizes, line spacing, hyperlegible face, light ground, reduce transparency, bigger targets, thicker focus](../../commit/c1a6c885478f162126723d223ddfbbc9cbe4abe8) | index.html, Accessibility.tsx, a11y.ts +1 | +371 / -93 |
 | 12 Sept, 19:36 | TronJuan | engine | [Update gemini.ts](../../commit/26fa92fbd3b5c26ca0e21e74d2a8666e4dfac5b8) | gemini.ts | +1 / -1 |
 | 12 Sept, 19:35 | TronJuan | engine | [Update gemini.ts](../../commit/376e4599bcc4b9e3a1a89368773c06c0272c5e6e) | gemini.ts | +1 / -1 |
 | 12 Sept, 19:20 | LAJ | other | [Update transcript-schema.md](../../commit/7b799ad4a7cf36635b3e7a813ac395cc12d67117) | transcript-schema.md | +2 / -2 |
