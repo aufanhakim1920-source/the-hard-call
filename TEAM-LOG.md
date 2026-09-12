@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 19:56 | aufanhakim1920-source | project + design | [every fr track gets a zero floor, and a check that keeps it that way](../../commit/3f974b273ccd74dc7657928e811e5d897c285713) | pages.yml, package.json, gate-css.mjs +1 | +93 / -14 |
 | 12 Sept, 19:55 | TronJuan | engine | [Update gemini.ts](../../commit/aab9e9911d7292cbc2202c6d745a8e54bf5d43bb) | gemini.ts | +1 / -1 |
 | 12 Sept, 19:53 | aufanhakim1920-source | phone | [top bar and call header down to two rows each, and the page stops scrolling sideways](../../commit/9abc6277929b3e7b67189149d5ab25dbab760abc) | TopBar.tsx, styles.css | +121 / -10 |
 | 12 Sept, 19:37 | aufanhakim1920-source | design | [accessibility widened to twelve controls — four text sizes, line spacing, hyperlegible face, light ground, reduce transparency, bigger targets, thicker focus](../../commit/c1a6c885478f162126723d223ddfbbc9cbe4abe8) | index.html, Accessibility.tsx, a11y.ts +1 | +371 / -93 |
