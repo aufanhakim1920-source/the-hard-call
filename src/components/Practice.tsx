@@ -27,24 +27,26 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
           return (
             <div className={"scen" + (next?.id === s.id ? " next" : "")} key={s.id}>
               <div className="lvl" aria-label={levelLabel(s.level)}>
-                {[1, 2, 3].map((n) => (
-                  <i key={n} className={n <= s.level ? "on" : ""} />
-                ))}
+                <span className="bars">
+                  {[1, 2, 3].map((n) => (
+                    <i key={n} className={n <= s.level ? "on" : ""} />
+                  ))}
+                </span>
                 <span className="small muted">{levelLabel(s.level).split(" · ")[1]}</span>
-                {next?.id === s.id && <span className="badge" style={{ marginLeft: "auto" }}>up next</span>}
-                {s.source === "generated" && <span className="badge" style={{ marginLeft: next?.id === s.id ? 6 : "auto" }}>from your call</span>}
+                {next?.id === s.id && <span className="badge">up next</span>}
+                {s.source === "generated" && <span className="badge">from your call</span>}
               </div>
-              <h3>
-                {s.name}, {s.age}
-              </h3>
-              <div className="small muted">
-                {s.job} · {s.product}
+              <div className="who">
+                <h3>
+                  {s.name}, {s.age}
+                </h3>
+                <div className="small muted">
+                  {s.job} · {s.product}
+                </div>
               </div>
               <div className="sit">{s.whyThisOne}</div>
               <div className="foot">
-                <span className="stats2">
-                  {p ? `${p} ${p === 1 ? "go" : "goes"} · best ${b}` : "not tried yet"}
-                </span>
+                <span className="stats2">{p ? `${p} ${p === 1 ? "go" : "goes"} · best ${b}` : "not tried yet"}</span>
                 <span style={{ display: "flex", gap: 6 }}>
                   {s.source === "generated" && (
                     <button

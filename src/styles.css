@@ -1053,8 +1053,8 @@ select.field option {
 }
 .scen {
   display: grid;
-  grid-template-columns: 150px 220px 1fr auto;
-  gap: 18px;
+  grid-template-columns: 170px 210px minmax(0, 1fr) auto;
+  gap: 22px;
   align-items: center;
   padding: 16px 4px;
   border-bottom: 1px solid var(--line);
@@ -1081,9 +1081,13 @@ select.field option {
 }
 .scen .lvl {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.scen .lvl .bars {
+  display: flex;
   gap: 4px;
-  align-items: center;
-  flex-wrap: wrap;
 }
 .scen .lvl i {
   width: 14px;
@@ -1094,13 +1098,13 @@ select.field option {
 .scen .lvl i.on {
   background: var(--gold);
 }
-.scen .lvl span {
-  margin-left: 6px;
-}
 .scen h3 {
-  margin: 2px 0 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
+}
+.scen .who .small {
+  margin-top: 2px;
 }
 .scen .sit {
   color: var(--grey);
