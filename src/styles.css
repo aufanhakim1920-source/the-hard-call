@@ -1498,3 +1498,138 @@ select.field option {
     margin-left: auto;
   }
 }
+
+
+/* ---------- account ---------- */
+.acct {
+  position: relative;
+}
+.acct-chip {
+  gap: 8px;
+  max-width: 220px;
+}
+.acct-chip .acct-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acct-chip.on {
+  color: var(--cream);
+}
+.acct-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--slate);
+  flex: none;
+}
+.acct-dot.guest {
+  background: var(--grey);
+}
+.acct-dot.account {
+  background: var(--gold);
+}
+.acct-sync {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.acct-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(340px, calc(100vw - 28px));
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-card);
+  padding: 14px 16px 16px;
+  z-index: 40;
+  animation: panelIn 220ms var(--ease-out) both;
+  transform-origin: top right;
+}
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.acct-email {
+  font-weight: 600;
+  margin: 2px 0 6px;
+  word-break: break-all;
+}
+.acct-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+.acct-tabs .tab {
+  padding: 6px 10px;
+}
+.acct-tabs .tab.on {
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+.acct-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-width: 760px) {
+  .acct-chip .acct-label {
+    max-width: 80px;
+  }
+  .acct-panel {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    top: calc(var(--topbar) + 8px);
+    width: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 8px 14px 0;
+    overflow: visible;
+    row-gap: 0;
+  }
+  .topbar .tabs {
+    order: 10;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 4px -14px 0;
+    padding: 0 14px;
+    width: calc(100% + 28px);
+  }
+  .topbar .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .topbar .acct {
+    margin-left: auto;
+  }
+  .tab-ink {
+    bottom: 0;
+  }
+}
+
+.words-head .label,
+.signs-head .label {
+  white-space: nowrap;
+}
+.words-head .small {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

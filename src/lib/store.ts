@@ -43,6 +43,13 @@ export function getStore(): Store {
   return state;
 }
 
+export function subscribe(l: () => void): () => void {
+  listeners.add(l);
+  return () => {
+    listeners.delete(l);
+  };
+}
+
 export function update(fn: (s: Store) => Store) {
   commit(fn(state));
 }

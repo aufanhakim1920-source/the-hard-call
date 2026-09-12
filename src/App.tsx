@@ -8,6 +8,7 @@ import { ReportCard } from "./components/ReportCard";
 import { TopBar, type View } from "./components/TopBar";
 import { DEMO_CUSTOMER } from "./lib/demoScript";
 import { preloadSfx } from "./lib/sfx";
+import { startSync } from "./lib/sync";
 import type { AssistantState, Customer, Mode, Report, Scenario, Session } from "./lib/types";
 
 interface ActiveCall {
@@ -27,6 +28,7 @@ export default function App() {
 
   useEffect(() => {
     preloadSfx();
+    startSync();
   }, []);
 
   const startLive = useCallback(() => {

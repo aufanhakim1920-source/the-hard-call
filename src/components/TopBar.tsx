@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { AssistantState } from "../lib/types";
 import { actions, useStore } from "../lib/store";
 import { play } from "../lib/sfx";
+import { AccountChip } from "./Account";
 
 export type View = "live" | "practice" | "deadlines" | "lessons" | "about";
 
@@ -55,6 +56,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
         ))}
       </nav>
       <div className="spacer" />
+      <AccountChip />
       <span className={"status-dot " + assistant} title={stateText}>
         <i />
         <span className="small">{stateText}</span>
