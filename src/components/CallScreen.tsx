@@ -346,7 +346,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                     </button>
                   ))}
                 </div>
-                <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
+                <span className="hint">Watch line 7: the worker asks for money instead of answering the sign.</span>
               </>
             )}
             {mode === "practice" && (

@@ -14,6 +14,8 @@
   --gold-line: rgba(199, 156, 90, 0.55);
   --line: rgba(154, 163, 173, 0.16);
   --line-2: rgba(154, 163, 173, 0.34);
+  --ok: #9fc9a8; /* 8.97:1 on ink */
+  --bad: #e7a89b; /* 8.24:1 on ink */
   --text-2: rgba(242, 238, 231, 0.82); /* the worker's words: quieter than the customer's */
   --text-3: rgba(242, 238, 231, 0.7);
   --sheet-weave: rgba(242, 238, 231, 0.035);
@@ -125,7 +127,7 @@ textarea {
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 40;
 }
 .wordmark {
   display: flex;
@@ -143,6 +145,16 @@ textarea {
 .tabs {
   display: flex;
   gap: 2px;
+  /* The strip scrolls at EVERY width, not only below the breakpoint. With
+     bigger targets on, the bar needs ~1027px and its breakpoint is 980, so a
+     band from 981 to about 1050 pushed the page sideways by up to 30px. A
+     breakpoint is a guess about content width; letting the strip shrink is not. */
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 .tab {
   background: none;
@@ -1010,9 +1022,13 @@ select.field option {
   border: 1px solid var(--line-2);
   color: var(--grey);
 }
+/* These two carried hardcoded literals chosen for the dark ground: measured,
+   the green is 8.97:1 on ink and 1.59:1 on cream, the red 8.24 and 1.73. Their
+   neighbours passed because they use tokens. Per-ground now, like everything
+   else — the exact trap the palette comment at the top of this file warns about. */
 .verdict .v.handled {
   border-color: rgba(159, 201, 168, 0.5);
-  color: #9fc9a8;
+  color: var(--ok);
 }
 .verdict .v.partly {
   border-color: var(--gold-line);
@@ -1020,7 +1036,7 @@ select.field option {
 }
 .verdict .v.missed {
   border-color: rgba(217, 83, 79, 0.5);
-  color: #e7a89b;
+  color: var(--bad);
 }
 .verdict .t {
   font-weight: 600;
@@ -1537,6 +1553,17 @@ select.field option {
   input.field,
   select.field {
     height: 40px;
+  }
+  /* The sheet lifts ITSELF to full when a legal sign fires, and at that height
+     it covered the bottom 29px of End call — measured with elementFromPoint,
+     which returned the sheet head at the button's own centre. On a phone, once
+     the most important sign of the call arrived, the call could not be ended.
+     The header stays put under the top bar and outranks the sheet. */
+  .call-head {
+    position: sticky;
+    top: var(--bar-h, var(--topbar));
+    z-index: 31;
+    background: var(--ink);
   }
   .call.phone {
     /* The phone is the other shape on purpose: the page itself scrolls under
@@ -2183,6 +2210,9 @@ select.field option {
        gold as TEXT must darken to #8A5E1C (4.91:1) while the sign's gold
        FILL stays #C79C5A because ink on it is 6.56:1. --- */
 :root[data-theme="light"] {
+  /* measured on cream: 4.85:1 and 5.02:1, against 1.59 and 1.73 for the dark values */
+  --ok: #2f6b3d;
+  --bad: #a8362f;
   --ink: #f2eee7;
   --ink-2: #e9e4da;
   --ink-3: #ded8cb;

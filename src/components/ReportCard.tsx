@@ -169,7 +169,7 @@ export function ReportCard({
           {/* A degraded card carries no model, and "judged by " with nothing
               after it reads as a bug rather than as an outage. */}
           <span className="muted small">
-            {fmtWhen(report.at)} · {Math.round(report.durationSec / 60)} min {report.durationSec % 60} s
+            {fmtWhen(report.at)} · {Math.floor(report.durationSec / 60)} min {report.durationSec % 60} s
             {report.model ? ` · judged by ${report.model}` : " · not judged"}
           </span>
         </div>

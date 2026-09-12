@@ -91,7 +91,12 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
 
       <div className="rv-facts">
         <span>
-          <b>{measured.length}</b> of <b>{gaps.length}</b> answered
+          {/* NOT "answered" — the ledger above already answers that, and these
+              two counts are different questions. This one is how many answers
+              could be TIMED: the model sometimes cites a worker line that lands
+              before the sign fired, so the gap is dropped. Saying "answered"
+              here made one card give two different numbers 250px apart. */}
+          <b>{measured.length}</b> of <b>{gaps.length}</b> answer times measured
         </span>
         <span>
           {fastest === undefined || slowest === undefined ? (
