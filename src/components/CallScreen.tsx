@@ -276,14 +276,19 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           <div className="inputs">
             {mode === "live" && (
               <>
+                {/* A control that cannot work must be disabled and must SAY why.
+                    It used to stay enabled and hide the reason in a title
+                    tooltip, which never appears on a phone and never reaches a
+                    screen reader as an explanation. */}
                 <button
                   className={"btn" + (speech.listening ? " listening" : "")}
                   onClick={() => (speech.listening ? speech.stop() : speech.start())}
-                  title={speech.supported ? "Uses this browser's speech engine (Chrome or Edge)" : "No speech engine in this browser"}
+                  disabled={!speech.supported}
                 >
                   <span className="rec-dot" />
                   {speech.listening ? "Listening" : "Listen"}
                 </button>
+                {!speech.supported && <span className="hint">This browser has no speech engine. Type what was said instead, or use Chrome or Edge.</span>}
                 <form className="type" onSubmit={submitTyped}>
                   <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
                   <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
@@ -298,15 +303,27 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             )}
             {mode === "demo" && (
               <>
-                <span className="hint">
-                  Speed
-                </span>
-                <button className={"btn sm" + (speed === 1 ? " gold" : "")} onClick={() => setSpeed(1)}>
-                  1×
-                </button>
-                <button className={"btn sm" + (speed === 2 ? " gold" : "")} onClick={() => setSpeed(2)}>
-                  2×
-                </button>
+                {/* One choice of two, so say so. It was two plain buttons with
+                    the state carried by the gold fill alone — invisible to a
+                    screen reader, and meaning in colour only. */}
+                <div className="speed" role="radiogroup" aria-label="Replay speed">
+                  <span className="hint" aria-hidden="true">
+                    Speed
+                  </span>
+                  {([1, 2] as const).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={speed === n}
+                      aria-label={`${n} times speed`}
+                      className={"btn sm" + (speed === n ? " gold" : "")}
+                      onClick={() => setSpeed(n)}
+                    >
+                      {n}×
+                    </button>
+                  ))}
+                </div>
                 <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
               </>
             )}
