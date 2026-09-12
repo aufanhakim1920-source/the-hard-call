@@ -8,7 +8,7 @@
 
 import { getEnv } from "./env.ts";
 
-const DEFAULT_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const DEFAULT_MODELS = ["gemini-2.5-flash", "gemini-flash-lite-latest"];
 
 export type JsonSchema = Record<string, unknown>;
 
