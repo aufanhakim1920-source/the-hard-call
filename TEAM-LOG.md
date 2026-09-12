@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 08:01 | aufanhakim1920-source | other | [record what the detector fallback actually did on the demo call](../../commit/5d9f155c3203604d29c9e3cb6014f1ec3f6bc87e) | DECISIONS.md | +26 / -0 |
 | 13 Sept, 08:00 | aufanhakim1920-source | engine | [run the deterministic detector before the model pass](../../commit/b79d1adab4c2bdea531e3c4a6b283fc170c27264) | detectorBridge.ts, engine.ts | +170 / -22 |
 | 12 Sept, 23:43 | laj07 | engine | [three event kinds, request tier, one speaker normaliser](../../commit/c6af7752f400c3eac942002ce9404839ddcdbbf9) | DETECTOR.md, event-schema.md, cross-check-cases.ts +8 | +737 / -60 |
 | 12 Sept, 22:27 | laj07 | engine | [Add hardship detection layer, deterministic by default, all fixtures passing](../../commit/d34f87dd74a3042a1e6619e9d0095e6dc1829925) | DETECTOR.md, run-detector.ts, smoke.ts +9 | +1340 / -56 |
