@@ -1,4 +1,4 @@
-import { SEEDS, levelLabel } from "../lib/scenarios";
+import { SEEDS, levelLabel, voiceFor } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { AGENT_ID } from "../lib/practice";
@@ -42,6 +42,9 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                 </h3>
                 <div className="small muted">
                   {s.job} · {s.product}
+                </div>
+                <div className="small muted voice-note">
+                  voice: {voiceFor(s).name} · {voiceFor(s).note}
                 </div>
               </div>
               <div className="sit">{s.whyThisOne}</div>

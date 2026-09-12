@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import type { AssistantState } from "../lib/types";
 import { actions, useStore } from "../lib/store";
 import { play } from "../lib/sfx";
@@ -25,13 +26,20 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
     { id: "about", label: "About" },
   ];
   const stateText = assistant === "thinking" ? "Listening" : assistant === "paused" ? "Assistant paused, retrying" : "Assistant ready";
+  const navRef = useRef<HTMLElement>(null);
+  const [ink, setInk] = useState({ left: 0, width: 0 });
+  useLayoutEffect(() => {
+    const el = navRef.current?.querySelector(".tab.on") as HTMLElement | null;
+    if (el) setInk({ left: el.offsetLeft + 12, width: Math.max(0, el.offsetWidth - 24) });
+  }, [view, openDeadlines, store.lessons.length]);
   return (
     <header className="topbar">
       <div className="wordmark">
         <Mark />
         The Hard Call
       </div>
-      <nav className="tabs" aria-label="Sections">
+      <nav className="tabs" aria-label="Sections" ref={navRef}>
+        <span className="tab-ink" style={{ transform: `translateX(${ink.left}px)`, width: ink.width }} aria-hidden="true" />
         {tabs.map((t) => (
           <button
             key={t.id}

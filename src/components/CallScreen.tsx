@@ -7,6 +7,8 @@ import { play } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
 import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
+import { PHONE, useMedia } from "../lib/useMedia";
+import { Sheet, type Detent } from "./Sheet";
 import { SignStack } from "./SignStack";
 import { Transcript } from "./Transcript";
 
@@ -43,6 +45,23 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const [flashId, setFlashId] = useState<string>();
   const [demoDone, setDemoDone] = useState(false);
   const [speed, setSpeed] = useState<1 | 2>(1);
+  const phone = useMedia(PHONE);
+  const [detent, setDetent] = useState<Detent>("peek");
+  const signCount = session.signs.length;
+  const newestSign = signCount ? session.signs[signCount - 1] : undefined;
+  const openCount = session.signs.filter((g) => !g.handled).length;
+  // On a phone, a legal sign lifts the sheet by itself; tips wait in the peek.
+  useEffect(() => {
+    if (!phone || !newestSign) return;
+    if (newestSign.kind === "legal") {
+      setDetent("full");
+      try {
+        navigator.vibrate?.(40);
+      } catch {
+        /* no haptics here */
+      }
+    }
+  }, [phone, newestSign, signCount]);
   const speedRef = useRef(speed);
   speedRef.current = speed;
   const typeRef = useRef<HTMLInputElement>(null);
@@ -70,12 +89,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  const jump = useCallback((lineId: string) => {
-    const el = document.getElementById("line-" + lineId);
-    el?.scrollIntoView({ block: "center", behavior: "smooth" });
-    setFlashId(lineId);
-    window.setTimeout(() => setFlashId(undefined), 1200);
-  }, []);
+  const jump = useCallback(
+    (lineId: string) => {
+      if (phone) setDetent("peek");
+      const el = document.getElementById("line-" + lineId);
+      el?.scrollIntoView({ block: "center", behavior: "smooth" });
+      setFlashId(lineId);
+      window.setTimeout(() => setFlashId(undefined), 1200);
+    },
+    [phone],
+  );
 
   const finish = useCallback(async () => {
     if (ending) return;
@@ -124,7 +147,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const canEdit = !started && mode === "live";
 
   return (
-    <div className="call">
+    <div className={"call" + (phone ? " phone" : "")}>
       <header className="call-head">
         {canEdit ? (
           <div className="setup">
@@ -278,8 +301,33 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             {endErr && <span className="warn">Report failed: {endErr}</span>}
           </div>
         </section>
-        <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} />
+        {!phone && <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} />}
       </div>
+
+      {phone && (
+        <Sheet
+          detent={detent}
+          onDetent={setDetent}
+          head={
+            <>
+              <span className={"sheet-count" + (openCount ? " on" : "")}>{signCount}</span>
+              <span className="sheet-title">
+                {newestSign ? (
+                  <>
+                    <b>{newestSign.title}</b>
+                    <span className="small muted"> · {openCount} open</span>
+                  </>
+                ) : (
+                  <span className="muted">No signs yet</span>
+                )}
+              </span>
+              <span className="sheet-hint small muted">{detent === "full" ? "drag down" : "drag up"}</span>
+            </>
+          }
+        >
+          <SignStack signs={session.signs} startedAt={session.startedAt} onHandled={markHandled} onJump={jump} newestOpenId={newestOpen?.id} compact />
+        </Sheet>
+      )}
 
       <footer className="privacy-line">
         <span>Only signs are kept. Words are never stored.</span>

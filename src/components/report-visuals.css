@@ -1,0 +1,224 @@
+/* Report visuals — the call timeline, the score ring, the sign bars.
+   Constructions from the vault's Instruments note: canvas tick ring (1a),
+   the 2px leading edge (2c), the bar BEHIND the row's text (2g),
+   label / value / unit (3a), corner ref-labels + a footer of two facts (3e).
+   Tokens only. No boxes: hairlines and gaps do the separating. */
+
+/* ---------- shared plate ---------- */
+.rv-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+/* ---------- call timeline ---------- */
+.rv-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.rv-corners {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+  opacity: 0.8;
+}
+.rv-tl-svg {
+  display: block;
+  width: 100%;
+  height: 120px;
+  overflow: visible;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.rv-tl-axis {
+  stroke: var(--line-2);
+  stroke-width: 1;
+}
+.rv-tl-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.rv-tl-cust {
+  stroke: var(--cream);
+  stroke-width: 1;
+}
+.rv-tl-work {
+  stroke: var(--grey);
+  stroke-width: 1;
+}
+.rv-tl-unk {
+  stroke: var(--slate);
+  stroke-width: 1;
+}
+.rv-tl-legal {
+  fill: var(--gold);
+  transition: fill 140ms var(--ease-out);
+}
+.rv-tl-tip {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1;
+  transition: stroke 140ms var(--ease-out);
+}
+.rv-tl-mark:hover .rv-tl-legal {
+  fill: var(--gold-2);
+}
+.rv-tl-mark:hover .rv-tl-tip {
+  stroke: var(--gold-2);
+}
+.rv-tl-hit {
+  fill: transparent;
+  cursor: default;
+}
+.rv-tl-done {
+  stroke: var(--cream);
+  stroke-width: 2;
+}
+.rv-tl-drop {
+  stroke: var(--gold);
+  stroke-width: 1;
+  stroke-dasharray: 1 3;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+.rv-tl-missed {
+  fill: var(--gold);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.rv-tl-time {
+  fill: var(--grey);
+  font-size: 10px;
+}
+.rv-facts {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--grey);
+}
+.rv-facts b {
+  font-weight: 400;
+  color: var(--cream);
+}
+
+/* ---------- score ring ---------- */
+.rv-ring {
+  position: relative;
+  flex: none;
+}
+.rv-ring-canvas {
+  display: block;
+}
+.rv-ring-read {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.rv-ring-value {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-2);
+}
+.rv-unit {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--grey);
+  margin-left: 2px;
+}
+
+/* ---------- sign bars ---------- */
+.rv-bars {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+.rv-bar-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 40px;
+  padding: 0 10px 0 4px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.rv-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  background: var(--gold-dim);
+  transition: width 700ms var(--ease-out);
+  pointer-events: none;
+}
+.rv-bar-fill.handled {
+  border-right: 2px solid var(--gold);
+}
+.rv-bar-verdict {
+  position: relative;
+  flex: none;
+  width: 64px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.rv-bar-row.handled .rv-bar-verdict {
+  color: var(--cream);
+}
+.rv-bar-title {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rv-bar-kind {
+  position: relative;
+  flex: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+  opacity: 0.7;
+}
+.rv-empty {
+  margin: 0;
+  padding: 12px 4px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--grey);
+}

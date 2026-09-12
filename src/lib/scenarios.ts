@@ -9,6 +9,7 @@ export const SEEDS: Scenario[] = [
     name: "Sarah Mitchell",
     age: 34,
     voice: "female",
+    voiceId: "EXAVITQu4vr4xnSDxMaL",
     job: "casual retail worker",
     product: "home loan",
     situation:
@@ -28,6 +29,7 @@ export const SEEDS: Scenario[] = [
     name: "Dean Kowalski",
     age: 41,
     voice: "male",
+    voiceId: "N2lVS1w4EtoT3dr4eOWO",
     job: "truck driver",
     product: "car loan",
     situation:
@@ -47,6 +49,7 @@ export const SEEDS: Scenario[] = [
     name: "Linh Tran",
     age: 58,
     voice: "female",
+    voiceId: "Xb7hH8MSUJpSbSDYk0k2",
     job: "aged-care worker",
     product: "credit card",
     situation:
@@ -62,12 +65,93 @@ export const SEEDS: Scenario[] = [
     approved: true,
     plays: 0,
   },
+  {
+    id: "seed-4",
+    name: "Jayden Cole",
+    age: 23,
+    voice: "male",
+    voiceId: "IKne3meq5aSn9XLyUdCD",
+    job: "apprentice electrician",
+    product: "personal loan",
+    situation:
+      "Jayden rang because a $49 late fee landed on his personal loan and he thinks it is unfair. His pay went in a day late. He is quick, a bit cocky, and keeps saying it is the bank's fault.",
+    hiddenProblem:
+      "Someone claiming to be from the bank rang him last week and he moved $1,800 to a so-called safe account. He is embarrassed, has told nobody, and it is why the repayment bounced.",
+    firstMessage: "Yeah hi, I've got a late fee on my loan and honestly that's on you guys, my pay went in a day late, that's it.",
+    level: 2,
+    expectedSigns: ["complaint", "scam", "hardship-request"],
+    whyThisOne: "A complaint that hides a scam. Log the complaint properly, then ask what actually happened to the money. The answer changes everything.",
+    source: "seed",
+    createdAt: 0,
+    approved: true,
+    plays: 0,
+  },
+  {
+    id: "seed-5",
+    name: "Frank Delaney",
+    age: 67,
+    voice: "male",
+    voiceId: "JBFqnCBsd6RMkjVDRZzb",
+    job: "retired bus driver",
+    product: "home loan",
+    situation:
+      "Frank has never missed a payment in twenty years and is mortified to be getting a call. He is formal, proud, and keeps apologising. He and his wife Margaret handled the money together.",
+    hiddenProblem: "Margaret died six weeks ago. He does not know the online banking password and the redraw was in her name; he has been paying bills from cash.",
+    firstMessage: "Hello, yes, this is Frank Delaney. I'm sorry, I know a payment was missed. That has never happened before.",
+    level: 2,
+    expectedSigns: ["bereavement", "hardship-request", "stress"],
+    whyThisOne: "Pride hides grief. If you go straight to the payment date, you never learn about Margaret. One gentle question does.",
+    source: "seed",
+    createdAt: 0,
+    approved: true,
+    plays: 0,
+  },
 ];
 
-export const VOICE_IDS: Record<Scenario["voice"], string> = {
-  female: "EXAVITQu4vr4xnSDxMaL", // Sarah — ElevenLabs premade
-  male: "IKne3meq5aSn9XLyUdCD", // Charlie — ElevenLabs premade, Australian
-};
+// ElevenLabs PREMADE voices only — the free plan cannot start an agent on a
+// Voice Library voice. Charlie is the one Australian in the premade roster.
+export interface VoiceChoice {
+  id: string;
+  name: string;
+  gender: Scenario["voice"];
+  age: "young" | "middle" | "old";
+  note: string;
+}
+export const VOICE_ROSTER: VoiceChoice[] = [
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Sarah", gender: "female", age: "young", note: "warm, a little tired" },
+  { id: "cgSgspJ2msm6clMCkdW9", name: "Jessica", gender: "female", age: "young", note: "bright, talks fast when nervous" },
+  { id: "FGY2WhTYpPnrIDTdsKH5", name: "Laura", gender: "female", age: "young", note: "quirky, deflects with jokes" },
+  { id: "XrExE9yKIg1WjnnlVkGX", name: "Matilda", gender: "female", age: "middle", note: "steady alto, organised" },
+  { id: "hpp4J3VqNfWAUOO0d1Us", name: "Bella", gender: "female", age: "middle", note: "polished, apologetic" },
+  { id: "Xb7hH8MSUJpSbSDYk0k2", name: "Alice", gender: "female", age: "old", note: "careful, softly spoken" },
+  { id: "IKne3meq5aSn9XLyUdCD", name: "Charlie", gender: "male", age: "young", note: "Australian, confident, fast" },
+  { id: "bIHbv24MWmeRgasZH58o", name: "Will", gender: "male", age: "young", note: "laid back, avoids the point" },
+  { id: "TX3LPaxmHKxFdv7VOQHJ", name: "Liam", gender: "male", age: "young", note: "energetic, embarrassed" },
+  { id: "iP95p4xoKVk53GoZ742B", name: "Chris", gender: "male", age: "middle", note: "down to earth" },
+  { id: "N2lVS1w4EtoT3dr4eOWO", name: "Callum", gender: "male", age: "middle", note: "gravelly, short-tempered" },
+  { id: "CwhRBWXzGAHq8TQ4Fs17", name: "Roger", gender: "male", age: "middle", note: "resonant, unhurried" },
+  { id: "JBFqnCBsd6RMkjVDRZzb", name: "George", gender: "male", age: "old", note: "warm, formal, proud" },
+];
+
+function ageBucket(age: number): VoiceChoice["age"] {
+  return age < 35 ? "young" : age < 55 ? "middle" : "old";
+}
+
+/** Pick a voice for a persona; `salt` spreads generated customers across the roster. */
+export function pickVoice(gender: Scenario["voice"], age: number, salt = ""): VoiceChoice {
+  const bucket = ageBucket(age);
+  const pool = VOICE_ROSTER.filter((v) => v.gender === gender && v.age === bucket);
+  const fallback = VOICE_ROSTER.filter((v) => v.gender === gender);
+  const list = pool.length ? pool : fallback;
+  let h = 0;
+  for (const ch of salt) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return list[h % list.length];
+}
+
+export function voiceFor(s: Scenario): VoiceChoice {
+  const byId = s.voiceId ? VOICE_ROSTER.find((v) => v.id === s.voiceId) : undefined;
+  return byId ?? pickVoice(s.voice, s.age, s.id);
+}
 
 export function buildPrompt(s: Scenario): string {
   const hardness =

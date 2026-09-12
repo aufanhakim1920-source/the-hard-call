@@ -23,20 +23,24 @@ export function SignStack({
   onHandled,
   onJump,
   newestOpenId,
+  compact,
 }: {
   signs: Sign[];
   startedAt: number;
   onHandled: (id: string, handled: boolean) => void;
   onJump: (lineId: string) => void;
   newestOpenId?: string;
+  compact?: boolean;
 }) {
   const list = [...signs].reverse();
   return (
     <aside className="signs" aria-label="Danger signs">
-      <div className="signs-head">
-        <span className="label">Signs</span>
-        <span className="small muted">{signs.length ? `${signs.filter((s) => !s.handled).length} open · newest on top` : "none yet"}</span>
-      </div>
+      {!compact && (
+        <div className="signs-head">
+          <span className="label">Signs</span>
+          <span className="small muted">{signs.length ? `${signs.filter((s) => !s.handled).length} open · newest on top` : "none yet"}</span>
+        </div>
+      )}
       <div className="signs-list">
         {list.length === 0 && (
           <div className="empty">

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { postScenario } from "../lib/api";
 import { fmtDate, fmtWhen } from "../lib/dates";
-import { levelLabel } from "../lib/scenarios";
+import { levelLabel, pickVoice } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import type { LessonKind, Report, ReportItem, Scenario, Session } from "../lib/types";
 import { uid } from "../lib/types";
+import { useCountUp } from "../lib/useCountUp";
 
 function Delta({ now, prev, invert }: { now: number; prev?: number; invert?: boolean }) {
   if (prev === undefined) return <div className="delta">first call in this mode</div>;
@@ -41,6 +42,10 @@ export function ReportCard({
   const [draft, setDraft] = useState<Scenario | null>(null);
   const [buildErr, setBuildErr] = useState<string | null>(null);
 
+  const nCaught = useCountUp(report.caught, 600, 80);
+  const nHandled = useCountUp(report.handled, 600, 160);
+  const nMissed = useCountUp(report.missed, 600, 240);
+
   const say = (t: string) => {
     setToast(t);
     window.setTimeout(() => setToast(null), 2200);
@@ -66,6 +71,7 @@ export function ReportCard({
         name: s.name,
         age: s.age,
         voice: s.voice,
+        voiceId: pickVoice(s.voice, s.age, session.id).id,
         job: s.job,
         product: s.product,
         situation: s.situation,
@@ -131,17 +137,17 @@ export function ReportCard({
       <div className="stats">
         <div className="stat">
           <div className="label">Signs caught</div>
-          <b>{report.caught}</b>
+          <b>{nCaught}</b>
           <Delta now={report.caught} prev={prev?.caught} />
         </div>
         <div className="stat">
           <div className="label">Handled</div>
-          <b>{report.handled}</b>
+          <b>{nHandled}</b>
           <Delta now={report.handled} prev={prev?.handled} />
         </div>
         <div className="stat">
           <div className="label">Missed</div>
-          <b>{report.missed}</b>
+          <b>{nMissed}</b>
           <Delta now={report.missed} prev={prev?.missed} invert />
         </div>
       </div>

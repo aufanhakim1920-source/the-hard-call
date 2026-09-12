@@ -5,7 +5,7 @@
 
 import { Conversation } from "@elevenlabs/client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { VOICE_IDS, buildPrompt } from "./scenarios";
+import { buildPrompt, voiceFor } from "./scenarios";
 import type { Scenario, Speaker } from "./types";
 
 export type PracticeStatus = "idle" | "connecting" | "connected" | "ended" | "error";
@@ -57,7 +57,7 @@ export function usePractice(opts: { onLine: (speaker: Speaker, text: string) => 
               firstMessage: scenario.firstMessage,
               language: "en",
             },
-            tts: { voiceId: VOICE_IDS[scenario.voice] },
+            tts: { voiceId: voiceFor(scenario).id },
           },
           onConnect: () => setStatus("connected"),
           onDisconnect: () => {

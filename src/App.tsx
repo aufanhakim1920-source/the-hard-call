@@ -66,6 +66,7 @@ export default function App() {
   return (
     <>
       <TopBar view={view} onView={onView} assistant={assistant} />
+      <div className="view" key={`${view}-${result ? result.report.callId : call.key}`}>
       {view === "live" &&
         (result ? (
           <ReportCard report={result.report} session={result.session} onNew={startLive} onPractice={startPractice} />
@@ -84,6 +85,7 @@ export default function App() {
       {view === "deadlines" && <Deadlines />}
       {view === "lessons" && <Lessons />}
       {view === "about" && <About />}
+      </div>
     </>
   );
 }

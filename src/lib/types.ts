@@ -109,6 +109,7 @@ export interface Scenario {
   name: string;
   age: number;
   voice: "female" | "male";
+  voiceId?: string;
   job: string;
   product: string;
   situation: string;
