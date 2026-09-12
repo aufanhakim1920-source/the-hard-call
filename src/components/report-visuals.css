@@ -1,8 +1,16 @@
-/* Report visuals — the call timeline, the score ring, the sign bars.
-   Constructions from the vault's Instruments note: canvas tick ring (1a),
-   the 2px leading edge (2c), the bar BEHIND the row's text (2g),
-   label / value / unit (3a), corner ref-labels + a footer of two facts (3e).
-   Tokens only. No boxes: hairlines and gaps do the separating. */
+/* Report visuals — the ledger, the answer times, the call timeline, the score
+   ring, the deadline track.
+
+   Constructions from the vault's Instruments note: the open channel with
+   overhanging end caps (2b), tick marks as a rhythm inside it (2c), the fill
+   behind a row (2g), label / value / unit with the big number set LIGHT and
+   tracked tight (3a), corner ref-labels and a footer of two facts (3e).
+
+   Colour rule for everything here, measured rather than picked: a stroke, a
+   marker or a solid fill that has to be seen against the ground uses
+   --gold-2, which is 8.56:1 on ink and 4.92:1 on cream. Plain --gold is 2.18:1
+   on cream and is only ever a tint (--gold-dim) or a fill with ink on top.
+   Tokens only. No boxes: hairlines, channels and gaps do the separating. */
 
 /* ---------- shared plate ---------- */
 .rv-label {
@@ -11,14 +19,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--grey);
-}
-
-/* ---------- call timeline ---------- */
-.rv-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
 }
 .rv-corners {
   display: flex;
@@ -32,10 +32,418 @@
   color: var(--grey);
   opacity: 0.8;
 }
+.rv-facts {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--grey);
+}
+.rv-facts b {
+  font-weight: 400;
+  color: var(--cream);
+}
+.rv-empty {
+  margin: 0;
+  padding: 12px 4px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--grey);
+}
+
+/* ---------- the ledger: one part-to-whole, not four percentages ---------- */
+.rv-ledger {
+  display: block;
+  margin: 2px 0 26px;
+}
+.rv-ledger-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+}
+.rv-count {
+  margin: 8px 0 12px;
+}
+.rv-count > span {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 9px;
+}
+.rv-count b {
+  font-family: var(--mono);
+  /* Big text goes LIGHTER, not heavier — measured across the reference set. */
+  font-weight: 300;
+  font-size: 46px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+}
+.rv-count i,
+.rv-count em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.rv-whole {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  margin-bottom: 11px;
+}
+.rv-seg {
+  min-width: 0;
+  transition: width 820ms var(--ease-out);
+}
+/* Three treatments, not three hues: a tint with an edge, a solid, and an empty
+   dashed slot. All three survive greyscale and the high-contrast setting. */
+.rv-seg.answered,
+.rv-key.answered i {
+  background: var(--gold-dim);
+  box-shadow: inset 0 0 0 1px var(--gold-2);
+}
+.rv-seg.missed,
+.rv-key.missed i {
+  background: var(--gold-2);
+}
+/* Quieter than the other two on purpose: "not verified" is a caveat, not an
+   alarm, and a dense pattern would out-shout the signal colour. */
+.rv-seg.unknown,
+.rv-key.unknown i {
+  background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 5px);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.rv-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 22px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.rv-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rv-key i {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+.rv-key b {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--cream);
+}
+.rv-key em {
+  font-style: normal;
+  opacity: 0.72;
+}
+.rv-key em::before {
+  content: "· ";
+}
+
+/* ---------- score history: the benchmark beside the number ---------- */
+.rv-hist {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+  margin: 0 0 14px;
+}
+.rv-hist-plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  border-bottom: 1px solid var(--line-2);
+}
+.rv-hist-bar {
+  width: 8px;
+  flex: none;
+  background: var(--line-2);
+  transition: height 900ms var(--ease-out);
+}
+.rv-hist-bar.here {
+  background: var(--gold-2);
+}
+
+/* ---------- answer times: the gap from sign to words ---------- */
+.rv-rt {
+  display: block;
+  margin: 2px 0 26px;
+}
+.rv-rt-rows {
+  margin: 8px 0 8px;
+}
+.rv-rt-row,
+.rv-rt-axis {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 8rem);
+  grid-template-areas: "head track value";
+  gap: 0 18px;
+  align-items: center;
+}
+.rv-rt-row {
+  padding: 9px 2px;
+}
+.rv-rt-row + .rv-rt-row {
+  border-top: 1px solid var(--line);
+}
+.rv-rt-head {
+  grid-area: head;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.rv-rt-title {
+  min-width: 0;
+  font-size: 14px;
+  color: var(--cream);
+}
+.rv-rt-stamp {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+/* The open channel from Instruments 2b: rails top and bottom, closed by end
+   caps that overhang 3px. A frame reads as a box; an overhung channel reads as
+   an instrument. */
+.rv-rt-track {
+  grid-area: track;
+  position: relative;
+  height: 16px;
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background-image: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px var(--rv-tick, 25%));
+}
+.rv-rt-track::before,
+.rv-rt-track::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+}
+.rv-rt-track::before {
+  left: -1px;
+  border-left: 1px solid var(--line-2);
+}
+.rv-rt-track::after {
+  right: -1px;
+  border-right: 1px solid var(--line-2);
+}
+/* Left edge = the sign fired. It is drawn on every lane, including the lanes
+   with no bar, so an empty lane reads as "it fired and nothing followed". */
+.rv-rt-fire {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 0;
+  width: 2px;
+  background: var(--gold-2);
+}
+.rv-rt-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  background: var(--gold-dim);
+  border-right: 2px solid var(--gold-2);
+  transition: width 760ms var(--ease-out);
+}
+.rv-rt-value {
+  grid-area: value;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+}
+.rv-rt-value b {
+  font-family: var(--mono);
+  font-weight: 300;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+}
+.rv-rt-nil {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.rv-rt-axis {
+  padding: 2px 2px 0;
+}
+.rv-rt-ax {
+  grid-area: track;
+  position: relative;
+  height: 15px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--grey);
+}
+.rv-rt-ax span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.rv-rt-ax span:first-child {
+  transform: none;
+}
+.rv-rt-ax span[data-end] {
+  transform: translateX(-100%);
+}
+
+/* ---------- deadline track: the window as a length ---------- */
+.rv-dl {
+  display: block;
+  margin: 24px 0;
+}
+.rv-dl-row {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 8rem);
+  grid-template-areas: "head mid read";
+  gap: 6px 18px;
+  align-items: center;
+  padding: 14px 2px;
+}
+.rv-dl-row + .rv-dl-row {
+  border-top: 1px solid var(--line);
+}
+.rv-dl-head {
+  grid-area: head;
+  min-width: 0;
+}
+.rv-dl-title {
+  font-size: 14px;
+  color: var(--cream);
+  margin-top: 3px;
+}
+.rv-dl-mid {
+  grid-area: mid;
+  min-width: 0;
+}
+.rv-dl-track {
+  position: relative;
+  height: 16px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.rv-dl-left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--gold-dim);
+  transition: width 820ms var(--ease-out);
+}
+.rv-dl-now {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--gold-2);
+}
+.rv-dl-due {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -2px;
+  background: var(--cream);
+}
+/* Past the date the window is spent, so the lane fills the other way: hatched
+   from the deadline back, which cannot be misread as time still in hand. */
+.rv-dl-row.overdue .rv-dl-left {
+  background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--gold-line) 3px 4px);
+}
+.rv-dl-marks {
+  position: relative;
+  height: 15px;
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--grey);
+  white-space: nowrap;
+}
+.rv-dl-from {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.rv-dl-to {
+  position: absolute;
+  top: 0;
+  transform: translateX(-100%);
+  color: var(--cream);
+}
+.rv-dl-read {
+  grid-area: read;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.rv-dl-read b {
+  font-family: var(--mono);
+  font-weight: 300;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+}
+.rv-dl-row.overdue .rv-dl-read b {
+  color: var(--gold-2);
+}
+.rv-dl-read .rv-unit {
+  margin: 5px 0 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- call timeline ---------- */
+.rv-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
 .rv-tl-svg {
   display: block;
   width: 100%;
-  height: 120px;
+  height: 128px;
   overflow: visible;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
@@ -80,46 +488,64 @@
   fill: transparent;
   cursor: default;
 }
+/* The reach: sign to the worker's cited words, capped in cream where the
+   worker answered. Same vocabulary as the answer-time rows on purpose. */
+.rv-tl-link {
+  stroke: var(--gold-2);
+  stroke-width: 1;
+  opacity: 0.8;
+}
+.rv-tl-from {
+  stroke: var(--gold-2);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+.rv-tl-ans {
+  stroke: var(--cream);
+  stroke-width: 2;
+}
 .rv-tl-done {
   stroke: var(--cream);
   stroke-width: 2;
 }
 .rv-tl-drop {
-  stroke: var(--gold);
+  stroke: var(--gold-2);
   stroke-width: 1;
   stroke-dasharray: 1 3;
   stroke-linecap: round;
   opacity: 0.85;
 }
+.rv-tl-drop.unver {
+  stroke: var(--grey);
+  opacity: 0.6;
+}
 .rv-tl-missed {
-  fill: var(--gold);
+  fill: var(--gold-2);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.rv-tl-missed.unver {
+  fill: var(--grey);
 }
 .rv-tl-time {
   fill: var(--grey);
   font-size: 10px;
 }
-.rv-facts {
-  display: flex;
-  justify-content: space-between;
-  gap: 4px 16px;
-  flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: var(--grey);
-}
-.rv-facts b {
-  font-weight: 400;
-  color: var(--cream);
-}
 
 /* ---------- score ring ---------- */
 .rv-ring {
-  position: relative;
   flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.rv-ring-face {
+  position: relative;
+}
+.rv-ring-under {
+  text-align: center;
 }
 .rv-ring-canvas {
   display: block;
@@ -152,83 +578,101 @@
   margin-left: 2px;
 }
 
-/* ---------- sign bars ---------- */
-.rv-bars {
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--line);
-}
-.rv-bar-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  height: 40px;
-  padding: 0 10px 0 4px;
-  border-bottom: 1px solid var(--line);
-  overflow: hidden;
-}
-.rv-bar-fill {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  background: var(--gold-dim);
-  transition: width 700ms var(--ease-out);
-  pointer-events: none;
-}
-.rv-bar-fill.handled {
-  border-right: 2px solid var(--gold);
-}
-.rv-bar-verdict {
-  position: relative;
-  flex: none;
-  width: 64px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--grey);
-}
-.rv-bar-row.handled .rv-bar-verdict {
-  color: var(--cream);
-}
-.rv-bar-title {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  font-size: 14px;
-  color: var(--cream);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.rv-bar-kind {
-  position: relative;
-  flex: none;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--grey);
-  opacity: 0.7;
-}
-.rv-empty {
-  margin: 0;
-  padding: 12px 4px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  font-size: 13px;
-  color: var(--grey);
+/* ---------- the phone ----------
+   Breakpoint measured off the content, not named after a device: below about
+   680px the three-column rows put the title, the channel and the reading all
+   under 200px each and the channel stops being readable. */
+@media (max-width: 680px) {
+  .rv-rt-row,
+  .rv-rt-axis,
+  .rv-dl-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 7rem);
+    grid-template-areas:
+      "head head"
+      "track value";
+    gap: 8px 14px;
+  }
+  .rv-dl-row {
+    grid-template-areas:
+      "head head"
+      "mid read";
+    align-items: end;
+  }
+  .rv-rt-head {
+    justify-content: space-between;
+  }
+  .rv-count b {
+    font-size: 38px;
+  }
+  .rv-dl-read b {
+    font-size: 28px;
+  }
+  .rv-rt-ax span:not(:first-child):not([data-end]) {
+    display: none;
+  }
+  /* Stacked, the strip took a whole row and floated away from the number it
+     is the benchmark for. On one line it costs nothing. */
+  .rv-hist {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 9px;
+    margin: 0 0 10px;
+  }
+  .rv-hist .rv-label {
+    margin-bottom: -2px;
+  }
+  .rv-ledger-top {
+    gap: 0 16px;
+  }
 }
 
-/* A verdict the transcript could not support: dimmer than missed, never gold. */
-.rv-bar-row.unverified .rv-bar-verdict {
-  /* --grey, not --text-3: measured, ink at 62% on cream composites to 4.42:1
-     and fails AA for text, while --grey is 5.01 on cream and 6.47 on ink. */
-  color: var(--grey);
+/* Bigger text must not clip a channel or crush a lane. */
+:root[data-text="2"] .rv-rt-track,
+:root[data-text="3"] .rv-rt-track,
+:root[data-text="2"] .rv-dl-track,
+:root[data-text="3"] .rv-dl-track {
+  height: 20px;
 }
-.rv-bar-fill.unverified {
-  background: var(--gold-dim);
+:root[data-text="3"] .rv-count b {
+  font-size: 40px;
+}
+:root[data-text="3"] .rv-rt-row,
+:root[data-text="3"] .rv-dl-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 7rem);
+  grid-template-areas:
+    "head head"
+    "track value";
+}
+:root[data-text="3"] .rv-dl-row {
+  grid-template-areas:
+    "head head"
+    "mid read";
+}
+:root[data-text="3"] .rv-rt-axis {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 7rem);
+  grid-template-areas:
+    "head head"
+    "track value";
+}
+
+/* Higher contrast lifts the channels and the dashed slot, hues untouched. */
+.high-contrast .rv-rt-track,
+.high-contrast .rv-dl-track {
+  border-top-color: var(--line-2);
+  border-bottom-color: var(--line-2);
+}
+.high-contrast .rv-seg.unknown,
+.high-contrast .rv-key.unknown i {
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.high-contrast .rv-tl-link {
+  opacity: 1;
+}
+
+/* A channel drawn in a tint disappears when transparency is turned down. */
+.reduce-transparency .rv-seg.answered,
+.reduce-transparency .rv-key.answered i,
+.reduce-transparency .rv-rt-bar,
+.reduce-transparency .rv-dl-left {
+  background-color: var(--ink-3);
 }

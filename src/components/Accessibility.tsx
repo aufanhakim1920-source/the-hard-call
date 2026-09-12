@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TEXT_SIZE_LABELS, announce, changedCount, resetA11y, setA11y, stopSpeaking, useA11y, type TextSize } from "../lib/a11y";
+import { useExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 
 function Switch({ on, onChange, label, hint }: { on: boolean; onChange: (v: boolean) => void; label: string; hint: string }) {
@@ -104,6 +105,9 @@ export function AccessibilityPanel() {
   const scroll = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const changed = changedCount();
+  // Focus goes back on the same frame the switch flips; only the node waits
+  // behind to animate out, and it is inert while it does.
+  const panel = useExit(open);
 
   const close = useCallback((giveFocusBack: boolean) => {
     setOpen(false);
@@ -179,8 +183,17 @@ export function AccessibilityPanel() {
         <span className="a11y-chip-label">Settings</span>
         {changed > 0 && <span className="count">{changed}</span>}
       </button>
-      {open && (
-        <div className="acct-panel a11y-panel" id="settings-panel" role="dialog" aria-modal="false" aria-labelledby="settings-title" tabIndex={-1} ref={dialog}>
+      {panel.mounted && (
+        <div
+          className={"acct-panel a11y-panel" + (panel.leaving ? " is-leaving" : "")}
+          id="settings-panel"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="settings-title"
+          tabIndex={-1}
+          ref={dialog}
+          inert={panel.leaving}
+        >
           <div className="a11y-head">
             <div className="label" id="settings-title">
               Settings

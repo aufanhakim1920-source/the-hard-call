@@ -384,8 +384,8 @@ select.field option {
      with three signs raised, the document was 888px tall and "End call" sat at
      top: -98 with the page scrolled as far as it goes. The signs and the
      transcript scroll inside their own columns instead. */
-  height: calc(100vh - var(--topbar));
-  height: calc(100dvh - var(--topbar));
+  height: calc(100vh - var(--bar-h, var(--topbar)));
+  height: calc(100dvh - var(--bar-h, var(--topbar)));
 }
 .call-head {
   display: flex;
@@ -1279,7 +1279,26 @@ select.field option {
   font-size: 13px;
   z-index: 40;
   opacity: 1;
-  animation: lineIn 220ms var(--ease-out);
+  animation: toastIn 220ms var(--ease-out);
+}
+/* Its own keyframes, not the shared `lineIn`: that one ends on
+   `transform: none`, which wipes the translateX(-50%) that centres this thing.
+   The toast was sliding in 50% of its own width off-centre and snapping back
+   when the animation ended. A transform keyframe has to carry every transform
+   the element depends on. */
+@keyframes toastIn {
+  from {
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1304,6 +1323,83 @@ select.field option {
   to {
     transform: none;
   }
+}
+
+/* ---------- motion: and things leave, they do not vanish ----------
+   Everything here opened with motion and closed by disappearing, because a
+   `{open && …}` child is gone from the DOM on the frame the state flips.
+   `useExit` in src/lib/motion.ts holds the node for one leave and adds
+   `.is-leaving`; these are the animations it plays.
+
+   ⚠️ An EXIT may animate opacity and an ENTRANCE may not. A running entrance
+   frozen at frame 0 in a throttled tab pins the element invisible — that bug
+   has already cost this project twice. A frozen EXIT leaves the thing on
+   screen, which is the harmless direction. Exits are also shorter than their
+   entrances: waiting on something you have already dismissed is the part that
+   reads as slow. */
+.acct-panel.is-leaving {
+  animation: panelOut 150ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes panelOut {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+.toast.is-leaving {
+  animation: toastOut 160ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+/* A row on its way out of a list. It slides against the reading direction so
+   it does not read as a row arriving, then the rows below close the gap under
+   the FLIP — a removal is two moves, not a disappearance. */
+.is-leaving-row {
+  animation: rowOut 200ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes rowOut {
+  to {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+/* A row travelling further than its own height passes the rows in between, so
+   it is picked up for the trip: a ground and a layer, no border and no radius,
+   gone again when it lands. Both grounds have a token for "one step up from
+   the page", which is the whole lift. */
+.is-moving {
+  position: relative;
+  z-index: 2;
+  background: var(--ink-2);
+}
+/* A ticked deadline is dimmed to 0.45, and a translucent lift is not a lift:
+   the rows underneath read straight through it and both sets of words were
+   illegible for a third of a second. It travels solid and dims where it lands
+   — the row's existing 200ms opacity transition does the settle, so ticking
+   reads as pick up, carry, put down. */
+.deadline-row.is-moving {
+  opacity: 1;
+}
+
+/* Swapping one control for another IN PLACE. `height: auto` is not animatable
+   and `max-height` guesses a number; a grid row interpolates the real measured
+   height. The child needs the overflow, because the row is what animates. */
+.swap {
+  display: grid;
+  /* The zero floor the css gate asks for, spelled out on a row rather than a
+     column. Verified in the browser that it still interpolates and still
+     resolves to the content's real height — a bare 0fr/1fr is the usual way
+     this trick is written, and it would have tripped the gate. */
+  grid-template-rows: minmax(0, 0fr);
+  transition: grid-template-rows 260ms var(--ease-out);
+}
+.swap.open {
+  grid-template-rows: minmax(0, 1fr);
+}
+.swap > * {
+  overflow: hidden;
+  min-height: 0;
 }
 .sign.done {
   transform: scale(0.985);
@@ -1714,7 +1810,7 @@ select.field option {
     position: fixed;
     left: 14px;
     right: 14px;
-    top: calc(var(--topbar) + 8px);
+    top: calc(var(--bar-h, var(--topbar)) + 8px);
     width: auto;
   }
 }
@@ -1724,11 +1820,11 @@ select.field option {
    alone on a row of its own and "Saved here only" truncated to "Saved here o…".
    Every control keeps its accessible name — only the visible words go.
 
-   940px, not 760: the bar's full-width content measures ~930px, so between the
+   980px, not 760: the bar's full-width content measures ~962px, so between the
    phone rules and that width it simply ran off the side of the window — 177px
    of sideways scroll at 768. The breakpoint is the bar's own width, measured,
    not a device name. */
-@media (max-width: 940px) {
+@media (max-width: 980px) {
   .wordmark {
     white-space: nowrap;
     font-size: 0;
@@ -1752,7 +1848,7 @@ select.field option {
     position: fixed;
     left: 14px;
     right: 14px;
-    top: calc(var(--topbar) + 8px);
+    top: calc(var(--bar-h, var(--topbar)) + 8px);
     width: auto;
   }
   .topbar {
@@ -1821,8 +1917,7 @@ select.field option {
   text-overflow: ellipsis;
 }
 
-.report .rv-timeline,
-.report .rv-bars {
+.report .rv-timeline {
   margin: 6px 0 22px;
 }
 
@@ -2100,8 +2195,14 @@ select.field option {
   --gold-line: rgba(138, 94, 28, 0.5);
   --line: rgba(28, 31, 36, 0.16);
   --line-2: rgba(28, 31, 36, 0.34);
-  --text-2: rgba(28, 31, 36, 0.78);
-  --text-3: rgba(28, 31, 36, 0.62);
+  --text-2: rgba(28, 31, 36, 0.78); /* 7.38:1 composited over the cream */
+  /* Computed, not eyeballed: composite the alpha over the ground, then
+     relative luminance, then (L1+.05)/(L2+.05). At 0.62 this read 4.43:1 and
+     failed AA for body text by a whisker — invisible to anyone choosing it by
+     eye. 0.66 reads 5.02:1. It lands on the same number as the muted grey
+     (5.01) because on a light ground a third, quieter tier has nowhere left to
+     go: anything dimmer than about 5:1 fails. */
+  --text-3: rgba(28, 31, 36, 0.66);
   --sheet-weave: rgba(28, 31, 36, 0.05);
 }
 :root[data-theme="light"] body::before {

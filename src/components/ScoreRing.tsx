@@ -86,15 +86,21 @@ export function ScoreRing({ score, size = 132, label = "score", unverified = fal
   }, [target, size, unverified]);
 
   return (
-    <div className="rv-ring" style={{ width: size, height: size }} role="img" aria-label={unverified ? "score not verified" : `${label} ${target} out of 100`}>
-      <canvas ref={canvas} className="rv-ring-canvas" style={{ width: size, height: size }} aria-hidden="true" />
-      <div className="rv-ring-read">
-        <div className="rv-ring-value" style={{ fontSize: Math.round(size * 0.27) }}>
-          <span ref={num}>—</span>
-          <span className="rv-unit">/100</span>
+    <div className="rv-ring" role="img" aria-label={unverified ? "score not verified" : `${label} ${target} out of 100`}>
+      <div className="rv-ring-face" style={{ width: size, height: size }}>
+        <canvas ref={canvas} className="rv-ring-canvas" style={{ width: size, height: size }} aria-hidden="true" />
+        <div className="rv-ring-read">
+          <div className="rv-ring-value" style={{ fontSize: Math.round(size * 0.27) }}>
+            <span ref={num}>—</span>
+            <span className="rv-unit">/100</span>
+          </div>
+          {!unverified && <div className="rv-label">{label}</div>}
         </div>
-        <div className="rv-label">{unverified ? "not verified" : label}</div>
       </div>
+      {/* "not verified" is twelve characters and the ring's clear middle is
+          about seventy pixels wide — inside, it crosses the ticks at every
+          size. It sits under the dial instead. */}
+      {unverified && <div className="rv-label rv-ring-under">not verified</div>}
     </div>
   );
 }

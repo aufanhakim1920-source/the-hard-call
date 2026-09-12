@@ -48,6 +48,26 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
     }
   }, [view, openDeadlines, store.lessons.length]);
 
+  // The call screen sizes itself as viewport minus the bar, and it used to
+  // subtract a fixed 56px. The bar is TWO rows below 980px and taller again at
+  // the largest text, so the call screen was up to 34px too tall and pushed its
+  // own header off the top — measured, the call header sat at -32.
+  //
+  // Publish the MEASURED height as its own variable, never back into --topbar:
+  // the bar's own height is set from --topbar, so writing the measurement there
+  // makes the bar define its own size from its own size. It latched at 90px and
+  // stayed there even at 1440 where the bar is one row.
+  const barRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const publish = () => document.documentElement.style.setProperty("--bar-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // A cut-off tab must read as "there is more", not as broken. The edge fades
   // only on the side that actually has hidden tabs.
   useLayoutEffect(() => {
@@ -67,7 +87,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
     };
   }, [tabs.length]);
   return (
-    <header className="topbar">
+    <header className="topbar" ref={barRef}>
       <div className="wordmark">
         <Mark />
         CallFlag

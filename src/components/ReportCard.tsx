@@ -4,29 +4,19 @@ import { fmtDate, fmtWhen } from "../lib/dates";
 import { levelLabel, pickVoice } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
+import { PHONE, useMedia } from "../lib/useMedia";
 import type { LessonKind, Report, ReportItem, Scenario, Session } from "../lib/types";
 import { uid } from "../lib/types";
-import { useCountUp } from "../lib/useCountUp";
 import { CallTimeline } from "./CallTimeline";
+import { DeadlineTrack } from "./DeadlineTrack";
+import { ReportLedger } from "./ReportLedger";
+import { Toast } from "./Toast";
+import { ResponseTimes } from "./ResponseTimes";
 import { ScoreRing } from "./ScoreRing";
-import { SignBars } from "./SignBars";
 
 function evidenceTime(ms: number) {
   const seconds = Math.floor(ms / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
-function Delta({ now, prev, invert }: { now: number; prev?: number; invert?: boolean }) {
-  if (prev === undefined) return <div className="delta">first call in this mode</div>;
-  const d = now - prev;
-  if (d === 0) return <div className="delta">same as your last call</div>;
-  const good = invert ? d < 0 : d > 0;
-  return (
-    <div className={"delta " + (good ? "up" : "down")}>
-      {d > 0 ? "+" : ""}
-      {d} vs your last call
-    </div>
-  );
 }
 
 export function ReportCard({
@@ -41,7 +31,10 @@ export function ReportCard({
   onPractice: (s: Scenario) => void;
 }) {
   const store = useStore();
-  const prev = store.reports.filter((r) => r.mode === report.mode && r.callId !== report.callId)[0];
+  // The worker's own earlier calls in this mode — the only honest benchmark for
+  // a number out of 100. Newest first, as the store keeps them.
+  const previous = store.reports.filter((r) => r.mode === report.mode && r.callId !== report.callId);
+  const phone = useMedia(PHONE);
   const [correcting, setCorrecting] = useState<string | null>(null);
   const [cKind, setCKind] = useState<LessonKind>("not-a-sign");
   const [cText, setCText] = useState("");
@@ -49,10 +42,6 @@ export function ReportCard({
   const [building, setBuilding] = useState(false);
   const [draft, setDraft] = useState<Scenario | null>(null);
   const [buildErr, setBuildErr] = useState<string | null>(null);
-
-  const nCaught = useCountUp(report.caught, 600, 80);
-  const nHandled = useCountUp(report.handled, 600, 160);
-  const nMissed = useCountUp(report.missed, 600, 240);
 
   const say = (t: string) => {
     setToast(t);
@@ -131,38 +120,34 @@ export function ReportCard({
         <div>
           <span className="label">Report card · {report.mode}</span>
           <h1>{report.customer}</h1>
+          {/* A degraded card carries no model, and "judged by " with nothing
+              after it reads as a bug rather than as an outage. */}
           <span className="muted small">
-            {fmtWhen(report.at)} · {Math.round(report.durationSec / 60)} min {report.durationSec % 60} s · judged by {report.model}
+            {fmtWhen(report.at)} · {Math.round(report.durationSec / 60)} min {report.durationSec % 60} s
+            {report.model ? ` · judged by ${report.model}` : " · not judged"}
           </span>
         </div>
         <div className="spacer" style={{ flex: 1 }} />
-        <ScoreRing score={report.score} unverified={report.scoreUnverified} />
+        {/* On a phone the ring was spending ~250px of the first screen, and on
+            most calls it spends it saying "not verified". It shrinks rather
+            than leading with nothing. */}
+        <ScoreRing score={report.score} unverified={report.scoreUnverified} size={phone ? 92 : 132} />
       </div>
 
-      <div className="stats">
-        <div className="stat">
-          <div className="label">Signs caught</div>
-          <b>{nCaught}</b>
-          <Delta now={report.caught} prev={prev?.caught} />
-        </div>
-        <div className="stat">
-          <div className="label">Handled</div>
-          <b>{nHandled}</b>
-          <Delta now={report.handled} prev={prev?.handled} />
-        </div>
-        <div className="stat">
-          <div className="label">Missed</div>
-          <b>{nMissed}</b>
-          <Delta now={report.missed} prev={prev?.missed} invert />
-        </div>
-      </div>
+      <ReportLedger report={report} previous={previous} />
+
+      <ResponseTimes session={session} report={report} />
 
       <CallTimeline session={session} report={report} />
 
       <p className="summary">{report.summary}</p>
-      {!!report.unverified && <p className="muted small">{report.unverified} item(s) could not be verified from the transcript. These are not counted as missed.</p>}
-
-      <SignBars items={report.items} />
+      {!!report.unverified && (
+        <p className="muted small">
+          {report.unverified === 1
+            ? "One judgement could not be verified from the transcript. It is not counted as missed."
+            : `${report.unverified} judgements could not be verified from the transcript. They are not counted as missed.`}
+        </p>
+      )}
 
       <div className="verdicts">
         {report.items.map((i) => (
@@ -229,21 +214,14 @@ export function ReportCard({
         ))}
       </div>
 
-      {report.deadlines.length > 0 && (
+      <DeadlineTrack report={report} />
+
+      {report.tip && (
         <div className="tip-box">
-          <div className="label">On the clock</div>
-          {report.deadlines.map((d) => (
-            <div key={d.key}>
-              {d.label} <b className="mono">{fmtDate(d.date)}</b> — {d.title}. Added to Deadlines.
-            </div>
-          ))}
+          <div className="label">One thing for next time</div>
+          {report.tip}
         </div>
       )}
-
-      <div className="tip-box">
-        <div className="label">One thing for next time</div>
-        {report.tip}
-      </div>
 
       <div className="actions">
         <button className="btn gold" onClick={onNew}>
@@ -296,7 +274,7 @@ export function ReportCard({
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
+      <Toast text={toast} />
     </div>
   );
 }
