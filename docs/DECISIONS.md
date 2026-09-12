@@ -643,3 +643,62 @@ One more thing the reduced-motion pass caught: the global rules squash
 `transition-duration` but **not** `transition-delay`, so a staggered arrival
 left a reduced-motion reader watching an invisible wait. Stagger must be
 zeroed explicitly.
+
+## A frozen tab is where an entrance's real cost shows up
+
+Three separate faults this round were one shape: **an animation that never
+advances past its first frame holds that frame forever.** A tab that is not
+painting does that, and so does a slow machine at exactly the wrong moment.
+
+| what | frozen at | cost |
+|---|---|---|
+| the active-tab underline | width 0 | which section you are in was carried by colour alone |
+| the view container | `translateY(6px)` | 6 px of vertical scroll clipping the privacy footer at 1280×720 |
+| the phone's bottom sheet | `translateY(0)` | sheet top 243 instead of 664 — covering the transcript, Listen and the type row |
+
+**The fix for a transition is to mount already placed.** A transition never
+runs on an element's first style, so applying the resting value on the first
+commit costs nothing and removes the frozen state entirely; later changes
+still animate. Measured on the tab underline: width 46 at t+0 on the same
+throttled load that previously gave 0.
+
+**The fix for the view was to delete the entrance.** A transform on a
+container is not free: besides freezing, *any* transform makes the element a
+containing block for every `position: fixed` descendant — and the view
+contains several, including the phone's sheet. There is no version that keeps
+the move and drops the costs, because the move *is* the transform. The
+contents already animate on their own, so the container's 6 px rise was the
+least valuable motion in the app and the most expensive.
+
+⭐ **Animate the contents, not the frame.**
+
+## A single-key shortcut needs to ask "is anyone interacting", not "is this an input"
+
+The shortcut guard skipped `INPUT`, `TEXTAREA` and `SELECT`. The Settings
+panel is deliberately non-modal, because a worker may need it during a live
+call, so focus can sit on its controls while the call is still listening on
+`window`. Measured: tab into the open panel, press **e**, and the call ends —
+report written, panel still floating above it.
+
+The guard now also ignores a dialog, a listbox, the select popup and anything
+contenteditable. ⭐ **The question a global key handler must ask is whether
+the user is interacting with something, not whether that something is a form
+field.**
+
+## My own verification was wrong twice, the same way
+
+Both times I sampled the page 1.6–1.8 s after load, while it was still
+settling, and both times the reading looked like a real defect:
+
+- a composited contrast sweep returned **11 failures, two at ratio 1.00** —
+  text supposedly invisible. The screenshot showed all eleven legible. An
+  ancestor was mid-entrance and its opacity folded into the foreground.
+- the tab strip reported `mask-image: none` while visibly cut off, which read
+  as the edge fade being broken. It was present — the observer that marks the
+  edge had not run yet.
+
+⭐ **Rule: sample after entrances have finished, and screenshot before
+believing any failure.** This is the mirror of the older lesson that a gate
+reads what you declare rather than what is painted. An instrument that cannot
+see the screen produces false alarms exactly as readily as false passes, and a
+false alarm costs whoever chases it.
