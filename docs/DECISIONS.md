@@ -535,3 +535,50 @@ implied inability and matches no entry in the lexicon.
 **So the claim that the legal half cannot be rate-limited stays out of the pitch
 until that line raises a sign.** A fallback that has never been seen to fire is
 a story, not a feature.
+
+## A lift that is a class cannot beat a transition that is already running
+
+The list animation carries a re-sorted row on its own opaque layer so its
+words are readable while it passes the rows it overtakes. The lift is a class.
+The rows it is applied to already transition the property the lift changes — a
+ticked deadline transitions `opacity`, a practice card transitions
+`background` — so adding the class did not set the property, it started a
+transition towards it, and a running transition outranks every rule in the
+stylesheet, `!important` included.
+
+Measured on the real list, ticking the top deadline of six, sampling the
+carried row's computed opacity at five points of its own 340 ms trip:
+
+| point in the trip | before | after |
+|---|---|---|
+| 0 ms | 0.45 | 1 |
+| 85 ms | 0.45 | 1 |
+| 170 ms | 0.45 | 1 |
+| 255 ms | 0.45 | 1 |
+| 340 ms | 0.45 | 1 |
+
+It was see-through for the whole journey — the one thing the lift exists to
+prevent — and in a tab that is not painting the transition never leaves its
+first frame, so it would stay that way for as long as the throttling lasts.
+
+**Rule: take the carry out of the transition's hands.** Nothing interpolates
+while a row is in the air; the transitions return on landing, which is where
+the dimming belonged. Re-measured after: 1 at all five points, dimming to 0.45
+where it lands.
+
+**Second defect, same function.** "Is this row passing anyone" was tested as
+*travels further than its own height*, which misses the commonest case of all:
+two neighbours swapping travel exactly one row each and cross in the middle,
+so neither was carried. The test is now *which row is moving against the
+traffic* — a re-sort displaces one row and everyone else shifts a single place
+to close the gap, so the minority direction is the traveller. Checked on a
+285 px trip, a 71 px adjacent swap, and Reopen (the row rises while five rows
+fall): the right row carried each time, and a removal heal carries nobody.
+
+**And a verification lesson worth more than either fix.** The Browser pane
+stops compositing when hidden — `requestAnimationFrame` never fires, so any
+script that awaits a frame hangs. Watching motion frame by frame is impossible
+there. What works instead: pause the animation and seek it to fixed times,
+reading computed style at each. It is frame-independent, exact, and it doubles
+as the throttled-tab test — which is the only reason the frozen transition was
+caught at all.
