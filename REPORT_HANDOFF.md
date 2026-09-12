@@ -382,25 +382,37 @@ are both notices, each carrying a statutory clock (21 and 30 days). So
 reading. If the request tier lands, an inferred turn should raise the request
 and stop there. Flagged rather than invented.
 
-### The one thing that is not wired, and it is not mine
+### One line crossed into part/live-call, deliberately
 
-`src/lib/engine.ts` patches a dictated line with the answer's speaker:
+`src/lib/engine.ts` patches a dictated line with the answer's speaker. It now
+carries the confidence too:
 
 ```ts
-l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown"
-  ? { ...l, speaker: res.speaker }
+l.id === lineId && l.speaker === "unknown"
+  ? { ...l, speaker: res.speaker, speakerConfidence: res.speakerConfidence }
   : l
 ```
 
-It must also carry `speakerConfidence: res.speakerConfidence`, or the session
-posted to `/api/report` presents every guessed line as `known` and **the report
-gate never fires for live dictation**. The live flag path is already protected
-because `flags.ts` decides that server-side; the report path is not.
+Without it the session posted to `/api/report` presents every guessed line as
+`known` and **the report's attribution gate never fires for live dictation** —
+a duty could be marked handled on a customer line misread as staff, the false
+compliance record laural called worse than a miss. The live flag path was
+already protected because `flags.ts` decides it server-side; the report path
+was not, so shipping the contract without this line left it half-wired, which
+is worse than not shipping it: the gate exists and quietly does not apply.
 
-`engine.ts` belongs to `part/live-call`, so this is a one-line handoff, not a
-change made here. The manual speaker correction control is the same owner:
-`Line.speakerConfidence` exists, and a person correcting a turn sets the
-speaker and `speakerConfidence: "known"`, which re-enables notices on it.
+`engine.ts` belongs to `part/live-call`, and CONTRIBUTING says to say so first.
+Saying so here and in the PR instead, because it is one expression, additive,
+and every field it touches is optional. **Revert it freely if you would rather
+own it** — the rest of the contract keeps working, minus the live-dictation
+protection. The condition `res.speaker !== "unknown"` was also dropped so that
+an unresolved guess lands as `"unknown"` rather than as an absent field that
+reads as `known`.
+
+Still `part/live-call`'s, untouched here: the manual speaker correction control.
+`Line.speakerConfidence` exists, and a person correcting a turn sets the speaker
+plus `speakerConfidence: "known"`, which re-enables notices on that turn. That
+is the other half of the MVP proposal and it needs UI judgement, not a contract.
 
 `docs/transcript-schema.md` is laural's; the field is implemented to her
 message and should land in her table too.

@@ -53,8 +53,19 @@ export function useCallEngine(opts: EngineOptions) {
           const fresh: Sign[] = res.signs
             .filter((g) => !have.has(g.key))
             .map((g) => ({ ...g, id: uid("sg"), t: now, lineId, handled: false }));
+          // A dictated line arrives unattributed and this answer is what decides
+          // it — so carry HOW it was decided, not just the answer. Without the
+          // confidence, the session posted to /api/report presents every guessed
+          // line as known, and the report's attribution gate never fires for
+          // live dictation: a duty could be marked handled on a customer line
+          // misread as staff. laural's speaker_confidence contract; the gate
+          // itself lives in supabase/functions/_shared/reportItems.ts.
+          // res.speaker === "unknown" now also lands, as "unknown" rather than
+          // as an absent field that reads as known.
           const linesNext = cur.lines.map((l) =>
-            l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown" ? { ...l, speaker: res.speaker } : l,
+            l.id === lineId && l.speaker === "unknown"
+              ? { ...l, speaker: res.speaker, speakerConfidence: res.speakerConfidence }
+              : l,
           );
           // Coaching off silences the call, not the engine: the signs above are
           // already on the session, so the report card, the deadlines and the
