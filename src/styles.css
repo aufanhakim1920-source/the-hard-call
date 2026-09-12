@@ -1374,18 +1374,32 @@ select.field option {
 }
 
 
-/* ---------- motion: views arrive, they do not appear ---------- */
+/* ---------- motion: views arrive, they do not appear ----------
+   The 6px rise this used to carry is gone, deliberately, and it is worth
+   saying why rather than leaving a bare rule.
+
+   A transform on `.view` has two costs that only show up in a tab that is not
+   painting, where an animation never advances past its first frame:
+
+     1. It holds `translateY(6px)` for as long as the throttling lasts.
+        MEASURED at 1280x720: 6px of vertical scroll that clips the privacy
+        footer — on the screen the demo spends all its time on.
+     2. Any transform makes the element a containing block for every
+        `position: fixed` descendant. `.view` has several, including the
+        bottom sheet the phone layout depends on. While frozen, they stop
+        being positioned against the viewport.
+
+   There is no version of this that keeps the move and drops the costs: the
+   move IS the transform, and the containing block comes with it. Since the
+   content inside every view already animates in on its own, the view-level
+   rise was the least valuable motion in the app and the most expensive. So it
+   goes, and the arrival is carried by what is inside it.
+
+   ⭐ The general rule: an entrance that animates a TRANSFORM on a container
+   with fixed descendants is not free, and a throttled tab is where you find
+   out. Animate the contents, not the frame. */
 .view {
   opacity: 1;
-  animation: viewIn 260ms var(--ease-out);
-}
-@keyframes viewIn {
-  from {
-    transform: translateY(6px);
-  }
-  to {
-    transform: none;
-  }
 }
 
 /* ---------- motion: and things leave, they do not vanish ----------
