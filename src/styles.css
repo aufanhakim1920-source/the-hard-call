@@ -379,7 +379,13 @@ select.field option {
 .call {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  min-height: calc(100vh - var(--topbar));
+  /* HEIGHT, not min-height. With only a minimum, the middle row grows to fit
+     the signs and pushes the header off the top: measured on a 1280x720 laptop
+     with three signs raised, the document was 888px tall and "End call" sat at
+     top: -98 with the page scrolled as far as it goes. The signs and the
+     transcript scroll inside their own columns instead. */
+  height: calc(100vh - var(--topbar));
+  height: calc(100dvh - var(--topbar));
 }
 .call-head {
   display: flex;
@@ -581,13 +587,15 @@ select.field option {
     opacity: 0;
   }
 }
+/* Transform only. A running animation starting at opacity:0 beats the base
+   opacity:1, and a throttled tab holds frame 0 forever — which means the line
+   is not dimmer, it is absent. This is the sign card's bug, in three more
+   places. See the vault: "An Entrance Must Not Gate Visibility". */
 @keyframes lineIn {
   from {
-    opacity: 0;
     transform: translateY(6px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -1260,11 +1268,9 @@ select.field option {
 }
 @keyframes viewIn {
   from {
-    opacity: 0;
     transform: translateY(6px);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -1397,6 +1403,9 @@ select.field option {
     height: 40px;
   }
   .call.phone {
+    /* The phone is the other shape on purpose: the page itself scrolls under
+       the bottom sheet, so the call must be free to grow past the viewport. */
+    height: auto;
     min-height: 100dvh;
     padding-bottom: calc(var(--peek) + var(--safe-bottom) + 12px);
     overscroll-behavior-y: none;
@@ -1632,11 +1641,9 @@ select.field option {
 }
 @keyframes panelIn {
   from {
-    opacity: 0;
     transform: translateY(-4px) scale(0.98);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
