@@ -82,6 +82,37 @@ export function useExit(open: boolean, ms = 160): { mounted: boolean; leaving: b
 }
 
 /**
+ * Pick a row up for its trip, and put it down again.
+ *
+ * The lift is a class — a ground, a layer, and full opacity. The trap is that
+ * the rows it is applied to ALREADY transition the very property the lift
+ * changes: a ticked deadline transitions `opacity`, a practice card
+ * transitions `background`. So adding the class does not set the property, it
+ * starts a CSS TRANSITION towards it — and a running transition outranks every
+ * rule in the stylesheet, `!important` included.
+ *
+ * Measured before this: the carried deadline row reported opacity 0.45 at 0,
+ * 85, 170, 255 and 340ms of its own 340ms trip — see-through for the whole
+ * journey, which is the exact thing the lift exists to prevent. Worse in a tab
+ * that is not painting, where the transition never advances off its first
+ * frame and the row travels at 0.45 for as long as the throttling lasts.
+ *
+ * So the carry is taken out of the transition's hands. Nothing interpolates
+ * while a row is in the air; the transitions come back when it lands, which is
+ * where the dimming belonged in the first place.
+ */
+function lift(row: HTMLElement) {
+  row.style.transition = "none";
+  row.classList.add("is-moving");
+}
+function drop(row: HTMLElement) {
+  row.classList.remove("is-moving");
+  // Cleared AFTER the class, so the style the browser settles on is the one
+  // with the transition in it and the row dims where it landed.
+  row.style.transition = "";
+}
+
+/**
  * Animate a list's rows from where they were to where they are.
  *
  * Put the returned ref on the container and `data-flip={id}` on every row.
@@ -117,24 +148,43 @@ export function useFlip<T extends HTMLElement>(key: unknown) {
     // is motion nobody asked for.
     if (!was || motionOff()) return;
 
-    for (const row of rows) {
+    // Every delta first, because whether a row PASSES anyone is a fact about
+    // the list, not about that row. Rows closing the gap after a removal all
+    // travel the same way and never cross; a re-sort sends one row against the
+    // traffic, and that one is the only one that needs carrying.
+    const moves = rows.map((row) => {
       const k = String(row.dataset.flip);
       const from = was.get(k);
       const to = now.get(k) as number;
+      return { row, from, d: from === undefined ? 0 : from - to };
+    });
+    const travelling = moves.filter((m) => m.from !== undefined && Math.abs(m.d) > 0.5);
+    const sinking = travelling.filter((m) => m.d < -0.5);
+    const rising = travelling.filter((m) => m.d > 0.5);
+    const opposed = sinking.length > 0 && rising.length > 0;
+    // Which one is the row the click moved? The one going AGAINST the traffic.
+    // A re-sort displaces exactly one row and everybody else shifts a single
+    // place to close the gap it left, so the minority direction is the
+    // traveller — and it works for "Reopen", where the moving row goes up and
+    // the majority goes down. Only it is carried: two carried rows on the same
+    // layer would cover each other anyway.
+    const against = opposed ? (sinking.length <= rising.length ? sinking : rising) : travelling;
+    const lead = against.reduce<(typeof travelling)[number] | null>((a, b) => (a && Math.abs(a.d) >= Math.abs(b.d) ? a : b), null);
+    // Own height was the only test before, which misses the commonest case of
+    // all: two neighbours swapping travel exactly one row each, cross in the
+    // middle, and were both left see-through for the whole trip.
+    const carried = lead && (opposed || Math.abs(lead.d) > lead.row.offsetHeight) ? lead.row : null;
+
+    for (const { row, from, d } of moves) {
       // Two changes in quick succession must not leave two transforms on one
       // row fighting over it. The id is what makes a flip findable later.
       for (const old of row.getAnimations()) if (old.id === "flip") old.cancel();
       if (from === undefined) {
         row.animate([{ transform: "translateY(10px)" }, { transform: "none" }], { duration: ENTER, easing: EASE, id: "flip" });
-      } else if (Math.abs(from - to) > 0.5) {
-        // Move further than your own height and you are passing other rows,
-        // not closing ranks with them — so the traveller is lifted for the
-        // trip and put back down. Without it the two rows' words draw on top
-        // of each other for a third of a second and neither can be read.
-        const far = Math.abs(from - to) > row.offsetHeight;
-        if (far) row.classList.add("is-moving");
-        const a = row.animate([{ transform: `translateY(${from - to}px)` }, { transform: "none" }], { duration: MOVE, easing: EASE, id: "flip" });
-        if (far) {
+      } else if (Math.abs(d) > 0.5) {
+        if (row === carried) lift(row);
+        const a = row.animate([{ transform: `translateY(${d}px)` }, { transform: "none" }], { duration: MOVE, easing: EASE, id: "flip" });
+        if (row === carried) {
           // Put it down on whichever comes first. A tab that is not painting
           // never advances the animation, so `finished` can hang for as long as
           // the throttling lasts, and a row left permanently lifted is a
@@ -143,7 +193,7 @@ export function useFlip<T extends HTMLElement>(key: unknown) {
           const seq = String(Number(row.dataset.flipSeq ?? 0) + 1);
           row.dataset.flipSeq = seq;
           const down = () => {
-            if (row.dataset.flipSeq === seq) row.classList.remove("is-moving");
+            if (row.dataset.flipSeq === seq) drop(row);
           };
           void a.finished.then(down).catch(down);
           window.setTimeout(down, MOVE + 60);

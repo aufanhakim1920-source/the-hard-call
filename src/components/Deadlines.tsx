@@ -4,6 +4,7 @@ import { useFlip } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import "./report-visuals.css";
+import "./clear-history.css";
 
 const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 
@@ -22,7 +23,11 @@ const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? o
 function ClearCallHistory() {
   const store = useStore();
   const [armed, setArmed] = useState(false);
-  const [cleared, setCleared] = useState<string | null>(null);
+  /** The outcome carries the sentence the question was asked with. Clearing
+      zeroes both counts on the same frame the control starts collapsing, so a
+      recomputed sentence would read "0 report cards and 0 deadlines" on the
+      way out — the numbers have to be taken at the moment of the click. */
+  const [cleared, setCleared] = useState<{ said: string; what: string } | null>(null);
   const done = useRef<HTMLParagraphElement | null>(null);
   const ask = useRef<HTMLDivElement | null>(null);
 
@@ -55,56 +60,63 @@ function ClearCallHistory() {
     return () => ro.disconnect();
   }, [armed]);
 
-  if (cleared) {
-    return (
-      <div className="clear-data">
-        {/* Focus lands here, so the outcome is spoken and the keyboard is not
-            dumped back at the top of the page by the button it was on. */}
-        <p className="clear-done" ref={done} tabIndex={-1} role="status">
-          {cleared}
-        </p>
-      </div>
-    );
-  }
-  if (reports + deadlines === 0) return null;
+  if (!cleared && reports + deadlines === 0) return null;
 
-  const what = `${plural(reports, "report card")} and ${plural(deadlines, "deadline")}`;
+  const live = `${plural(reports, "report card")} and ${plural(deadlines, "deadline")}`;
+  const what = cleared ? cleared.what : live;
+  const clocks = store.deadlines.filter((d) => !d.done).length;
 
+  // Both halves stay in the tree and one row closes as the other opens. The
+  // control used to be REPLACED by its outcome on the same frame — an animated
+  // open and an instant cut for a close, which reads worse than neither.
   return (
-    <div className={"clear-data" + (armed ? " armed" : "")}>
-      <div className="clear-head">
-        <span className="rv-label">{what} stored on this device</span>
-        <button
-          className="btn ghost sm"
-          aria-expanded={armed}
-          onClick={() => {
-            const next = !armed;
-            setArmed(next);
-            play("tap");
-
-          }}
-        >
-          {armed ? "Keep them" : "Clear demo data"}
-        </button>
-      </div>
-      <div className="clear-ask" aria-hidden={!armed} ref={ask}>
+    <div className={"clear-data" + (armed ? " armed" : "") + (cleared ? " cleared" : "")}>
+      <div className="clear-swap" inert={cleared ? true : undefined} aria-hidden={cleared ? true : undefined}>
         <div>
-          <p className="clear-say">
-            Removes {what} from this device, including the {plural(store.deadlines.filter((d) => !d.done).length, "clock")} still
-            running. Your lessons and practice customers stay. This cannot be undone.
+          <div className="clear-head">
+            <span className="rv-label">{what} stored on this device</span>
+            <button
+              className="btn ghost sm"
+              aria-expanded={armed}
+              onClick={() => {
+                setArmed(!armed);
+                play("tap");
+              }}
+            >
+              {armed ? "Keep them" : "Clear demo data"}
+            </button>
+          </div>
+          <div className="clear-ask" aria-hidden={!armed} ref={ask}>
+            <div>
+              <p className="clear-say">
+                Removes {what} from this device, including the {plural(clocks, "clock")} still running. Your lessons and practice
+                customers stay. This cannot be undone.
+              </p>
+              <button
+                className="btn gold sm"
+                tabIndex={armed ? undefined : -1}
+                onClick={() => {
+                  actions.clearCallHistory();
+                  play("undo");
+                  setCleared({ said: `Removed ${live}. Lessons and practice customers were kept.`, what: live });
+                  window.setTimeout(() => done.current?.focus(), 0);
+                }}
+              >
+                Remove {what}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* The live region is mounted from the start rather than created with its
+          own text — a status region that appears already full is the one a
+          screen reader is most likely to miss. Focus lands here too, so the
+          keyboard is not dumped at the top of the page by the button it was on. */}
+      <div className="clear-swap outcome">
+        <div>
+          <p className="clear-done" ref={done} tabIndex={-1} role="status">
+            {cleared?.said}
           </p>
-          <button
-            className="btn gold sm"
-            tabIndex={armed ? undefined : -1}
-            onClick={() => {
-              actions.clearCallHistory();
-              play("undo");
-              setCleared(`Removed ${what}. Lessons and practice customers were kept.`);
-              window.setTimeout(() => done.current?.focus(), 0);
-            }}
-          >
-            Remove {what}
-          </button>
         </div>
       </div>
     </div>
