@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 12 Sept, 22:57 | Shawn Lee | report | [accept canonical transcripts and verify detector integration](../../commit/a4023e1f044946991ea04fa80cfa021b30422874) | REPORT_HANDOFF.md, detector-report.mjs, report-input.test.mjs +2 | +340 / -6 |
 | 12 Sept, 22:57 | TronJuan | engine | [Update cases.json](../../commit/f8cf456d6e21252b3cf102eacd9d7048981969d4) | cases.json | +1 / -1 |
 | 12 Sept, 22:39 | aufanhakim1920-source | practice | [the customer stopped repeating herself, and the failure says what went wrong](../../commit/f98f4c0db115127f35d58f5fba55038fa623fa32) | practice.ts | +47 / -2 |
 | 12 Sept, 22:39 | aufanhakim1920-source | project + report | [the product is CallFlag, and the mark now survives the size it lives at](../../commit/3a3d5206d7537a5ed6409b94950275e5290c5e7f) | backend.md, data.md, engine.md +12 | +435 / -14 |
