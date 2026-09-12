@@ -1,21 +1,50 @@
 {
-  "_comment": "Ground truth for the detector. Each call lists the flags that must be raised and the ones that must not. tolerance_ms is how far off the trigger timestamp may be and still count as correct.",
+  "_comment": "Ground truth for the detector. Each call lists what must be emitted and what must not. The three event kinds are asserted separately, because 'no statutory notice' and 'no live cues' are different claims and must fail independently.",
   "tolerance_ms": 3000,
+
+  "_kinds": {
+    "obligation": "A legal duty was triggered. Asserted, deadline-bearing, persisted, and the only kind that enters the compliance record.",
+    "request": "The customer asked to change their repayments but inability is not established. Low bar, no legal claim, prompts the threshold question. Persisted. A request carrying superseded_by must NOT be scored — score the obligation it became.",
+    "cue": "A circumstance signal that routes the call in the moment (safety, scam, gambling, health). Never persisted. This detector emits none; the sign engine does. Asserted here as must_not_emit_kinds so a regression that starts classifying the customer fails a test."
+  },
 
   "call_001": {
     "must_flag": [
       {
         "rule_id": "NCC_72_ORAL_NOTICE",
+        "kind": "obligation",
         "trigger_turn_start_ms": 51200,
         "why": "'I can't make the repayment. Not this month and honestly not for a while' — stated inability, medium term. Reinforced at 74700 with 'four, five months'.",
         "obligation": "Assess hardship notice and notify the decision",
         "deadline_days": 21,
         "authority": "National Credit Code s 72(4)"
+      },
+      {
+        "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+        "kind": "obligation",
+        "trigger_turn_start_ms": 51200,
+        "why": "The duty to inform arises with the notice.",
+        "deadline_days": null,
+        "authority": "ABA industry guideline — Banks' financial difficulty programs"
+      },
+      {
+        "rule_id": "NCC_72_WRITTEN_NOTICE_30D",
+        "kind": "obligation",
+        "trigger_turn_start_ms": 142700,
+        "why": "Staff put a variation on the table ('pausing repayments', 'interest-only'), arming the written-notice obligation.",
+        "deadline_days": 30,
+        "authority": "National Credit Code s 72 / s 73"
       }
     ],
-    "must_not_flag": [],
+    "must_not_flag": [
+      {
+        "rule_id": "HARDSHIP_REQUEST",
+        "why": "The customer goes straight to a clear statement of inability with no prior ask, so the notice and the request would land on the same turn. One event, not two prompts at once."
+      }
+    ],
+    "must_not_emit_kinds": ["cue"],
     "staff_handling": "correct",
-    "expected_report_card": "Recognised the notice, named the hardship process, set the 21-day expectation, paused collections, offered financial counselling. Use as the reference 'good call'."
+    "expected_report_card": "Recognised the notice, named the hardship process, set the 21-day expectation, paused collections, offered financial counselling. Reference 'good call'."
   },
 
   "call_002": {
@@ -24,8 +53,13 @@
       {
         "rule_id": "NCC_72_ORAL_NOTICE",
         "why": "Customer says 'struggling' and 'couldn't afford' but states a specific near-term recovery date and confirms future repayments are manageable. Temporary difficulty, not inability. Firing here is a false positive and the single most important failure to avoid."
+      },
+      {
+        "rule_id": "HARDSHIP_REQUEST",
+        "why": "She asks for nothing and settles the threshold question herself — 'I'll be square once the twentieth comes through', 'no dramas'. There is no question left for the staff member to ask."
       }
     ],
+    "must_not_emit_kinds": ["cue"],
     "staff_handling": "correct",
     "expected_report_card": "Correctly probed whether the change was structural, confirmed future affordability, logged contact. No hardship obligations triggered."
   },
@@ -33,7 +67,16 @@
   "call_003": {
     "must_flag": [
       {
+        "rule_id": "HARDSHIP_REQUEST",
+        "kind": "request",
+        "trigger_turn_start_ms": 16500,
+        "expect_superseded": true,
+        "why": "'I've missed the last two and I don't think I'm going to make the next one either' — difficulty with no duration either way. Not yet a notice, but the staff member should ask whether it is ongoing. Superseded by the notice at 45000, so the report card scores the obligation, not this.",
+        "deadline_days": null
+      },
+      {
         "rule_id": "NCC_72_ORAL_NOTICE",
+        "kind": "obligation",
         "trigger_turn_start_ms": 45000,
         "why": "'I cannot cover the repayment. Not next month, not the month after... four or five months' — unambiguous stated inability over the medium term.",
         "obligation": "Assess hardship notice and notify the decision",
@@ -42,15 +85,38 @@
       },
       {
         "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
-        "trigger_turn_start_ms": 103200,
-        "why": "Customer directly asks whether a process exists. Staff answers vaguely and steers back to the informal arrangement without naming the hardship provisions.",
-        "obligation": "Tell the customer hardship provisions exist under the National Credit Code",
+        "kind": "obligation",
+        "trigger_turn_start_ms": 45000,
+        "escalated_at_ms": 103200,
+        "why": "The duty to inform arises with the notice at 45000. At 103200 the customer directly asks whether a process exists, which escalates the same obligation rather than creating a new one — staff answers vaguely at 111000 and returns to the informal arrangement without naming the provisions.",
         "deadline_days": null,
         "authority": "ABA industry guideline — Banks' financial difficulty programs"
       }
     ],
     "must_not_flag": [],
+    "must_not_emit_kinds": ["cue"],
     "staff_handling": "failed",
-    "expected_report_card": "Missed the oral hardship notice. Substituted an informal arrangement for a statutory assessment, so no 21-day clock started and no decision is owed on record. Did not inform the customer of hardship provisions when directly asked. Could not confirm collections activity would stop. Closed with a file note, which creates no obligation and no audit trail — the same substitution pattern behind the 2025 NAB/AFSH penalty."
+    "expected_report_card": "Missed the oral hardship notice. Substituted an informal arrangement for a statutory assessment, so no 21-day clock started and no decision is owed on record. Did not inform the customer of hardship provisions when directly asked. Could not confirm collections activity would stop. Closed with a file note, which creates no obligation and no audit trail — the same substitution pattern behind the 2025 NAB/AFSH penalty. Do not double-count the superseded request at 16500."
+  },
+
+  "call_004": {
+    "must_flag": [
+      {
+        "rule_id": "HARDSHIP_REQUEST",
+        "kind": "request",
+        "trigger_turn_start_ms": 14600,
+        "why": "Explicit ask to move the payment. A request fires even though he states a near-term recovery ('I get paid on the twentieth') — that is exactly the case the staff member must resolve rather than assume.",
+        "deadline_days": null
+      }
+    ],
+    "must_not_flag": [
+      {
+        "rule_id": "NCC_72_ORAL_NOTICE",
+        "why": "Asking for more time is not a statement of inability. No 21-day clock starts. This is the boundary between the two tiers and the same situation as eval/cases.json c02."
+      }
+    ],
+    "must_not_emit_kinds": ["cue"],
+    "staff_handling": "correct",
+    "expected_report_card": "Asked the threshold question ('is this a one-off, or has something changed with your income'), confirmed future affordability, actioned the deferral. Request resolved satisfied; no obligation triggered."
   }
 }
