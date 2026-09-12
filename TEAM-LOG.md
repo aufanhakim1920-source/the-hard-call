@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 01:47 | aufanhakim1920-source | project + live call | [two report cards on one axis, and a demo script rewritten against twelve real runs](../../commit/01f5475926daef0b394fe7ad169a318ca07f2a49) | README.md, DEMO-SCRIPT.md, SUBMISSION.md +8 | +1301 / -148 |
 | 13 Sept, 01:21 | aufanhakim1920-source | other | [a legal flag now has to quote the customer](../../commit/60558aa32be0d62e6749481d335a7a358a8d2ece) | DECISIONS.md | +32 / -0 |
 | 13 Sept, 01:20 | aufanhakim1920-source | engine | [the request tier exists, and the notice now needs a quote it can check](../../commit/29d17994aff280ad5508eba8867542ecd8ca316c) | fixture-results.json, fixtures.mjs, results.json +5 | +1125 / -212 |
 | 13 Sept, 01:15 | aufanhakim1920-source | other | [the A/B demo varied the display and held the behaviour fixed](../../commit/c21fe760ba46a272583fa902c6851b42ce3dd331) | DECISIONS.md | +32 / -0 |
