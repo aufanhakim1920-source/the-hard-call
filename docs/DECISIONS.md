@@ -582,3 +582,64 @@ there. What works instead: pause the animation and seek it to fixed times,
 reading computed style at each. It is frame-independent, exact, and it doubles
 as the throttled-tab test — which is the only reason the frozen transition was
 caught at all.
+
+## Dimming text with `opacity` is choosing a colour blind
+
+A sweep for one failing value found 23. Almost every one was a single mistake
+repeated: `--ink` inverts with the theme and `--gold` does not, so every
+ink-on-gold surface became cream on gold the moment the light ground was
+selected — the primary button, the legal sign card's body, its "Mark handled"
+button, the skip link, the sheet counter, `::selection`. All measured 2.18:1;
+all now 6.56:1.
+
+Two rules came out of it, both more useful than the list:
+
+**1 · `opacity` on text is a colour you have not looked at.** The same 0.75
+measured **8.56:1** on the plain card and **3.93:1** on the gold one. A dimmed
+token is a different colour on every surface it lands on, and nothing warns
+you. Use a per-ground token, not a dimmed one.
+
+**2 · A colour that passes on one ground can fail on the other, and the token
+is where that gets decided.** Three literal `#1c1f24` patches in the light
+block turned out to be one missing token wearing three costumes. No stylesheet
+here now has a colour literal in a text declaration.
+
+## A contrast sweep reports phantom failures during an entrance
+
+Verifying the above independently, a composited sweep of the light ground
+returned **11 failures, two of them at ratio 1.00** — text supposedly the exact
+colour of its background, i.e. invisible. The screenshot showed all eleven
+perfectly legible.
+
+The sweep folds every ancestor's `opacity` into the foreground alpha, which is
+correct; but it ran while the page's entrance was still playing, so an
+ancestor was legitimately part-way to opaque. Re-run after motion settled:
+**0 failures, on both grounds.**
+
+⭐ **Rule: measure contrast only after entrances have finished, and screenshot
+before believing any failure.** This is the mirror image of the older lesson
+that a gate reads what you declare rather than what is painted — the same
+blindness, pointing the other way. An instrument that cannot see the screen
+produces false alarms as readily as false passes, and a false alarm wastes the
+time of whoever chases it.
+
+## The report card was showing the wrong answer first
+
+The split bar inflated from zero, which held **"0 of 4" on screen for 820 ms**
+on a card whose whole job is to be understood in two seconds — 40% of the
+glance spent on a wrong number, and the denominator counted too, so every
+intermediate frame made a different claim.
+
+The bar and the history strip are now true on frame one and arrive by a 7 px
+rise; only the numerator counts, 620 ms → 420 ms. Measured in a genuinely
+throttled tab the segments freeze at **644 px + 215 px**, the real 75/25,
+where before they froze at zero.
+
+The answer-time bars kept their sweep, because there the growth *is* the
+value. That is the line: animate a quantity only when the animation is saying
+something true about it.
+
+One more thing the reduced-motion pass caught: the global rules squash
+`transition-duration` but **not** `transition-delay`, so a staggered arrival
+left a reduced-motion reader watching an invisible wait. Stagger must be
+zeroed explicitly.
