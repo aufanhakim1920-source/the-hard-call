@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 09:16 | aufanhakim1920-source | other | [the native button face, one owner per property, and comparing two cards in the first second](../../commit/5238dbc11279aefcc1ac0a791b9b9930c63b5d51) | DECISIONS.md | +75 / -0 |
 | 13 Sept, 09:13 | aufanhakim1920-source | report | [the card leads with what the call cost, and an overdue bar drew nothing](../../commit/117bd6711e5c45c2de85331dba77cf718516b60a) | DeadlineTrack.tsx, ReportCard.tsx, report-deadline.css +1 | +315 / -23 |
 | 13 Sept, 09:13 | aufanhakim1920-source | live call | [the quote on the hero card was rendering as a raw Windows button](../../commit/c68b01828718db0de947d3a889efc0a5af592418) | Sheet.tsx, SignStack.tsx, sign-card.css | +526 / -37 |
 | 13 Sept, 08:59 | aufanhakim1920-source | other | [three frozen entrances, a shortcut that fired from a panel, and two false alarms of my own](../../commit/366c1445e7f34dad34f77438293b0a727b39f5f4) | DECISIONS.md | +59 / -0 |
