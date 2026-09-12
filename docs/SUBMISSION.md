@@ -29,10 +29,10 @@ trust it.
 | B4 | The Pages deploy for the final commit finished | Actions tab, green tick, then hard-reload the live URL | whoever merges last | check at freeze |
 | B5 | The live engine answers | `/functions/v1/api/health` returns `"gemini":true` | Tron | **yes — `gemini:true`, 2 keys armed, model `gemini-flash-latest`** |
 | B6 | No secret is committed | `.env` git-ignored, only `.env.example` tracked, no key-shaped strings in tracked files | anyone | **yes, scanned** |
-| B7 | **Nothing uncommitted in `src/`** at freeze | `git status` is clean | everyone | **no** — `CallHistory.tsx`, `use-grown.ts` and four edited files were uncommitted at 01:40 |
-| B8 | Every open pull request is merged or closed with a reason | PR list is empty | Aufan | **PR #3 (detector) open · PR #5 (report) draft** |
+| B7 | **Nothing uncommitted in `src/`** at freeze | `git status` is clean | everyone | **yes** — `git status` clean and `main` in sync with `origin/main`. Re-check at freeze |
+| B8 | Every open pull request is merged or closed with a reason | PR list is empty | Aufan | **no** — PR #3 (detector) and PR #5 (report) both open. Neither is a draft |
 | B9 | **The engine on Supabase matches `main`** | The Pages workflow deploys the *site* only. The edge function ships by hand: `npm run functions:deploy`. Merging the request-tier and quote-check commits to `main` does **not** update the engine a judge talks to | whoever merges last | **run it after the last engine merge, before freeze** |
-| B10 | **The Calls screen is on `main` and deployed** | Load the live URL and look for a **Calls** tab next to Live call | UI owner | **not deployed.** Verified by searching the published bundle: the two worker scripts are live, the Calls screen is not. It is the demo's payoff beat — see D8 |
+| B10 | **The Calls screen is on `main` and deployed** | Load the live URL and look for a **Calls** tab next to Live call | UI owner | **yes** — on `main`, and the published bundle contains the screen's own caveat string. Confirmed on the live URL |
 | B11 | The live site points at Supabase, not localhost | Search the published JS for `localhost:8787` | anyone | **yes** — the bundle contains only `https://clqcpqxivqylnjqmfeuz.supabase.co/functions/v1/api`. CI builds from repo variables, not from anyone's `.env` |
 
 ## C · Claims the judges can check
@@ -56,12 +56,12 @@ Each of these is a sentence we make somewhere. If the code stops backing it, the
 |---|---|---|---|---|
 | D1 | **Anonymous sign-ins are OFF** on the Supabase project, so the app runs "Saved here only" | Either switch them on (Authentication → Sign In / Providers → Anonymous ON, Confirm email OFF) and demo an account, or leave off and never show an account flow | Aufan (owner-only setting) | Low if left off — the README and the chip already say so. Do not demo accounts |
 | D2 | **The detector (PR #3)** | Merge before freeze, or close and say the legal test is a model call with a code gate | laural + Aufan | Merging is worth real rubric points (agentic, deterministic, cross-checked). Merging late is the bigger risk |
-| D3 | **PR #5, draft** | Finish or close | Shawn | A draft PR at freeze reads as unfinished work |
+| D3 | **PR #5, open** | Merge or close with a reason | Shawn | Not a draft — an open PR at freeze still reads as unfinished work |
 | D4 | **ElevenLabs practice quota** | Redeem the Forward credit (it is in the Discord menu) and run one full practice call end to end | Aufan | Practice mode is half the pitch and **no connected voice call has been verified**. If it cannot be shown, say so instead of implying it works |
 | D5 | ~~The 2× replay speed does nothing~~ | **Done.** Verified 13 Sep: 49.8 s at 1×, 25.2 s at 2×. The control only exists once the replay is running, and the line already scheduled when you press it still lands at 1× — both are in the demo script as beats, not bugs | live-call owner | closed |
 | D6 | **Practice screen trap**: opening a scenario and not speaking leaves you stuck — End call is disabled and the Live call tab shows the same session; only a reload escapes | Let the Live call tab abandon an unstarted practice call | live-call owner | A judge who clicks Practice during Q&A gets stuck |
 | D7 | **The report card varies a lot more than we thought.** Twelve runs: coached scored **95 twice and "not verified" five times**; silent scored **30, 30, 40, 40, 45**. The coached run usually returns *no score at all*, because the hardship-process sign comes back unverified and the card withholds rather than invents | Nothing to fix — it is `scoreUnverified` working. But **the "95 against 20" beat fails five times in seven**, so the script now points at the fraction and the per-sign table instead | everyone | A promised number that does not appear is worse than no number — and here the *good* run is the one with no number |
-| D8 | **The Calls screen — two cards on one axis — is not committed and not deployed.** It is where the whole before/after lands, and it writes the honest caveats into the page itself | Merge and deploy it, or perform the demo as two cards in sequence (the script has that fallback) | UI owner + Aufan | Merging is the single biggest visible win left. Leaving it means narrating a comparison instead of pointing at one |
+| D8 | ~~The Calls screen is not committed or deployed~~ **CLOSED** — it is on `main` and live. Two cards on one axis, with the honest caveats written into the page | Nothing. Perform the comparison on the Calls tab | — | Was the biggest visible win left; it landed |
 | D9 | **The "who said it" box flips after every typed line.** One sentence as Customer switches it to Worker, so a second typed line raises nothing — correctly, since the engine only flags the customer | Either stop flipping it, or leave it and keep the warning in the demo script | live-call owner | Measured: the hardship sentence as Worker raised 0 signs in 16 s; the same sentence as Customer raised the legal sign in 2.7 s. A judge typing during Q&A hits this |
 | D10 | **The hint under the transcript reads "Watch line 7: the worker asks for money instead of answering the sign."** True of the silent script only; on the coached run line 7 is *"Take your time — what would make things easier right now?"* | One-line copy fix, or condition it on coaching | live-call owner | It is on screen during the run a judge is watching most closely |
 
@@ -100,7 +100,7 @@ ElevenLabs connected call.
 
 | Time | Do | Owner |
 |---|---|---|
-| by 08:30 | **D8 decided** — the Calls screen merges or it does not. Everything downstream depends on which demo is being recorded | Aufan + UI owner |
+| by 08:30 | ~~D8 decided~~ **done** — the Calls screen is live, so the demo ends by pointing at the comparison rather than narrating it | — |
 | by 09:00 | D2, D3, D9, D10 decided; last merges land; **`npm run functions:deploy` run after the final engine merge** (B9) | laural, Shawn, Aufan |
 | 09:00–10:00 | **Video recorded off the live URL, not localhost** (C1) — follow `docs/DEMO-SCRIPT.md`, use 2×, both runs fit in 75 s. Say "the same call, handled two ways" in the first ten seconds (C7) | Aufan |
 | 10:15 | **Run one coached and one silent call on the live URL** and check the verdicts match section E. The twelve measured runs were local, on a different model | Aufan |

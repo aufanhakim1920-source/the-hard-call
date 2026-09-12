@@ -46,9 +46,12 @@ model kept reading a *cause* ("I lost my job, nothing's coming in") as an *inabi
 The fix was to stop asking the model for a verdict and start asking it for a **fact**:
 
 ```ts
-// The model classifies what was said. This line decides.
-const periodOk = (s: ModelSign) =>
-  s.key !== "hardship-request" || s.period === "months_or_open_ended";
+// The model classifies what was said. Code decides what it means.
+// Three conditions, and the middle one is what kills "push it back two weeks".
+const isNotice = (s: ModelSign) =>
+  s.period === "months_or_open_ended" &&
+  s.recovery !== "named" &&          // a named payday is a timing gap, not a notice
+  quotedInThisTurn(s.inabilityQuote); // and the customer must actually have said it
 ```
 
 `period` is a required enum — `none` / `single_payment` / `near_term_recovery` /
@@ -77,8 +80,10 @@ and returns **no flag** on an API failure rather than guessing.
 | legal obligations | deterministic rules | a rule should not be a judgement call |
 | cause cues, and the question to ask next | Gemini | these genuinely are judgements |
 
-**The consequence that matters for a demo:** the flagging half **cannot be rate-limited**. We
-discovered this the hard way — see the quota section below.
+**The consequence that will matter for a demo, once it merges:** the flagging half **will not be
+rate-limitable at all**. ⚠️ It is not on `main` yet, so **do not say it in the present tense on
+stage** — today the flags still come from the model pass and can be throttled. We discovered the
+problem it solves the hard way; see the quota section below.
 
 ---
 

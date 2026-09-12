@@ -90,7 +90,7 @@ is the whole argument.
 | 1:02–1:07 | Read the legal card aloud when it lands | "There it is. It names the duty, the date the bank has to reply by, and the exact question to ask next — and he asks it while she is still on the phone." | Gold **LEGAL** card: **Reply due · [today + 21 days] · 21 days · National Credit Code s72**, and **Ask next: …**. It read Sun 4 Oct on 13 Sep; the date is computed, so it will read **Sun 5 Oct** on Monday |
 | 1:09 | Press **E**, but only once the legal card is on screen | — | Script finished at **25.2 s** again |
 | 1:12 | — | "Nothing missed." | Report card in **3.0–3.5 s**. Lead line: **"The assistant coached this call"**. **0 missed**, every run |
-| 1:16 | Click the **Calls** tab | "Both calls, one axis. The engine did identical work in both runs. The only difference is whether the person on the phone was told in time to do anything about it." | **TWO CALLS, SIDE BY SIDE** — the two fractions on one scale, then the per-sign table: the legal row reads **coached HANDLED · silent MISSED** |
+| 1:16 | Click the **Calls** tab | "Both calls, one axis. The engine did identical work in both runs. The only difference is whether the person on the phone was told in time to do anything about it." | **Two calls compared** — the two fractions on one scale, then the per-sign table: the legal row reads **coached HANDLED · silent MISSED** |
 | 1:25 | Stop | — | — |
 
 **⚠ Wait for the legal card before you press E on the coached run.** It landed at **20.0 s** on one
@@ -206,7 +206,7 @@ two numbers."* Let the app make the disclaimer and agree with it.
 
 | If | Do |
 |---|---|
-| The **Calls** tab is not there | It is the newest screen and it may not be deployed. Fall back to the two report cards in sequence — press End, read the silent card, run the second call, read the coached card. The argument survives; you narrate the comparison instead of pointing at it |
+| The **Calls** tab is missing (it is deployed, so this should not happen) | It is the newest screen and it may not be deployed. Fall back to the two report cards in sequence — press End, read the silent card, run the second call, read the coached card. The argument survives; you narrate the comparison instead of pointing at it |
 | The top bar says **Assistant paused** | Finish the call anyway — the report card is still written from what is already known, marked `degraded`, with no invented score. Say plainly that the free-tier key is rate-limited. Honesty scores better than a stalled screen |
 | The live URL is down | `npm run dev` at localhost, **with `npm run api` already running** — the local `.env` points the app at `localhost:8787`, and without that server every call falls back to the no-write-up card. Say it is the same build |
 | A sign does not fire on a typed line | Check the **who said it** box first — see trap 2. Then send it again; a sign fires once per key, so it is safe to repeat |
