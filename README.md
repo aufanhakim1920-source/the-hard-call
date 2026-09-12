@@ -1,6 +1,11 @@
-# The Hard Call
+# CallFlag
 
-**Live signs for a bank's hardship calls, with the question to ask next. Then the calls you got wrong become your practice.**
+**Client alerts for banking staff.** Live signs for a bank's hardship calls, with the question to ask next. Then the calls you got wrong become your practice.
+
+> The product is **CallFlag**. The repo, the folder, the package and the deployed URL stay `the-hard-call` —
+> the Pages deploy and the team's branches key off that path, so only the interface carries the new name.
+> The full colour logo goes at `public/brand/callflag-logo.png`; the About page picks it up on its own and
+> reads fine without it.
 
 Built in 48 hours for *Forward: AI in Business Hackathon* (DSCubed × RAID, University of Melbourne, 12–14 Sep 2026).
 **Track 3 — Solve a Business Problem**, entered alongside the **Built With ElevenLabs** track.
@@ -17,7 +22,7 @@ Staff miss it. In 2025 NAB was fined **$15.5m** over **345** hardship requests t
 
 A bank (Bendigo and Adelaide) already uses AI to find hardship in calls — **after** the call, when a team leader is told minutes later and the customer has hung up.
 
-## What The Hard Call does
+## What CallFlag does
 
 1. **It listens during the call.** The worker puts the call on speaker; the browser's own speech engine turns it into words. Nothing is recorded.
 2. **⚠ A sign pops up live**, once per new thing, the moment the customer says something that counts — with the **reply-due date** and **one question the worker can ask next**, word for word.
@@ -36,7 +41,7 @@ A bank (Bendigo and Adelaide) already uses AI to find hardship in calls — **af
 | Westpac (pilot) | Live alerts during calls | For scams, not hardship |
 | Balto, Cresta, Google Agent Assist | Live tips for call centres | General; no Australian hardship law, no 21-day clock |
 | Hyperbound, Yoodli | AI practice customers | For sales calls, not hardship |
-| **The Hard Call** | Live sign + ask-next + deadline + report card + practice built from your own calls | The first we could find that does all of it together |
+| **CallFlag** | Live sign + ask-next + deadline + report card + practice built from your own calls | The first we could find that does all of it together |
 
 ## How it's built
 

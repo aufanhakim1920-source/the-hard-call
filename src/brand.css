@@ -1,0 +1,106 @@
+/* CallFlag — the product name and the mark.
+   Kept out of styles.css so two people can work on the app at once.
+
+   The mark is a swallowtail flag knocked out of a disc. It replaces the gold
+   warning triangle for two reasons, not one: the triangle is the sign's own
+   glyph and the top bar should not spend the signal colour twice, and its
+   knocked-out exclamation (4.8 units of a 64 viewBox) landed at 1.2px in the
+   top bar, where it antialiased to a smudge. Every feature here is at least
+   6 units — 1.5px at 16px — so nothing drops out.
+
+   ⚠️ The pole deliberately pokes above the flag and well below it. The first
+   draft had them flush, and magnifying the real 16/20/32px pixels showed why
+   that fails: a filled bowl on a stem is the letter P, and at 32px it read as
+   one. The overhang is what makes it a flag instead of a letterform.
+
+   Colour is one rule: disc = --gold-2, flag = --ink. --gold-2 is already the
+   per-ground "gold you can actually see" (#DCB373 on ink, #8A5E1C on cream),
+   so the mark is 8.45:1 on the dark ground and 4.91:1 on the light one with no
+   second declaration. The flag is --ink because it IS the ground showing
+   through, and that keeps the sign's own #C79C5A unique to the sign. */
+
+.mark .disc {
+  fill: var(--gold-2);
+}
+.mark .flag {
+  fill: var(--ink);
+}
+
+/* ---------- the About page's brand header ---------- */
+
+/* Space and a single hairline do the separating — no card, no box.
+   minmax(0, 1fr) so the text column can shrink below its longest word. */
+.brand-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+  padding-bottom: 26px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.brand-head.has-logo {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.brand-lockup .mark {
+  width: 56px;
+  height: 56px;
+  flex: none;
+}
+/* Scoped to .brand-head so it outranks `.page h1` (0,1,1), which otherwise
+   pinned the name at 22px — caught by measuring the computed size, not by
+   looking, because Hyperlegible at 22px bold still looks deliberate. */
+.brand-head .brand-name {
+  margin: 0;
+  font-size: clamp(30px, 6vw, 40px);
+  font-weight: 600;
+  /* Display sizes need tighter tracking than the 15px top bar's -0.01em. */
+  letter-spacing: -0.024em;
+  line-height: 1.02;
+}
+/* Same reason: `.about p` would otherwise set this one. */
+.brand-head .brand-tag {
+  margin: 5px 0 0;
+  color: var(--grey);
+  font-size: 15px;
+  max-width: none;
+}
+
+/* The full colour artwork. It is absent until someone drops the file in, and
+   an absent logo must leave a finished header rather than a broken icon — so
+   the element is only rendered once the image has actually decoded. */
+.brand-logo {
+  display: block;
+  width: clamp(150px, 26vw, 232px);
+  height: auto;
+  justify-self: end;
+}
+
+@media (max-width: 640px) {
+  .brand-head,
+  .brand-head.has-logo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .brand-lockup .mark {
+    width: 44px;
+    height: 44px;
+  }
+  .brand-logo {
+    justify-self: start;
+    width: clamp(140px, 48vw, 200px);
+  }
+}
+
+/* Bigger text scales the words being read, never the chrome — so the name
+   grows with the content steps and the mark holds its size. */
+:root[data-text="2"] .brand-head .brand-tag,
+:root[data-text="3"] .brand-head .brand-tag {
+  font-size: 17px;
+}

@@ -1,6 +1,33 @@
 import { useEffect, useState } from "react";
 import { getHealth } from "../lib/api";
 import { actions, useStore } from "../lib/store";
+import { Mark } from "./TopBar";
+
+const LOGO_SRC = `${import.meta.env.BASE_URL}brand/callflag-logo.png`;
+
+/**
+ * The full colour artwork, when it is there.
+ *
+ * The file is Aufan's and may not be in the repo yet, so the image is decoded
+ * first and only rendered once it has loaded — an <img> with an onError
+ * handler flashes a broken icon before it can hide itself, and a placeholder
+ * box would be a blank rectangle standing in for a thing.
+ */
+function useLogo(): boolean {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    let live = true;
+    const img = new Image();
+    img.onload = () => {
+      if (live) setOk(true);
+    };
+    img.src = LOGO_SRC;
+    return () => {
+      live = false;
+    };
+  }, []);
+  return ok;
+}
 
 interface EvalResults {
   model: string;
@@ -23,9 +50,19 @@ export function About() {
     getHealth().then(setHealth).catch(() => setHealth({ ok: false, gemini: false, model: "" }));
   }, []);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const hasLogo = useLogo();
   return (
     <div className="page narrow about">
-      <h1>The Hard Call</h1>
+      <header className={"brand-head" + (hasLogo ? " has-logo" : "")}>
+        <div className="brand-lockup">
+          <Mark />
+          <div>
+            <h1 className="brand-name">CallFlag</h1>
+            <p className="brand-tag">Client alerts for banking staff.</p>
+          </div>
+        </div>
+        {hasLogo && <img className="brand-logo" src={LOGO_SRC} alt="The CallFlag logo: a handset and a flag on a shield." />}
+      </header>
       <p className="lede">Live signs for a bank's hardship calls, with the question to ask next. Then the calls you got wrong become your practice.</p>
 
       <h2>Why</h2>
