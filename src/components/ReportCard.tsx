@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "../lib/reportScore";
 import { useState } from "react";
 import { postScenario } from "../lib/api";
 import { fmtDate, fmtWhen } from "../lib/dates";
@@ -111,7 +112,7 @@ export function ReportCard({
   const copy = async () => {
     const lines = [
       `CallFlag — report card, ${fmtWhen(report.at)}`,
-      `${report.customer} · ${report.mode} · score ${report.scoreUnverified ? "not verified" : report.score}`,
+      `${report.customer} · ${report.mode} · score ${!hasVerifiedReportScore(report) ? "not verified" : report.score}`,
       report.summary,
       ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
       ...report.deadlines.map((d) => `${d.label} ${fmtDate(d.date)} — ${d.title}`),
@@ -136,7 +137,7 @@ export function ReportCard({
           </span>
         </div>
         <div className="spacer" style={{ flex: 1 }} />
-        <ScoreRing score={report.score} unverified={report.scoreUnverified} />
+        <ScoreRing score={report.score} unverified={!hasVerifiedReportScore(report)} />
       </div>
 
       <div className="stats">

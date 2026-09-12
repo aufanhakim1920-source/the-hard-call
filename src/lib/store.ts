@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "./reportScore";
 // A small persistent store over localStorage. Only outcomes are kept —
 // reports, deadlines, lessons, practice customers — never a transcript.
 
@@ -92,7 +93,7 @@ export const actions = {
       const scenarios = r.scenarioId
         ? s.scenarios.map((sc) =>
             sc.id === r.scenarioId
-              ? { ...sc, plays: sc.plays + 1, bestScore: Math.max(sc.bestScore ?? 0, r.score) }
+              ? { ...sc, plays: sc.plays + 1, bestScore: hasVerifiedReportScore(r) ? Math.max(sc.bestScore ?? 0, r.score) : sc.bestScore }
               : sc,
           )
         : s.scenarios;

@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "./reportScore";
 // Keeps the local store and the Supabase tables in step.
 //   push: every local change is upserted (debounced) under the signed-in user.
 //   pull: on sign-in, rows the device has never seen are merged in.
@@ -31,7 +32,7 @@ function reportRow(r: Report): Row {
   };
 }
 function reportFrom(x: Row): Report {
-  return {
+  const report: Report = {
     callId: String(x.id),
     mode: x.mode as Report["mode"],
     customer: String(x.customer),
@@ -49,6 +50,12 @@ function reportFrom(x: Row): Report {
     model: String(x.model ?? ""),
     at: new Date(String(x.at)).getTime(),
     deadlines: [],
+  };
+  return {
+    ...report,
+    scoreUnverified: !hasVerifiedReportScore(report),
+    unverified: report.items.filter((item) => item.verdict === "unverified").length,
+    handled: report.items.filter((item) => item.verdict === "handled").length,
   };
 }
 function deadlineRow(d: Deadline): Row {

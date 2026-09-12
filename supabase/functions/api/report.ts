@@ -190,15 +190,15 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
     return json(req, 200, {
       callId: s.id,
       summary: quota
-        ? "The written review is unavailable: the free daily limit on the AI has been reached. Everything below was recorded during the call itself and is complete."
-        : "The written review is unavailable because the AI could not be reached. Everything below was recorded during the call itself and is complete.",
+        ? "The written review is unavailable: the AI service returned a quota or rate-limit error. The available call records are shown below; handling has not been verified."
+        : "The written review is unavailable because the AI could not be reached. The available call records are shown below; handling has not been verified.",
       items,
       missedByAI: [],
       tip: "",
       score: 0,
       scoreUnverified: true,
       caught: s.signs.length,
-      handled: s.signs.filter((g) => g.handled).length,
+      handled: 0,
       partly: 0,
       unverified: items.length,
       missed: 0,

@@ -100,3 +100,22 @@ model nor browser integration was exercised here.
 Still coordinate the proposed request/notice/ephemeral-cue contract with Laural.
 It is not present in this detector version. No global privacy guarantee is
 made: legacy sign categories and free-text report fields still need work.
+
+## Offline resilience follow-up
+
+The server and browser fallback both mark every item unverified and now report
+zero verified handling, even when the worker ticked every flag. Quota copy no
+longer assumes a daily limit: 429 alone does not identify the quota window.
+
+`hasVerifiedReportScore` is shared by report display/copy, practice best-score
+calculation and scenario best-score updates. It also checks item verdicts so
+older cloud rows that lost optional verification metadata do not show an
+unverified-item score as valid. Cloud restore derives unverified and handled
+counts from items; no database migration is required for this check. This does
+not preserve all optional metadata (e.g. coaching and degraded reason); full
+cloud metadata round-tripping remains a separate integration task.
+
+`node --test eval/report*.test.mjs` now includes quota/network fallback tests
+and a coaching-on/off prompt-invariance test. Identical transcript evidence
+must receive identical model inputs regardless of the coaching switch. This
+is an offline regression check, not a claim about actual model accuracy.

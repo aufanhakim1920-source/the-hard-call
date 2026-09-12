@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "../lib/reportScore";
 import { SEEDS, levelLabel, voiceFor } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
@@ -8,8 +9,8 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const store = useStore();
   const all: Scenario[] = [...SEEDS, ...store.scenarios.filter((s) => s.approved)];
   // Best score per scenario comes from the reports, so seeds get it too.
-  const best = (id: string) => store.reports.filter((r) => r.scenarioId === id).reduce((m, r) => Math.max(m, r.score), 0);
-  const plays = (id: string) => store.reports.filter((r) => r.scenarioId === id).length;
+  const best = (id: string) => store.reports.filter((r) => r.scenarioId === id && hasVerifiedReportScore(r)).reduce((m, r) => Math.max(m, r.score), 0);
+  const plays = (id: string) => store.reports.filter((r) => r.scenarioId === id && hasVerifiedReportScore(r)).length;
   const sorted = [...all].sort((a, b) => a.level - b.level || b.createdAt - a.createdAt);
   const next = sorted.find((s) => best(s.id) < 70);
 
