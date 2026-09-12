@@ -75,9 +75,13 @@ export function SignStack({
               </div>
             )}
             <div className="foot">
-              <span className="quote" title="Jump to these words" onClick={() => onJump(s.lineId)}>
+              {/* A real button: a span with a click handler is invisible to a
+                  keyboard and to a screen reader, and its browser tooltip
+                  never appears on a phone. The name carries the WORDS, not
+                  the appearance, so the reader knows what they are jumping to. */}
+              <button type="button" className="quote" onClick={() => onJump(s.lineId)} aria-label={`Jump to the line where she said: ${s.evidence}`}>
                 “{s.evidence}”
-              </span>
+              </button>
               {s.handled ? (
                 <>
                   <span className="handled-at">✓ handled {s.handledAt ? fmtClock(s.handledAt - startedAt) : ""}</span>

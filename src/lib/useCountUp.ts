@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motionOff } from "./a11y";
 
 // Strong ease-out (cubic-bezier(.23,1,.32,1) is close to this in feel).
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3.2);
@@ -7,7 +8,9 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3.2);
 export function useCountUp(to: number, ms = 700, delay = 0): number {
   const [v, setV] = useState(0);
   useEffect(() => {
-    if (typeof window !== "undefined" && (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden)) {
+    // motionOff() is the OS setting OR the app's own "Less motion" switch. The
+    // raw media query alone ignored the switch the user can actually reach.
+    if (typeof window !== "undefined" && (motionOff() || document.hidden)) {
       setV(to);
       return;
     }
