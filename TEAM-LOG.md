@@ -4,6 +4,9 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 08:00 | aufanhakim1920-source | engine | [run the deterministic detector before the model pass](../../commit/b79d1adab4c2bdea531e3c4a6b283fc170c27264) | detectorBridge.ts, engine.ts | +170 / -22 |
+| 12 Sept, 23:43 | laj07 | engine | [three event kinds, request tier, one speaker normaliser](../../commit/c6af7752f400c3eac942002ce9404839ddcdbbf9) | DETECTOR.md, event-schema.md, cross-check-cases.ts +8 | +737 / -60 |
+| 12 Sept, 22:27 | laj07 | engine | [Add hardship detection layer, deterministic by default, all fixtures passing](../../commit/d34f87dd74a3042a1e6619e9d0095e6dc1829925) | DETECTOR.md, run-detector.ts, smoke.ts +9 | +1340 / -56 |
 | 13 Sept, 03:25 | aufanhakim1920-source | project | [four wrong numbers and one false claim in the file a judge reads first](../../commit/7d216663bed5b79c6f26e7ffbe5e6f915c49845a) | README.md, DECISIONS.md, DEMO-SCRIPT.md +1 | +51 / -27 |
 | 13 Sept, 03:18 | aufanhakim1920-source | other | [a privacy claim belongs on the screen, not in the pitch](../../commit/6d37ea89291e22506232038120b27c8a4a2ee9ca) | DECISIONS.md | +23 / -0 |
 | 13 Sept, 03:18 | aufanhakim1920-source | practice | [the loop works end to end, and a failure in it now says what happened](../../commit/24a67731ddad62f0cbd20aef223792c17bae8a26) | Practice.tsx, ReportCard.tsx, report-visuals.css +2 | +261 / -15 |
