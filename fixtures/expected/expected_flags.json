@@ -5,7 +5,8 @@
     "obligation": "A legal duty was triggered. Asserted, deadline-bearing, persisted, and the only kind that enters the compliance record.",
     "request": "The customer asked to change their repayments but inability is not established. Low bar, no legal claim, prompts the threshold question. Persisted. A request carrying superseded_by must NOT be scored \u2014 score the obligation it became.",
     "cue": "A circumstance signal that routes the call in the moment (safety, scam, gambling, health). Never persisted. This detector emits none; the sign engine does. Asserted here as must_not_emit_kinds so a regression that starts classifying the customer fails a test.",
-    "attribution": "Attribution gate: only a turn whose speaker is KNOWN can carry a legal assertion. An inability stated on an INFERRED turn downgrades to a request carrying downgraded_from. A satisfying staff turn that is only inferred resolves unverified, never satisfied. Defaults to known when the field is absent."
+    "attribution": "Attribution gate: only a turn whose speaker is KNOWN can carry a legal assertion. An inability stated on an INFERRED turn downgrades to a request carrying downgraded_from. A satisfying staff turn that is only inferred resolves unverified, never satisfied. Defaults to known when the field is absent.",
+    "followup": "followup_days is set on requests only and is not a legal deadline. The 21-day clock runs from when the customer spoke, so an unresolved request is chased at day 7, leaving 14 days of the statutory window if it turns out to have been a notice. Raising a notice 'just in case' would instead manufacture a duty that may not exist."
   },
   "call_001": {
     "must_flag": [
@@ -73,7 +74,8 @@
         "trigger_turn_start_ms": 16500,
         "expect_superseded": true,
         "why": "'I've missed the last two and I don't think I'm going to make the next one either' \u2014 difficulty with no duration either way. Not yet a notice, but the staff member should ask whether it is ongoing. Superseded by the notice at 45000, so the report card scores the obligation, not this.",
-        "deadline_days": null
+        "deadline_days": null,
+        "expect_followup_days": 7
       },
       {
         "rule_id": "NCC_72_ORAL_NOTICE",
@@ -108,7 +110,8 @@
         "kind": "request",
         "trigger_turn_start_ms": 14600,
         "why": "Explicit ask to move the payment. A request fires even though he states a near-term recovery ('I get paid on the twentieth') \u2014 that is exactly the case the staff member must resolve rather than assume.",
-        "deadline_days": null
+        "deadline_days": null,
+        "expect_followup_days": 7
       }
     ],
     "must_not_flag": [
@@ -132,7 +135,8 @@
         "expect_downgraded_from": "NCC_72_ORAL_NOTICE",
         "expect_attribution": "inferred",
         "why": "Same words as call_001's notice, but the speaker was only inferred from text on a single mixed mic. Good enough to prompt, not to assert a 21-day clock.",
-        "deadline_days": null
+        "deadline_days": null,
+        "expect_followup_days": 7
       }
     ],
     "must_not_flag": [
@@ -155,7 +159,8 @@
         "trigger_turn_start_ms": 16500,
         "expect_superseded": true,
         "why": "Identical turn to call_003. Same event, same moment.",
-        "deadline_days": null
+        "deadline_days": null,
+        "expect_followup_days": 7
       },
       {
         "rule_id": "NCC_72_ORAL_NOTICE",

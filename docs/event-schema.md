@@ -237,3 +237,24 @@ recovery and on a single missed payment. It is `NCC_72_ORAL_NOTICE`, not the
 request tier. And `tip` currently does two jobs: a duty the worker forgot, and a
 circumstance that routes the call. Those need different handling, which is what
 `obligation` vs `cue` gives them.
+
+## `followup_days` — chasing what nobody asked
+
+Tron's point, with one correction that makes it work: you cannot raise a notice
+conditionally. The 21-day clock runs from **when the customer spoke**, not from
+when the bank decides, so a notice recorded just in case manufactures a duty
+that may never have existed — and that is precisely what must not enter the
+compliance record.
+
+The follow-up itself is right, and it belongs on the request. `HARDSHIP_REQUEST`
+carries `followup_days: 7`. When it resolves `missed` — the worker never asked
+whether this was timing or inability — the resolution says to chase within seven
+days, because acting by day 7 still leaves **14 days** of the statutory window
+if it does turn out to have been a notice.
+
+So nothing is asserted, nothing is thrown away, and a miss becomes recoverable
+instead of final. `followup_days` is set on requests only and is never a legal
+deadline; `deadline_days` is the field that carries those.
+
+The report card line: *"Threshold question not asked. Call back by <date> — 14
+days of the window remain if this was a notice."*

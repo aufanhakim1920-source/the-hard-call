@@ -58,6 +58,7 @@ function makeFlag(
     obligation: rule.obligation,
     deadline_days: rule.deadline_days,
     deadline_from: rule.deadline_from,
+    followup_days: rule.followup_days ?? null,
     authority: rule.authority,
     confidence,
     staff_prompt: rule.staff_prompt,
@@ -128,6 +129,17 @@ function resolve(flag: Flag, turns: Turn[]): Resolution {
       reason: `Staff discharged the obligation at ${hit.start_ms}ms.`,
     };
   }
+  if (rule.followup_days != null) {
+    return {
+      status: "missed",
+      evidence: null,
+      reason:
+        `The threshold question was never asked. Chase within ${rule.followup_days} days: ` +
+        `the 21-day clock runs from when the customer spoke, so acting by day ${rule.followup_days} ` +
+        `still leaves 14 days if this turns out to have been a hardship notice.`,
+    };
+  }
+
   return {
     status: "missed",
     evidence: null,

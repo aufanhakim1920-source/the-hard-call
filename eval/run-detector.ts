@@ -27,6 +27,7 @@ type Want = {
   expect_superseded?: boolean;
   expect_downgraded_from?: string;
   expect_attribution?: string;
+  expect_followup_days?: number;
   deadline_days?: number | null;
 };
 
@@ -108,6 +109,9 @@ async function main() {
       }
       if (want.expect_attribution && got.attribution !== want.expect_attribution) {
         fail(`${want.rule_id} attribution is "${got.attribution}", expected "${want.expect_attribution}"`);
+      }
+      if (want.expect_followup_days != null && got.followup_days !== want.expect_followup_days) {
+        fail(`${want.rule_id} followup_days is ${got.followup_days ?? "unset"}, expected ${want.expect_followup_days}`);
       }
       if (want.deadline_days !== undefined && got.deadline_days !== want.deadline_days) {
         fail(`${want.rule_id} deadline_days is ${got.deadline_days}, expected ${want.deadline_days}`);

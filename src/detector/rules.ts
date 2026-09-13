@@ -18,6 +18,8 @@ export interface Rule {
   deadline_from: string | null;
   authority: string;
   staff_prompt: string;
+  /** Days to chase an unresolved event. Requests only; never a legal deadline. */
+  followup_days?: number;
   /** Staff-side patterns that discharge this obligation on the call. */
   satisfiedBy?: RegExp[];
   /** True when nothing said on the call can settle it (post-call system action). */
@@ -100,6 +102,9 @@ export const RULES: Record<string, Rule> = {
       "Customer has asked to change their repayments. Establish whether this is a timing problem or an inability to pay",
     deadline_days: null,
     deadline_from: null,
+    // Tron's idea: if nobody asked, chase it at day 7 rather than losing the
+    // signal. No clock is asserted, and 14 days of the window survive.
+    followup_days: 7,
     authority: "National Credit Code s 72 (threshold question)",
     staff_prompt:
       "Customer has asked to change their repayments. Ask whether they can recover in the near term — if not, this is a hardship notice and the 21-day clock starts.",

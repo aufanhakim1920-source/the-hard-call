@@ -92,6 +92,14 @@ export interface Flag {
   obligation: string;
   deadline_days: number | null;
   deadline_from: string | null;
+  /**
+   * Days after the call by which an UNRESOLVED event should be chased. Only set
+   * on `request`, and it is not a legal deadline — it exists because the 21-day
+   * clock runs from when the customer spoke, not from when the bank decides. If
+   * the threshold question was never asked, chasing at day 7 leaves 14 days of
+   * the statutory window intact should it turn out to have been a notice.
+   */
+  followup_days?: number | null;
   authority: string;
   confidence: number;
   staff_prompt: string;
