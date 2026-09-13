@@ -13,6 +13,7 @@ import { Select } from "./Select";
 import { Sheet, type Detent } from "./Sheet";
 import { SignStack } from "./SignStack";
 import { Transcript } from "./Transcript";
+import "./call-screen.css";
 
 const DIRECTION_OPTIONS = [
   { value: "outbound", label: "Bank rang them" },
@@ -276,13 +277,17 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             the way out — there is nothing to end and no report to write.
             A practice call with nothing said used to be a trap: End call was
             disabled, and the only escape was reloading the page. Leaving is
-            always allowed — an empty call simply produces an empty report. */}
+            always allowed — an empty call simply produces an empty report.
+            Once a call is running the slot keeps its primary but gives up the
+            gold. Measured at the instant a statutory card lands: two #C79C5A
+            objects on one screen, the card and the button that throws the call
+            away, and the button sat in the first-fixation corner. */}
         {idle && onDemo ? (
           <button className="btn gold" onClick={onDemo}>
             ▶ Play the demo call
           </button>
         ) : (
-          <button className="btn gold" onClick={() => void finish()} disabled={ending}>
+          <button className="btn end" onClick={() => void finish()} disabled={ending}>
             {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
           </button>
         )}
@@ -435,7 +440,11 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                       role="radio"
                       aria-checked={speed === n}
                       aria-label={`${n} times speed`}
-                      className={"btn sm" + (speed === n ? " gold" : "")}
+                      /* Filled, not gold: the third saturated object on a screen
+                         whose one accent belongs to the legal card. The fill is
+                         still the state in greyscale, and aria-checked carries
+                         it for anyone not reading colour at all. */
+                      className={"btn sm" + (speed === n ? " on" : "")}
                       onClick={() => setSpeed(n)}
                     >
                       {n}×

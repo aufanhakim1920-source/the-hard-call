@@ -1,0 +1,93 @@
+/* The live call screen's ranking.
+ *
+ * One question, asked at four moments of a demo call: what is the loudest
+ * thing, and is it the thing that matters most? Idle answered it correctly —
+ * the gold Play button is the way in and nothing else is claiming the colour.
+ * The three moments of a running call did not, and all three failures were the
+ * same failure: something that nobody acts on was wearing the weight that
+ * belongs to the words and to the legal card.
+ *
+ * Everything here is a demotion. Nothing new was added to the screen.
+ */
+
+/* ---- 1 · the accent belongs to the sign card, and only to it, during a call
+ *
+ * Measured at the instant a statutory card lands: TWO #C79C5A fills on screen.
+ * The card at 108,907px2, and "End call" in the top-right corner — the natural
+ * first fixation — at 2,900px2. Gold is this product's alarm colour; the only
+ * other thing wearing it was the button that throws the call away. The demo's
+ * "2x" speed toggle was a third.
+ *
+ * Idle keeps its gold: nothing else is claiming the colour before a call
+ * starts, and the way IN has to be the loudest control on an empty screen.
+ *
+ * Cream on --ink-3 measures 11.47:1 on the dark ground and 11.64:1 on the
+ * light one, so this reads as a filled primary without the accent. */
+.call .call-head .btn.end {
+  background: var(--ink-3);
+  border-color: var(--line-2);
+  color: var(--cream);
+}
+.call .call-head .btn.end:hover:not(:disabled) {
+  background: var(--line);
+  border-color: var(--grey);
+}
+/* The base .btn kbd is --grey, which is 5.19:1 on this fill in the dark and
+   only 4.08:1 in the light — a real AA failure introduced by the new ground,
+   not by the glyph. --text-2 reads 8.28:1 and 6.46:1. */
+.call .call-head .btn.end kbd {
+  color: var(--text-2);
+}
+.call .speed .btn.on {
+  background: var(--ink-3);
+  border-color: var(--line-2);
+  color: var(--cream);
+}
+
+/* ---- 2 · the clock was the largest glyph on the screen
+ *
+ * 22px mono in full cream, against the customer's 19px and the sign title's
+ * 16px: the biggest type on a live call belonged to a number nobody acts on.
+ * This is the report card's score ring one screen over.
+ *
+ * --grey is what the idle clock already used and is measured at 6.47:1 on ink
+ * and 5.01:1 on cream, so the demotion opens no contrast question. Both states
+ * shrink together — a placeholder reading "--:--" has even less claim on 22px
+ * than a running one, and a smaller idle clock only makes the gold Play button
+ * more dominant, which is what that state is for. */
+.call .call-head .clock {
+  font-size: 15px;
+  color: var(--grey);
+  min-width: 54px;
+}
+
+/* ---- 3 · the customer's words are the subject
+ *
+ * With no legal card on screen, the thing that matters most is what the
+ * customer just said — and it was losing to a raised tip card (74,920px2) on
+ * the right and, in type, to her own NAME in the header. A name is identical
+ * on every line of the call; her sentence is the only thing that changes. That
+ * is the compare board's fault exactly.
+ *
+ * Raised to 22px, it is the largest type on the screen and still well under
+ * the gold card, which wins on saturation rather than on size.
+ *
+ * The :not() chain matters: the text-size setting sets this same property at
+ * the same specificity, and a blanket override here would silently switch off
+ * three of the four steps. It is excluded rather than fought. */
+:root:not([data-text="1"]):not([data-text="2"]):not([data-text="3"]) .call .ln.customer .text {
+  font-size: 22px;
+}
+@media (max-width: 760px) {
+  :root:not([data-text="1"]):not([data-text="2"]):not([data-text="3"]) .call .ln.customer .text {
+    /* 375px keeps a shorter measure, so the step is smaller: 17 to 19, not 22. */
+    font-size: 19px;
+  }
+}
+
+/* Every selector here is prefixed with .call for one reason: three of these
+   rules tie on specificity with the base stylesheet, and a tie is settled by
+   which <style> tag the bundler happened to emit first. It emitted this one
+   first, and the clock stayed 22px cream through a whole verification pass
+   while the screenshot looked plausible. Specificity decides it now, in both
+   the dev server and the build. */
