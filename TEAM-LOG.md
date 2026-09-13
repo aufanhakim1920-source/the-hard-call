@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 16:16 | aufanhakim1920-source | other | [rehearsed against the live app, and the script pointed at the wrong row](../../commit/c1fd22f1cda51e93d5ac6cdc9739b4181f806d40) | DEMO-SCRIPT.md, PITCH.md, REHEARSAL.md | +308 / -5 |
 | 13 Sept, 16:14 | aufanhakim1920-source | accounts | [the engine's own numbers were below the fold, under other lenders' figures](../../commit/105e4f96a8c6aefb4972e724a31b0f4deec54c19) | About.tsx, Account.tsx, about.css +1 | +261 / -58 |
 | 13 Sept, 15:56 | aufanhakim1920-source | other | [the same ranking fault four times in one day, and the question that finds it](../../commit/a048d7d41d868c6d201aa3590ac29cc8862f4ea8) | DECISIONS.md | +33 / -0 |
 | 13 Sept, 15:54 | aufanhakim1920-source | report | [on Lessons the loudest object on the page was the empty text box](../../commit/2e5e3d12b052631f607d347926b48b0d6db1a104) | Deadlines.tsx, Lessons.tsx, deadlines.css +2 | +203 / -3 |
