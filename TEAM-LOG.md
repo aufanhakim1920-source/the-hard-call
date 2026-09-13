@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 17:20 | aufanhakim1920-source | engine | [the A/B generator writes to the page that actually ships](../../commit/4d671e445ec3eb8a3deae2dd0b7b834ab8843b0e) | build-demo.ts | +243 / -83 |
 | 13 Sept, 17:17 | aufanhakim1920-source | other | [a control with no focus ring, a rule that had never matched, and the offline demo](../../commit/cc99eb685da3d550c13d915c00cc1dd36be4b7f2) | ab-demo.html, call-history.css, report-visuals.css | +255 / -84 |
 | 13 Sept, 17:16 | aufanhakim1920-source | design | [a11y: three of six High contrast tokens did nothing on the light ground](../../commit/bb5090eb78fa3cba3899949cb5132bc6d9ef1f35) | ab-demo.html, styles.css | +68 / -6 |
 | 13 Sept, 16:58 | aufanhakim1920-source | engine | [the detector's complaint clock was being dropped at the bridge](../../commit/08784a765c5374c9bfa9de78313989756e183714) | detectorBridge.ts | +28 / -0 |
