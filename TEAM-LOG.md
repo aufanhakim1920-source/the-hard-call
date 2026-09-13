@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 13:59 | aufanhakim1920-source | live call + design | [the first screen told a stranger a call was already running](../../commit/4e93fe8cb4560b8859bed8380e1d004aaaaad812) | DEMO-SCRIPT.md, PREFREEZE.md, CallScreen.tsx +1 | +112 / -21 |
 | 13 Sept, 13:53 | aufanhakim1920-source | report | [the answer times were network latency subtracted from real time](../../commit/2bcdbae4e57418ad5f980d2ed467e6a62777065a) | ResponseTimes.tsx, report-math.ts, report-visuals.css | +64 / -17 |
 | 13 Sept, 13:43 | aufanhakim1920-source | other | [the cold walkthrough, and what it got right and wrong](../../commit/80f07e743d636b10f3c5966f9b865fd67e1ae18a) | JUDGE.md | +248 / -0 |
 | 13 Sept, 13:43 | aufanhakim1920-source | other | [a 404 on every load, hidden by the guard that was meant to help](../../commit/c45b679e1af0717f77c3ad15abeb7c5d44f95824) | About.tsx | +12 / -28 |
