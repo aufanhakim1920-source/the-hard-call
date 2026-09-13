@@ -1121,17 +1121,28 @@ select.field option {
   flex-wrap: wrap;
   margin-top: 24px;
 }
+/* The screen's plane order was upside down. MEASURED on the dark ground: of the
+   three painted surfaces larger than 8000 px on this view, two were the page's
+   own colour and the only one with a ground of its own was `.done` — so the
+   FINISHED deadline was the single object on the screen with a surface, and the
+   running 21-day statutory clocks sat on the page with a hairline under them.
+
+   The live call already owns the right vocabulary for this and it is measured
+   and approved: a sunken rail, a raised card, and a gold leading edge meaning
+   "this one" (`.sel-opt.is` and `.call-row.on` both use that edge). An open
+   deadline comes forward onto the raised plane and takes the edge; a settled
+   one falls back to the page. No new language, no border doing the separating. */
 .deadline-row {
   display: grid;
-  grid-template-columns: 110px 120px minmax(0, 1fr) auto;
+  grid-template-columns: 132px 124px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
-  padding: 14px 4px;
-  border-bottom: 1px solid var(--line);
+  padding: 14px 16px;
+  margin-bottom: 6px;
+  border-radius: var(--r-card);
+  background: var(--ink-2);
+  box-shadow: inset 3px 0 0 var(--gold);
   transition: background 200ms, color 200ms;
-}
-.deadline-row:first-of-type {
-  border-top: 1px solid var(--line);
 }
 /* A settled deadline used to be `opacity: 0.45`, which is the same mistake the
    report card was just cleared of: dimming text with opacity is choosing a
@@ -1141,23 +1152,42 @@ select.field option {
 
    The stood-down reading comes from the ground and a quieter token instead,
    exactly as the handled sign card does it, so a row that is finished still
-   looks finished and can still be read by whoever has to reopen it. */
+   looks finished and can still be read by whoever has to reopen it. It reads
+   quieter by dropping to the page now rather than by being the only thing
+   lifted off it; --text-3 on the page measures 7.64:1 dark and 5.03:1 light,
+   BETTER than the 5.95/4.57 it had on --ink-2. The edge stays, in the line
+   colour, so "settled" is still marked by a shape and not only by a value. */
 .deadline-row.done {
-  background: var(--ink-2);
+  background: none;
+  box-shadow: inset 3px 0 0 var(--line-2);
   color: var(--text-3);
 }
 .deadline-row.done .left,
 .deadline-row.done .d {
   color: var(--text-3);
 }
+/* The lift during a FLIP has to clear whatever the row already sits on. The
+   generic `.is-moving` ground is --ink-2, which is now the row's resting
+   colour, so the carry would have been invisible. One step further up. */
+.deadline-row.is-moving {
+  background: var(--ink-3);
+}
+/* Rank type by consequence, not by category — the rule the report card's own
+   deadline block already follows (date 19 px, statute 10 px). This screen was
+   missed by that pass: the date a 21-day statutory clock hangs on was 14 px and
+   the days remaining were 12 px grey, i.e. the two most consequential things on
+   the view were quieter than the customer's name beside them. Cream, not grey,
+   measures 13.14:1 dark and 13.04:1 light on the raised ground. The words still
+   say "21 days left" / "overdue", so soon and over are never colour alone. */
 .deadline-row .d {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 17px;
+  font-weight: 500;
 }
 .deadline-row .left {
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--grey);
+  font-size: 15px;
+  color: var(--cream);
 }
 .deadline-row .left.soon {
   color: var(--gold-2);
@@ -1181,32 +1211,74 @@ select.field option {
 }
 
 /* ---------- practice picker ---------- */
+/* Five rows at identical weight on one ground, and the one the roster is
+   actually steering you to was marked by a 10 px badge and a 3 px tick hung
+   outside the list. Nothing told the eye where to land, which is the failure
+   [[No Boxes No Instinct]] measures at 49/50 and [[One Rich Object A Sparse
+   Page]] names: one thing carries the screen and the rest gets out of its way.
+
+   "Up next" is now the object — the raised plane and the gold leading edge the
+   live call's sign rail and `.sel-opt.is` already use. The other four stay on
+   the page, separated by the existing hairline, so nothing competes with it. */
 .scen-grid {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--line);
 }
 .scen {
   display: grid;
   grid-template-columns: 170px 210px minmax(0, 1fr) auto;
   gap: 22px;
   align-items: center;
-  padding: 16px 4px;
+  padding: 16px;
   border-bottom: 1px solid var(--line);
   position: relative;
-  transition: background 160ms;
+  transition: background 160ms, box-shadow 160ms var(--ease-out);
+}
+.scen:last-child {
+  border-bottom-color: transparent;
 }
 .scen:hover {
   background: rgba(154, 163, 173, 0.04);
 }
+.scen.next {
+  background: var(--ink-2);
+  border-bottom-color: transparent;
+  border-radius: var(--r-card);
+  /* The rail lives INSIDE the surface now. It used to be an absolutely
+     positioned pseudo at left: -20px, which fell outside the 14 px page gutter
+     on a phone — practice.css patches that to -14px for exactly that reason.
+     An inset edge cannot fall off the screen at any width, so that patch is
+     now dead and the pseudo is neutralised here rather than left to fight it.
+     One owner for the rail. */
+  box-shadow: inset 3px 0 0 var(--gold);
+  margin-bottom: 4px;
+}
+/* The hover on this row widens the rail rather than lifting the ground: on the
+   light theme --ink-3 is #DED8CB, where the row's own --grey secondary text
+   measures 4.09:1 and fails AA. A hover state is not exempt from the ratio. */
+.scen.next:hover {
+  background: var(--ink-2);
+  box-shadow: inset 6px 0 0 var(--gold);
+}
 .scen.next::before {
-  content: "";
-  position: absolute;
-  left: -20px;
-  top: 14px;
-  bottom: 14px;
-  width: 3px;
-  background: var(--gold);
+  content: none;
+}
+/* Raising the row changed the ground under text that had been measured against
+   the page, and MEASURED it caught one: the badge's --gold-2 is 4.91:1 on cream
+   and only 4.48:1 on --ink-2, i.e. it failed AA the moment this card came
+   forward. --gold-on-tint exists for exactly this — gold as TEXT on a tint that
+   is not the page — and reads 5.45:1 light, 7.77:1 dark.
+
+   The two quiet lines move up a tier at the same time. --grey on --ink-2 is
+   4.57:1 light, which passes but is thinner than the 5.01:1 it had on the page,
+   and this is the one row on the screen a reader is being sent to: --text-2
+   reads 6.97:1 light and 9.30:1 dark. */
+.scen.next .badge {
+  color: var(--gold-on-tint);
+}
+.scen.next .sit,
+.scen.next .stats2 {
+  color: var(--text-2);
 }
 @media (max-width: 860px) {
   .scen {
@@ -1338,14 +1410,30 @@ select.field option {
 .about li {
   margin-bottom: 6px;
 }
+/* Five boxes in a repeat() grid, on the screen a judge reads to check whether
+   the engine works — and NOT ONE of them was drawn on purpose. MEASURED: the
+   tile has no border, no radius, no shadow, and an opaque background of
+   `var(--ink)`, which is the page's own colour. What made it visible is the
+   grain: body::before sits at z-index 0 and #root at z-index 1, so any opaque
+   background inside the app punches a smooth rectangle out of the texture. A
+   background doing nothing but occluding grain produced the single most
+   textbook instance of the pattern [[No Boxes No Instinct]] counts at 49/50.
+
+   Space and the type scale do the separating instead, per that note, and the
+   flex wrap stops the fifth number orphaning alone in a grid cell. */
 .kv {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 38px;
   max-width: 640px;
+  margin: 6px 0 4px;
+}
+.kv .stat {
+  background: none;
+  padding: 0;
 }
 .kv .stat b {
-  font-size: 24px;
+  font-size: 26px;
 }
 
 .toast {
