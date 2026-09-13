@@ -127,12 +127,27 @@
   line-height: 1.4;
   color: var(--text-3);
 }
+/* The lead-in stays in the page's own voice while the quotes stay in hers, so
+ * the line reads as a sentence about the phrases rather than a row of them. */
+.signs .watch-like {
+  font-family: var(--sans);
+  font-style: normal;
+}
+/* The statute. It used to be 10px mono with tracking, alone on a line under a
+ * legal claim — which is the citation-LINK shape, and a cold reader pressed it
+ * and got nothing. Nothing about it was clickable in CSS: no pointer, no
+ * underline, no fill. The affordance was entirely typographic — an isolated
+ * identifier in the one face that differs from its neighbours. So it gives up
+ * the mono and the tracking and is written as prose ("under the …, s 72(4)"),
+ * which is what it always was: the source of the line above it.
+ *
+ * 11px sans, --text-3: 7.87:1 on the dark column, 4.81:1 on the light one.
+ * Unchanged by this — the token did not move, only the face. */
 .signs .watch-src {
   display: block;
   margin-top: 4px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  line-height: 1.4;
   color: var(--text-3);
 }
 .signs .watch-note {
@@ -149,6 +164,19 @@
   font-size: 12px;
   line-height: 1.45;
   color: var(--text-2);
+}
+
+/* Same fault as the statute, in the coaching-off state: "Settings → The
+ * assistant" was mono with tracking and an arrow in it, which is a breadcrumb,
+ * and a breadcrumb is a link. Nothing in this app navigates from here. The
+ * words now say it as a sentence and the face follows them.
+ *
+ * Scoped through .signs so it outranks the base rule without editing the
+ * global sheet, which another hand holds. */
+.signs .silent-where {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: normal;
 }
 
 /* In the phone sheet the column is narrower and the panel sits under the

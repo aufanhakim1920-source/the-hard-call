@@ -58,7 +58,9 @@ function SilentNote() {
       <b>Coaching is off for this call.</b>
       The assistant is still listening and still judging every line. Nothing appears here while you are on the phone — the whole
       report card arrives the moment you end the call.
-      <span className="silent-where">Settings → The assistant, to turn it back on.</span>
+      {/* Was "Settings → The assistant" in mono — a breadcrumb, which is a
+          link shape, and nothing here navigates. Said as a sentence instead. */}
+      <span className="silent-where">Turn it back on in Settings, under “The assistant”.</span>
     </div>
   );
 }
@@ -107,21 +109,33 @@ function Watching({ met }: { met: boolean }) {
             <span className="watch-op" />
             <span className="watch-txt">
               <span className="watch-cond">they can’t meet the repayment</span>
-              <span className="watch-ex">“I’m behind” · “I can’t cover it” · “struggling”</span>
+              {/* "like", and commas rather than interpuncts. Three short quotes
+                  in a row divided by dots is the tag-row shape, and a cold
+                  reader tried to tap them; a lower-case lead-in and a list
+                  makes them read as the sentence fragment they are. */}
+              <span className="watch-ex">
+                <span className="watch-like">like</span> “I’m behind”, “I can’t cover it”, “struggling”
+              </span>
             </span>
           </p>
           <p className="watch-row">
             <span className="watch-op">and</span>
             <span className="watch-txt">
               <span className="watch-cond">it won’t be fixed soon</span>
-              <span className="watch-ex">“a few months” · “not before the new year”</span>
+              <span className="watch-ex">
+                <span className="watch-like">like</span> “a few months”, “not before the new year”
+              </span>
             </span>
           </p>
           <p className="watch-row">
             <span className="watch-op">then</span>
             <span className="watch-txt">
               <span className="watch-out">21 days to answer, from that sentence</span>
-              <span className="watch-src">National Credit Code s 72(4)</span>
+              {/* A bare statute number alone on a line, set in the one mono
+                  face in the block, is the citation-link shape — it was the
+                  first thing a judge pressed, and it goes nowhere. It is a
+                  source note, so it is written as one. */}
+              <span className="watch-src">under the National Credit Code, s 72(4)</span>
             </span>
           </p>
           <p className="watch-note">A date they’ll be square by cancels it. That is a timing problem, not hardship.</p>
@@ -221,7 +235,11 @@ export function SignStack({
                 <span className="clock-label">{s.dueLabel ?? "Reply due"}</span>
                 <b className="clock-date">{fmtDate(s.dueDate)}</b>
                 <span className="clock-left">{s.dueDays} days left</span>
-                {s.source ? <span className="clock-law">{s.source}</span> : null}
+                {/* "under" so the citation is a phrase and not a bare
+                    identifier sitting on its own line, which is the shape of a
+                    link. No article: the authority string is not always one
+                    that takes "the". */}
+                {s.source ? <span className="clock-law">under {s.source}</span> : null}
               </div>
             ) : s.detail ? (
               <div className="detail">{s.detail}</div>
