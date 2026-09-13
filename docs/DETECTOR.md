@@ -109,17 +109,67 @@ statement is this:
 > statutory notice only on phrasings its rules reach, and on an independent set
 > that is a small minority.
 
-Do not say "the legal half is deterministic" in a pitch. Say the flagging cannot
-be silenced by quota — a request still fires with no key at all — and that the
-notice tier leans on the model. A judge who runs `cross-check-cases.ts` sees the
-distribution.
+Do not say "the legal half is deterministic" in a pitch, and do not say the
+flagging cannot be silenced by quota either — the next section measures a script
+where rules mode raises nothing at all, not even a request. The wording that
+survives someone running the code is: *clear statutory notices can be raised
+locally without an API call, while the model handles less explicit language.*
+
+### Measured: the demo script fires nothing in rules mode
+
+`src/lib/demoScript.ts` — the script behind "Play the demo call", and the one in
+the submission video — produces **zero flags** in rules mode. Twelve turns, no
+API calls, nothing raised. Shawn caught this against the pitch wording. It is not
+a vocabulary gap, it is structural.
+
+The two halves of the s 72 test are split across three customer turns:
+
+| Turn | Text | Carries |
+|---|---|---|
+| 1 | "Things have been a bit tight lately." | inability — near miss, see below |
+| 2 | "Honestly, I'm a bit behind on everything." | inability — near miss |
+| 3 | "Maybe. I got laid off last month." | the **cause**, deliberately never counted |
+| 4 | "I don't know. I'm really stressed about all of it." | a cue, correctly silent |
+| 5 | "Just a few months without the full payment." | duration only |
+
+`classifyTurn` requires DIFFICULTY and MEDIUM_TERM **in the same customer turn**,
+so nothing assembles. Turns 1–2 carry no duration; turn 5 matches `MEDIUM_TERM`
+on "a few months" and is discarded anyway, because a turn with neither difficulty
+nor an ask returns `null` before the duration is ever looked at.
+
+Turns 1 and 2 are also near misses on wording, and fixing them would not help:
+
+- `things?\s+(are|is)\s+…tight` wants "things **are** tight", gets "things
+  **have been** tight".
+- `behind\s+on\s+(the\s+)?(payment|repayment|…)` wants "behind on **the
+  payment**", gets "behind on **everything**".
+
+**The real fix** is letting the two halves combine across the customer's turns
+inside `contextWindow`, which is how s 72 actually reads: the notice is what the
+borrower conveyed, not what fits in one sentence. That is a change to the core
+rule and needs the full fixture suite and all 44 cases re-run, so it was not made
+before the submission freeze. It is the highest-value change left in this layer.
+
+The offline A/B page is the worked example of what *does* hold: it is built from
+the fixtures, where both halves sit in one turn, so that artefact genuinely runs
+with no key at all.
+
+Reproduce it by importing `demoScript` and calling `detect(..., { mode: "rules" })`.
 
 ## Agreement with the sign engine
 
 `eval/cross-check-cases.ts` runs this layer over `eval/cases.json`. Current
-state: **40/41 agree, zero false positives.** Every hard negative stays silent,
-including `c19` (a *worker* line containing the word "hardship") and `c35`
-(distress with no money ask).
+state: **43/44 agree, zero false positives.** Every hard negative stays silent,
+including `c19` (a *worker* line containing the word "hardship"), `c35` (distress
+with no money ask) and `c43` (asking whether a process exists, with no notice on
+record).
+
+`c42` and `c44` read as false positives until the report was fixed. Both carry
+`existingKeys: ["hardship-request"]` — the notice is already on record — and
+`expect` lists only the delta the new line should add. The detector correctly
+re-finds that notice in the context turns; the report was ignoring
+`existingKeys`. `c43` is the control: same question as `c42`, nothing on record,
+silent.
 
 The one gap is `c41` — "Don't worry about it, I'll be fine in a month". Note
 that it does **not** reach the model tier either: `classifyTurn` returns null on
