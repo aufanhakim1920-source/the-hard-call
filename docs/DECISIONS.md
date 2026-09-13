@@ -1184,3 +1184,50 @@ real customer's name. The *content* is de-identified; the *link* is not
 removed. So the sentence is "carries none of their details, and keeps a
 reference to which call it came from" — never "unlinkable". Overclaiming a
 privacy property is worse than the property being narrower than you hoped.
+
+## Nobody had asked what a model error body can contain
+
+The practice panel printed a Gemini 503's whole 780-character JSON body on
+screen under the friendly sentence. The question nobody had asked is what
+*else* a model error body can carry — and the answer is anything the request
+carried.
+
+The detail is redacted **by shape** now, before display: bearer tokens, api-key
+and secret and password with whatever follows them, JWTs, provider-prefixed
+ids, and any long opaque run. Then flattened, capped at 180 characters, and
+put behind a closed disclosure. **780 characters to 180.**
+
+⭐ **A rule becomes a check the day it is found**, so the shapes live in
+`eval/redact.check.ts` — seven real secret shapes plus a benign 503, exiting
+non-zero if any survives. Verified: all seven redacted and the plain 503 passes
+through intact, because **a redactor that eats everything is no more useful
+than one that eats nothing.**
+
+## A control that cannot succeed should not be offered
+
+"Turn this into a practice customer" was enabled on a call with zero lines.
+The server answers `400 empty session`, and the failure panel then told the
+worker to **try again** — on a path where trying again can only fail again.
+
+⭐ **An error message that suggests a remedy has made a claim, and that claim
+can be false.** "Try again" on a deterministic failure is worse than no
+message: it spends the user's time and their trust in the next message. The
+control is disabled now with its reason beside it, and the failure branch names
+the real remedy instead.
+
+## The last irreversible click without a guard
+
+Removing a generated practice customer was one click — no confirmation, no
+undo, and the model call that built them already spent — sitting a few pixels
+from **Start** on a grid of nine rows. Discard had the same shape: one click
+erased a draft with nothing kept.
+
+Both ask first now, and they use the app's **existing** patterns rather than a
+third one: Discard opens the arm-then-confirm row that Deadlines and About
+already use, and Remove arms in place, because a question row repeated nine
+times is heavier than the thing it guards. The armed button disarms after six
+seconds — an armed control that outlives the screen is the bug the guard exists
+to prevent.
+
+⭐ **Count the irreversible clicks in a product and check each one has a guard.**
+There were three here and two of them had none; nobody had listed them.
