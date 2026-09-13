@@ -219,10 +219,12 @@ signs recorded and judged**; coaching on gave 4 and 4, with identical verdicts, 
 ⚠️ **That last sentence is now the opposite of the product's argument, and it is kept only to show
 where the demo started.** Identical verdicts were exactly the problem — the worker's words were the
 same either way, so the switch changed the display and nothing else (see *The before-and-after demo
-had nothing to compare*). With two worker scripts the current deployed measurement is: coaching off
-**0 cards, 5 signs recorded, 0 of 5 answered, the statutory notice missed**; coaching on **4 cards,
-4 signs, 4 of 4 answered, the notice handled.** The deadline is still identical, and that is still
-the point — the clock starts whether or not anyone on the call noticed.
+had nothing to compare*). With two worker scripts, the ten runs measured on the deployed engine on
+13 Sep gave: coaching off **0 cards, 5 signs recorded, 0 of 5 answered, the statutory notice missed**;
+coaching on **4 cards, 4 signs, 4 of 4 answered, the notice handled.** Those exact fractions belong to
+those ten runs and are not the claim — see *The fraction moved and the direction did not*, last in
+this file. The deadline is still identical, and that is still the point — the clock starts whether or
+not anyone on the call noticed.
 
 ---
 
@@ -1036,3 +1038,68 @@ Whole demo call: **10 sounds down to 6.**
 
 ⚠️ **Nobody has listened to any of this.** Every figure above is a count, a
 level or a spectrum. It needs a person with a headset before the demo.
+
+## The fraction moved and the direction did not
+
+The pitch had a number in it again: *"four of four answered against zero of five."* It reproduced ten
+times on the deployed engine, it was archived, and it was wrong to say out loud — because a **second**
+pair of runs through the same product came back **coached 5 of 5, silent 0 of 4**, and both shapes are
+in `eval/demo-runs.json`.
+
+So the archive was counted properly rather than sampled. **42 runs, 14 coached and 28 silent**, across
+two engines and both versions of the demo script.
+
+**The denominator is not noise.** Four signs are raised in every single run on both sides:
+`ask-about-hardship`, `job-loss`, `stress` and the legal `hardship-request`. Exactly one comes and
+goes — `inform-hardship-provisions`, the prompt to tell the customer the hardship process exists —
+and inside the archive it splits perfectly by engine: on the deployed function it landed on the
+**silent** side in 13 of 13 silent runs and never in 7 coached ones; on the local source engine it is
+the exact reverse, 7 of 7 coached and 0 of 15 silent. (`docs/EVIDENCE.md` records a browser pair with
+the local-shaped result while calling the engine the deployed one, which is one more reason not to
+promise a side.)
+
+**Answered fractions found in the archive — ten distinct shapes:**
+
+| side | shapes recorded |
+|---|---|
+| coached | 4 of 4 ×7 · 5 of 5 ×5 · 4 of 5 ×2 |
+| silent | 0 of 5 ×7 · 1 of 5 ×5 · 2 of 5 ×1 · 0 of 4 ×3 · 1 of 4 ×3 · 2 of 4 ×3 · 3 of 4 ×6 |
+
+("Answered" as the report card counts it: handled or partly. Under the stricter reading — handled
+only — there are six shapes, and a coached card on which *every* sign is fully handled occurs in just
+**3 of the 14** coached runs; the other eleven read 3 of 4, 3 of 5 or 4 of 5.)
+
+**What survived all 42, with nothing near an exception:**
+
+| | coached (14 runs, 63 signs) | silent (28 runs, 125 signs) |
+|---|---|---|
+| **missed** | **0** | 86 |
+| **handled** | 49 | **0** |
+| partly | 12 | 34 |
+| unverified | 2 | 5 |
+| **the statutory notice** | **handled, 14 of 14 runs** | **handled in 0 of 28** — missed in 25, partly in 3 |
+
+The three silent runs where the notice came back *partly* are all from before the 13 Sep script fix;
+after it, all nine silent runs missed it. Even counting them, the notice has never been handled on the
+silent side.
+
+⚠️ **The loose wording of the claim does not survive, and that matters.** *"Every sign answered on the
+coached side, none answered on the silent side"* is only true if "answered" means two different things
+on the two sides. Read strictly — answered = fully handled — the silent half is perfect (0 of 125) and
+the coached half fails in 11 of 14 runs, which carry a *partly* or an *unverified*. Read loosely —
+answered = handled or partly — the coached half holds and the silent half fails in 18 of 28 runs,
+which carry partly verdicts on the cue tips. **The claim only holds in its asymmetric form: nothing
+missed on the coached side, nothing handled on the silent side.** That is now the sentence in the
+README, in the demo script's first block and in the checklist as E-0.
+
+⭐ **Two rules, and the first is the one that keeps getting relearned here.** A number that reproduces
+ten times is a measurement of ten runs; it becomes a claim only when you have counted the runs it does
+*not* cover. Ours had thirty-two of those sitting in the same file. ⭐⭐ And the second: **when a claim
+is retired for being unstable, restate the replacement in the exact form that was verified.** The
+short, symmetrical version of the direction reads better and is false; the asymmetric version is the
+one the archive actually supports, and a presenter can only be given the one that holds.
+
+**Not fixed, recorded:** `docs/EVIDENCE.md` attributes its browser pair to the deployed engine, while
+every archived deployed run has the opposite shape and its own correction section shows the local path
+had been mistaken for the deployed one an hour earlier the same night. It is unresolved from inside
+this repository, and it changes nothing about what to say on stage.

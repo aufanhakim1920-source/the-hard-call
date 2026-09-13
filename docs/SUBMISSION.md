@@ -7,7 +7,8 @@ Every line below is a yes/no somebody can check. Tick it yourself before you tru
 
 **Statuses re-checked against the tree and the deployed function on 13 Sep.** What that pass changed,
 because a stale checklist is worse than none: PR #3 had merged (B8, C2, D2), the silent run records
-**5** signs rather than 3 and now raises **more** than the coached run (C8, E), and D6, D9 and D10
+**5** signs rather than 3 and on the deployed engine raises **more** than the coached run (C8 — which
+side gets the extra sign depends on the engine, so do not name one), and D6, D9 and D10
 were all already fixed in the source. The verdict rows and the timings from the 01:40 twelve-run pass
 are kept below, split into E-1 and E-2 because they were measured on two different engines.
 
@@ -50,7 +51,7 @@ Each of these is a sentence we make somewhere. If the code stops backing it, the
 | C3 | "Nothing that classifies a customer is ever stored" | README, About | laural | **true on `main`**: cause cues are live-only. Re-verified after the detector merged — it emits no cue-tier events at all |
 | C4 | The report card "says the call ran silent" | Settings panel says this | Shawn or UI | **fixed, verified 13 Sep.** Silent card leads *"The assistant ran silent on this call…"*; coached card leads *"The assistant coached this call — every sign appeared the moment it was raised."* Seen on all twelve runs |
 | C7 | **"The same call, handled two ways"** — the demo is described as a dramatisation wherever it is claimed | `docs/DEMO-SCRIPT.md`, the video narration, the Devpost description | Aufan | **script says it; the video and Devpost do not exist yet.** Two worker scripts, one customer script. If a judge asks whether the worker's lines are scripted, the answer is yes — say it before they ask |
-| C8 | The two report cards are described as comparing the **same** signs | Anywhere the before/after is claimed | Aufan | ⚠ **they do not, and the direction has reversed.** On the deployed engine **silent raises 5 and coached raises 4**, identically across all ten archived runs. The extra sign is the hardship-process prompt, and it fires on the **silent** run because that worker never mentions hardship assistance — the coached worker says it, so the engine stops asking. The four shared signs, the customer's words and the 21-day deadline are identical. Say the asymmetry before a judge finds it; the Calls screen prints it too |
+| C8 | The two report cards are described as comparing the **same** signs | Anywhere the before/after is claimed | Aufan | ⚠ **they do not, and which side gets the extra sign is not fixed.** Through the deployed engine the archive is consistent — **silent 5, coached 4** in all 20 runs — but through the local source engine it is the exact mirror (coached 5, silent 4 in all 22), and the browser pair in `docs/EVIDENCE.md` recorded the mirror shape while calling the engine the deployed one. The extra sign is the hardship-process prompt, and it fires on whichever worker never mentions hardship assistance. **The four shared signs, the customer's words and the 21-day deadline are identical in all 42 runs.** Say the asymmetry before a judge finds it, and say it without naming a side; the Calls screen prints whichever way it fell |
 | C5 | Every legal figure is sourced | README and About: NCC s72 / 21 days · RG 271 / 30 days · NAB $15.5m / 345 notices / ASIC 25-165MR · REP 782 · REP 815 | Aufan | numbers match the sources on file; re-read once aloud before submitting |
 | C6 | Nothing claims to be first without a search | Bendigo and Adelaide Bank is named in the README as prior art | Aufan | **yes** |
 
@@ -64,18 +65,29 @@ Each of these is a sentence we make somewhere. If the code stops backing it, the
 | D4 | **ElevenLabs practice quota** | Redeem the Forward credit (it is in the Discord menu) and run one full practice call end to end | Aufan | Practice mode is half the pitch and **no connected voice call has been verified**. If it cannot be shown, say so instead of implying it works |
 | D5 | ~~The 2× replay speed does nothing~~ | **Done.** Verified 13 Sep: 49.8 s at 1×, 25.2 s at 2×. The control only exists once the replay is running, and the line already scheduled when you press it still lands at 1× — both are in the demo script as beats, not bugs | live-call owner | closed |
 | D6 | ~~**Practice screen trap**~~ | **CLOSED — fixed in `CallScreen.tsx`.** End call is no longer disabled on an empty call; leaving is always allowed and an empty call simply produces an empty report. Verified by reading the handler, **not by clicking it** — one pass through Practice on the live URL before the video would close that gap | live-call owner | closed |
-| D7 | ~~**The report card varies a lot more than we thought**~~ | **CLOSED — diagnosed and fixed, not tolerated.** The variance was never in the engine: signs raised were byte-identical every run, and calling `/report` six times on one identical session still returned missed = 1,1,1,1,2,2. **All of it lived in the written review**, and the model said why — the silent script's *"a couple of weeks before the next reminder"* and *"someone will be in touch"* read as partial discharge of the obligation. **The script was sitting exactly on the line it was meant to be clearly one side of.** Both offers were removed and both scripts gained a neutral sign-off, so a sign raised on the last line still has a worker line to be judged against. After: 10 deployed runs, **every counted field identical** — coached 4 signs / 4 of 4 answered / legal HANDLED 4 of 4; silent 5 signs / 0 of 5 answered / legal MISSED 6 of 6. Only the score still moves, by 3 points | everyone | ⭐ **A number in a pitch is a claim and needs a harness, not the memory of a good run.** `eval/demo-runs.ts` is that harness; re-run it after any edit to `demoScript.ts`. Still never quote the score — say the fraction |
+| D7 | ~~**The report card varies a lot more than we thought**~~ | **CLOSED — diagnosed and fixed, not tolerated.** The variance was never in the engine: signs raised were byte-identical every run, and calling `/report` six times on one identical session still returned missed = 1,1,1,1,2,2. **All of it lived in the written review**, and the model said why — the silent script's *"a couple of weeks before the next reminder"* and *"someone will be in touch"* read as partial discharge of the obligation. **The script was sitting exactly on the line it was meant to be clearly one side of.** Both offers were removed and both scripts gained a neutral sign-off, so a sign raised on the last line still has a worker line to be judged against. After: 10 deployed runs, **every counted field identical** — coached 4 signs / 4 of 4 answered / legal HANDLED 4 of 4; silent 5 signs / 0 of 5 answered / legal MISSED 6 of 6. Only the score still moves, by 3 points **on that engine** — and see D11, because the fraction moves on others | everyone | ⭐ **A number in a pitch is a claim and needs a harness, not the memory of a good run.** `eval/demo-runs.ts` is that harness; re-run it after any edit to `demoScript.ts`. Never quote the score, and no longer quote the fraction either — say the direction |
 | D8 | ~~The Calls screen is not committed or deployed~~ **CLOSED** — it is on `main` and live. Two cards on one axis, with the honest caveats written into the page | Nothing. Perform the comparison on the Calls tab | — | Was the biggest visible win left; it landed |
 | D9 | ~~**The "who said it" box flips after every typed line**~~ | **CLOSED — it no longer alternates.** The box stays where it was put, with the reasoning left in the code: the cost is asymmetric, since typing the customer's sentence into a box that has silently flipped to Worker raises nothing (0 signs in 16 s as Worker against the legal sign in 2.7 s as Customer) | live-call owner | closed |
 | D10 | ~~**The hint under the transcript names line 7**~~ | **CLOSED — conditioned on coaching.** Coaching off reads *"Watch line 7: the worker asks for money instead of answering the sign."*; coaching on reads *"Watch what the worker does the moment each sign lands."* | live-call owner | closed |
+| D11 | **The fraction on the cards is not stable, and it was in the presenter's mouth** | **CLOSED — the documents now lead with the direction.** Counted across all **42 runs** in `eval/demo-runs.json`: the answered fraction takes **ten distinct shapes** (coached 4 of 4, 5 of 5, 4 of 5; silent 0/1/2/3 of 4 and 0/1/2 of 5), because one sign — the hardship-process prompt — comes and goes and lands on whichever worker has not covered it. What holds in **42 of 42**: **0 signs missed on the coached side** (0 of 63) and **0 signs handled on the silent side** (0 of 125), with the statutory notice handled in 14 of 14 coached runs and 0 of 28 silent ones. README, DEMO-SCRIPT and this file now state that and print the fraction only as an observed range with its source | pitch owner | ⭐ **A number that reproduces ten times on one engine is a measurement, not a claim.** The claim is the thing that survived every engine, both scripts and both directions of the asymmetry |
 
 ## E · Already done and verified — do not redo
 
 Two separate measurement sets, and they must not be quoted as one.
 
+**E-0 · The claim that survives all 42 archived runs**, both engines and both versions of the script:
+**no sign has ever been marked missed on the coached side** (0 of 63) and **none has ever been marked
+handled on the silent side** (0 of 125); the statutory notice was handled in **14 of 14** coached runs
+and **0 of 28** silent ones. This is the sentence a presenter is allowed to say without looking at
+the screen. Everything in E-1 and E-2 below is narrower than it — see D11.
+
 **E-1 · The deployed engine, `eval/demo-runs.ts --remote`, 13 Sep — ten runs, four coached and six
-silent.** These are the numbers the README and the demo script quote. Archived in
-`eval/demo-runs.json`; the report's own `model` field reads `gemini-flash-latest` on all ten.
+silent.** Archived in `eval/demo-runs.json`; the report's own `model` field reads
+`gemini-flash-latest` on all ten. Every counted field was identical across the ten: coached 4 signs,
+4 of 4 answered; silent 5 signs, 0 of 5. ⚠️ **Those fractions are true of these ten runs and are not
+a prediction** — the same script on the local source engine produces the mirror shape, and the
+browser pair in `docs/EVIDENCE.md` recorded coached 5 of 5 / silent 0 of 4. Quote them as "in the ten
+deployed runs on 13 Sep", never bare.
 
 **E-2 · The browser, twelve full calls (seven coached, five silent) at 1280 px, 13 Sep 01:20–01:40.**
 ⚠ These went through `npm run dev` against the **local** engine on `gemini-2.5-flash`, because that is
@@ -95,9 +107,10 @@ and it is on the Monday list.
   cards, at 9.0 s (stress), 14.4–14.6 s (job loss), 22.5–22.7 s (hardship prompt) and 20.0–25.3 s
   (the legal sign). ⚠ The old "3 signs still recorded" here is **superseded by E-1: the silent run
   records 5**, every run, and raises one *more* than the coached run — see C8.
-- **The statutory notice was HANDLED in every coached run and MISSED in every silent one**, in both
-  measurement sets: 7/7 and 5/5 in E-2, and 4/4 and 6/6 in E-1. That is the only verdict that has
-  never once wavered, and it is the argument.
+- **The statutory notice was HANDLED in every coached run and never handled in any silent one**, in
+  both measurement sets: 7/7 and 5/5 in E-2, and 4/4 and 6/6 in E-1 — and across the full 42-run
+  archive, 14/14 coached and 0/28 silent (missed in 25, partly in 3, all three of those before the
+  13 Sep script fix). That is the only verdict that has never once wavered, and it is the argument.
 - A typed sentence raises the legal sign in **2.7 s**, reply-due computed as today + 21 (Sun 4 Oct).
 - The negative control — "push the payment back a couple of weeks, I get paid on the twentieth" —
   **raises nothing after 13 s of waiting**.
@@ -116,7 +129,7 @@ the live URL since.
 | by 08:30 | ~~D8 decided~~ **done** — the Calls screen is live, so the demo ends by pointing at the comparison rather than narrating it | — |
 | by 09:00 | **D3 is the only decision left** (D2, D6, D9, D10 all closed); last merges land; **`npm run functions:deploy` run after the final engine merge** (B9) | Shawn, Aufan |
 | 09:00–10:00 | **Video recorded off the live URL, not localhost** (C1) — follow `docs/DEMO-SCRIPT.md`, use 2×, both runs fit in 75 s. Say "the same call, handled two ways" in the first ten seconds (C7) | Aufan |
-| 10:15 | **Run one coached and one silent call on the live URL** and check the verdicts match section E. The twelve measured runs were local, on a different model | Aufan |
+| 10:15 | **Run one coached and one silent call on the live URL** and check the run against **E-0**, not E-1: nothing missed coached, nothing handled silent, the notice handled against not handled. **A different sign count or a different fraction is expected and is not a failure** — note what it produced and leave the documents alone. Only an E-0 row breaking is a stop-everything | Aufan |
 | 10:30 | B1–B11 checked against the final commit; hard-reload the live URL and run the demo once | whoever merges last |
 | **11:00** | **`main` freezes.** Nothing merges after this | everyone |
 | 11:00–11:45 | Devpost: track name, repo link, live URL, video link; re-read the Official Rules (A5) | Aufan |

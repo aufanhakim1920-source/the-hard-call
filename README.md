@@ -4,11 +4,13 @@
 reply-due date and one question to ask next.** After the call it grades the worker, not the
 customer, and the calls that went wrong become de-identified practice customers.
 
-**The measurement the whole thing rests on.** The same customer, the same words, the same engine, run
-ten times on the deployed function. With the signs on screen the worker answered **4 of the 4 signs
-raised**, in all four runs. With them hidden he answered **0 of 5**, in all six runs — and the
-statutory notice that starts a 21-day clock was **handled in every coached run and missed in every
-silent one**. Full table and the archived run records [below](#what-it-does).
+**The measurement the whole thing rests on.** The same customer, the same words, the same engine,
+run twice — once with the signs on screen and once with them hidden. Across **every one of the 42
+runs archived** in `eval/demo-runs.json`: **not one sign was ever marked missed on the coached side,
+and not one was ever marked handled on the silent side.** The statutory notice that starts a 21-day
+clock was handled in **14 of 14** coached runs and in **none** of the 28 silent ones. The number of
+signs raised moves between runs; which side answers them has never moved. Full tables and the
+archived run records [below](#what-it-does).
 
 > **Live app:** https://aufanhakim1920-source.github.io/the-hard-call/
 > **Video:** _(link goes here)_ · **Demo:** [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md) ·
@@ -77,29 +79,40 @@ is a dramatisation and we say so — there are two worker scripts in `src/lib/de
 earlier version with only one proved nothing, because the worker said the same words either way.
 
 **Measured, not claimed.** `eval/demo-runs.ts` replays the demo script through the real engine —
-the same detector pass, the same `/flags`, the same `/report` — and archives every run. The numbers
-below are **10 runs on the deployed engine**, 4 coached and 6 silent, on 13 Sep:
+the same detector pass, the same `/flags`, the same `/report` — and archives every run. The archive
+holds **42 runs**, 14 coached and 28 silent, on two engines and both versions of the script.
 
-| | Coaching **on** | Coaching **off** |
+**What held in all 42:**
+
+| | Coaching **on** (14 runs, 63 signs) | Coaching **off** (28 runs, 125 signs) |
 |---|---|---|
-| Sign cards on screen during the call † | 4 | **0** |
-| Signs recorded and judged | 4 | **5** |
-| Signs answered | **4 of 4, every run** | **0 of 5, every run** |
-| The statutory notice (NCC s72) | **handled, 4 of 4** | **missed, 6 of 6** |
+| Signs **missed** | **0**, every run | 86 |
+| Signs **handled** | 49 | **0**, every run |
+| The statutory notice (NCC s72) | **handled, 14 of 14 runs** | **handled in 0 of 28 runs** — missed in 25, partly in 3 |
 | 21-day deadline created | yes | **yes — with nothing on screen** |
-| Withheld as unverified | 0 | 0 |
-| Score | 88 · 85 · 88 · 88 | 10 · 10 · 10 · 15 · 10 · 10 |
+| Sign cards on screen during the call † | 4 or 5 | **0** |
 
-† Every row but that one comes from the harness, which has no screen. The card count is a browser
-observation from the same day, counted by eye on twelve full runs.
+† Every other row comes from the harness, which has no screen. The card count is a browser
+observation from 13 Sep, counted by eye on twelve full runs.
 
-The silent run raises **more** signs than the coached one, which reads oddly until you see why: the
-worker who never mentions hardship assistance earns a prompt telling him to, and the worker who does
-mention it never triggers one. The absence is the thing being measured.
+**What did not hold: the fraction.** The ten runs measured on the deployed engine on 13 Sep came back
+identical on every counted field — coached **4 of 4** answered (3 handled, 1 partly), silent
+**0 of 5**, scores 88 · 85 · 88 · 88 against 10 · 10 · 10 · 15 · 10 · 10. Three runs of the same
+script through the local source engine produced the mirror image, coached **5** signs and silent
+**4**, and the two browser runs written up in `docs/EVIDENCE.md` recorded coached **5 of 5** and
+silent **0 of 4**. Across the whole archive the answered fraction takes **ten distinct shapes**.
 
-**The score is still the least trustworthy row and we do not lead with it.** It moves by up to three
-points between identical runs, because the written review is generated and the counted fields are
-not. The comparison to say out loud is the fraction: **four of four answered against zero of five.**
+**So the fraction is not a claim we make.** One sign comes and goes — the prompt to tell the customer
+the hardship process exists — and it lands on whichever worker has not covered it. That is the
+finding, not a wobble in it: the worker who never mentions hardship assistance earns a prompt telling
+him to, the worker who does never triggers one, and **the absence is the thing being measured.** What
+we state, because it has never once failed in 42 runs, is the direction: **nothing missed on the
+coached side, nothing handled on the silent side, and the statutory notice handled in every coached
+run and in no silent one.**
+
+**The score is the least trustworthy row and we do not lead with it.** It moves by up to three
+points between otherwise identical runs, because the written review is generated and the counted
+fields are not.
 
 ⚠️ **An earlier version of this table quoted "95 against 20".** Neither row survived measurement.
 Across 19 silent and 7 coached judgements recorded before the script was fixed, **the coached score
@@ -107,6 +120,11 @@ Across 19 silent and 7 coached judgements recorded before the script was fixed, 
 missed* — appeared **0 times** either, because `caught` was 1 on all 19 runs and never 3. The bare
 score 20 did occur, in 7 of those 19. They were replaced rather than defended, and every run record
 is archived in `eval/demo-runs.json` so anyone can check both the old claim and this one.
+
+⚠️ **And an earlier version of this section led with "four of four against zero of five".** That
+fraction is real and reproduced ten times, but only on one engine; the archive contains its mirror
+too. It has been demoted to an observed range with its source, because a fraction quoted on a stage
+while a different one is on the screen behind you costs more than it buys.
 
 ## A hint is not a notice
 

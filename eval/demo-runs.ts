@@ -424,5 +424,29 @@ for (const side of sides) {
   }
 }
 
-fs.writeFileSync(path.join(HERE, ARGS.out), JSON.stringify({ at: new Date().toISOString(), model: process.env.GEMINI_MODEL, args: ARGS, results }, null, 2));
+// ⚠️ `process.env.GEMINI_MODEL` is the LOCAL model, and writing it as the
+// run's model labelled every --remote run with the wrong engine. A whole
+// verification pass was spent chasing that: the archive said gemini-2.5-flash
+// while report.model, which is the deployed function's own answer, said
+// gemini-flash-latest. A field that is right in one mode and silently wrong in
+// the other is worse than no field.
+//
+// The engine the run actually used is whatever the report came back saying.
+const enginesUsed = [...new Set(results.map((r) => r?.report?.model).filter(Boolean))];
+fs.writeFileSync(
+  path.join(HERE, ARGS.out),
+  JSON.stringify(
+    {
+      at: new Date().toISOString(),
+      host: REMOTE ? `remote ${REMOTE.base}` : "local source",
+      /** What the engine reported for itself, not what this process was configured with. */
+      engines: enginesUsed,
+      localModelEnv: REMOTE ? null : (process.env.GEMINI_MODEL ?? null),
+      args: ARGS,
+      results,
+    },
+    null,
+    2,
+  ),
+);
 console.log(`\nwrote eval/${ARGS.out}`);
