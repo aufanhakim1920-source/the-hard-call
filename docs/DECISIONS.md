@@ -1333,3 +1333,67 @@ chip-shaped — but every button in this app is 4 px, so it mimics nothing here,
 and that pill is what separates legal from tip in greyscale and for a
 colour-blind reader. ⭐ **A shape is only a false affordance relative to the
 shapes the rest of the product uses.**
+
+## A card with zero surfaces has no reading order, however good its type is
+
+The report card's *content* had been worked hard — the verdict leads, the miss
+count is large, the split bar is hazard-striped, the answer times are honest.
+Nobody had asked whether it was a well-made **object**. Measured on the
+finished card:
+
+- **0 painted surfaces** larger than 8000 px², across 1956 px of card
+- **25 elements** carrying a 1 px border
+- **eleven regions** whose margins were 18, 20, 20, 20, 22, 22, 24, 24, 26 px
+
+So the model's write-up got the same air as the miss count, and the eye had no
+second or third stop — just a walk down a stack of flat panels separated by
+hairlines. ⭐ **Type can rank things only within a surface. Between regions,
+the ranking is ground and air, and with neither there is no ranking at all.**
+
+**And the reading order was inverted.** The score ring was a 132 px gold dial
+at the top-right — the only round thing, the only saturated thing, at the
+natural first-fixation corner — while the miss count the research put first was
+a 65 px band of flat page. On the card that says the worker failed, **the
+biggest warm gold glyph on screen read `30`**, and gold is this product's
+positive accent everywhere else. The same fault the split bar's hazard stripes
+were introduced to fix, one level up.
+
+⭐ **Demoting something in doctrine is not demoting it in paint.** The decision
+log had said for two days that the ring is not the primary reading. The ring
+had not been told.
+
+**A real WCAG failure found on the way past:** the ring's lit ticks were drawn
+in `--gold`, **2.18:1 on cream** — below the 3:1 a meaningful graphic needs, on
+the marks that *are* the score, and 1.79:1 once a plate sat behind them on a
+phone. The rule is written at the top of that very stylesheet; the ring was the
+one place not following it.
+
+**And the plate needed two tokens, not one.** Dark takes `--ink-3` because
+`--ink-2` is a 1.09:1 step and is invisible when you actually look at it; light
+takes `--ink-2` because `--ink-3` there drops the ring's own labels to 4.12:1
+and fails. ⭐ *Changing a ground re-opens every contrast question that ground
+had answered* — including the questions asked by things that merely sit on top
+of it.
+
+## Motion may carry a value in; it may not pretend the value is something else
+
+The ledger numerator counted up from zero over 420 ms — already the trimmed
+version of a worse one where the denominator moved too. A screenshot caught
+**"1 OF 5" on a call whose answer is five of five**, on the frame the pitch
+lands on: the one most likely to be paused, photographed, or dropped into a
+video.
+
+Worse in a tab that is not compositing — the frames never arrive, so the figure
+sat at **0** until a 570 ms safety timer rescued it. A number reading zero
+because the tab was in the background is not a subtler kind of wrong.
+
+⭐ **A quantity must be true on the first frame.** This was the fourth and last
+place on this card breaking that rule, after the split bar, the deadline track
+and the answer-time bars. The arrival is still animated — the row rises — but
+the number is true from the first paint. Verified by sampling 120 ms after
+mount and again after every animation finished: identical.
+
+The hook had exactly one consumer and was deleted rather than left behind. ⭐
+**A helper whose whole premise is "start a quantity at zero and decide later"
+is a loaded gun for the next chart** — the same reason its sibling went this
+morning.
