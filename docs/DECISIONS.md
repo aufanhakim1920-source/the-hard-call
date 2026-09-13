@@ -1103,3 +1103,39 @@ one the archive actually supports, and a presenter can only be given the one tha
 every archived deployed run has the opposite shape and its own correction section shows the local path
 had been mistaken for the deployed one an hour earlier the same night. It is unresolved from inside
 this repository, and it changes nothing about what to say on stage.
+
+## Sixty-five borders, nine shadows, and all nine of them inset
+
+Every pass tonight hunted defects. Nobody had asked whether the thing is any
+good. Counted across the stylesheet: **65 `1px solid` declarations against 9
+box-shadows, and all nine were `inset`** — drawing more lines. Zero elevation
+anywhere in the app. That is the house reflex, measured at 49 of 50 past
+builds, present here structurally rather than as a matter of taste.
+
+**The plane order on Deadlines was upside down.** Of the three painted surfaces
+larger than 8000 px² on that screen, two were the page's own colour, and the
+only object with a ground of its own was the **settled** row. A finished
+deadline had a surface; two running 21-day statutory clocks lay flat on the
+page with a hairline under them.
+
+⭐ **Depth is a ranking. If the finished thing is the only thing with a
+surface, the screen is telling the reader the wrong story** — and a hairline
+under a row is not a ranking, it is a fence.
+
+Same screen, the same fault in type: the date a 21-day clock hangs on was 14 px
+mono and "21 days left" was 12 px grey, **both quieter than the customer's
+name beside them.** The report card's deadline block had already been fixed for
+exactly this and this screen was missed. *When a rule is applied, grep for
+every other place the rule belongs.*
+
+**The About page's engine numbers were visible by accident.** Five ghost
+rectangles — no border, no radius, no shadow, background set to the page's own
+colour. They read as objects only because the grain layer sits under the root,
+so any opaque background punches a smooth rectangle out of the texture. The
+most textbook instance of the pattern in the app, drawn entirely by accident,
+on the screen a judge reads to check the engine.
+
+**And one regression caught inside the same pass:** raising the Practice row
+put its badge on a new ground, where the gold drops from 4.91:1 to **4.48:1**
+and fails AA. ⭐ **Changing a ground re-opens every contrast question that
+ground had already answered.** A raise is not a cosmetic change.
