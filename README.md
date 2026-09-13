@@ -359,8 +359,12 @@ worse than no claim. What is true, and checkable by reading the source:
   **So we do not claim the flagging cannot be rate-limited.** On a
   transcript whose wording the rules do reach, it fires with no key at all; on this one it does not.
 - **Practice mode is configured, not proven.** The published ElevenLabs agent is live and the Start
-  button is enabled; a full connected voice call needs a microphone and free-tier quota, and is on the
-  pre-submission checklist.
+  button is enabled; a full connected voice call needs a microphone and quota. **The free
+  allowance is spent** — 14 of 15 minutes for the month, and five attempts on 13 Sep returned
+  `quota_exceeded` or a concurrency refusal, with zero sessions started. So the voice cannot be
+  demonstrated live without a paid tier. Everything up to the session is verified and recorded in
+  `docs/PRACTICE.md`, including the de-identification check: a transcript carrying 29 identifiers
+  produced a persona with none of them and zero shared 3-grams.
 - There is no licence file. Public so it can be judged; not licensed for reuse.
 
 ## Run it

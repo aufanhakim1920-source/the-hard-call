@@ -100,6 +100,10 @@ and it is on the Monday list.
   `gemini-flash-latest`. The two worker scripts are live on the published bundle.
 - **The replay runs 49.8 s at 1× and 25.2 s at 2×.** Line times at 2×: 1.1, 3.1, 5.1, 7.2, 10.2,
   12.7, 15.2, 17.7, 20.7, 23.2, 25.2 s.
+- ⚠️ **75 s is the two REPLAYS plus reading the cards. The full run in `docs/DEMO-SCRIPT.md`
+  ends at 1:28**, because it also carries the Settings toggle between the runs and the Calls
+  comparison at the end. Rehearse to the script's clock, not to this number — a presenter who
+  trains to 75 s arrives 13 seconds short. `docs/DEMO-SCRIPT.md` is authoritative for timing.
 - **Both runs, back to back, fit in 75 s** including ten seconds of standing still reading the two
   cards. Measured end to end.
 - **Report card lands 3.0–3.8 s after End call** (twelve runs). Say "a few seconds", never a number.

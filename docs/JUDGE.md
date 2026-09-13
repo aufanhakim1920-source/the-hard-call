@@ -102,6 +102,10 @@ speaks; that anything syncs; and — the important one — **how often it is rig
 ## 4 · The three weakest things
 
 **1. The app says it has never measured itself, and that is not true.** About → "How good is the
+⚠️ **SUPERSEDED — see "Checked afterwards" at the foot of this file. This finding is
+WITHDRAWN: the eval numbers DO render on the live About page. The reading below was
+taken before an async fetch resolved.**
+
 engine" → *"Eval results not published on this build yet."* Meanwhile
 `/the-hard-call/eval-results.json` is served by the same site, returns 200, and contains a 41-case
 run: precision 1.00, recall 0.69, f1 0.82, per-key breakdown, zero errors. The page fetched that file
@@ -171,7 +175,7 @@ READMEs that would not survive the audit their own authors ran here.
 **Where the documents and the product disagree:**
 
 - The README says the published eval is *"also shown on the app's About page."* **It is not.** The
-  About page shows "not published on this build yet" while the file it describes is served and
+  ⚠️ **WITHDRAWN, see the foot of this file.** About page shows "not published on this build yet" while the file it describes is served and
   fetched. This is the one outright mismatch, and it costs the most, because the eval is the best
   thing in the README.
 - README: *"Coaching can be switched off."* I never found that control on the main path — the Calls

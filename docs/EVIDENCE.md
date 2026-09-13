@@ -336,6 +336,13 @@ Worst first. Nothing was fixed.
 {"ok":true,"gemini":true,"keys":2,"model":"gemini-2.5-flash","time":"2026-09-13T00:39:39.980Z"}
 ```
 
+⚠️ **SUPERSEDED — WITHDRAWN at the foot of this file.** The deployed function reports
+`gemini-flash-latest`; this reading came from the LOCAL development path, which runs a
+different model. The README was correct.
+
+```
+```
+
 `README.md:178` says the deployed function "currently reports **`gemini-flash-latest`**", and
 `README.md:194` says the published precision/recall figures are measured against "**the model the
 deployed function actually uses**". Both are now wrong. `README.md:228` records that a control run on
