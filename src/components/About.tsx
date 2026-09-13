@@ -132,7 +132,7 @@ export function About() {
         <div className="brand-lockup">
           <Mark />
           <div>
-            <h1 className="brand-name">CallFlag</h1>
+            <h1 className="brand-name">The Hard Call</h1>
             <p className="brand-tag">Client alerts for banking staff.</p>
           </div>
         </div>

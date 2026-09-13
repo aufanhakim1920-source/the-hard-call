@@ -299,7 +299,7 @@ export function ReportCard({
 
   const copy = async () => {
     const lines = [
-      `CallFlag — report card, ${fmtWhen(report.at)}`,
+      `The Hard Call — report card, ${fmtWhen(report.at)}`,
       `${report.customer} · ${report.mode} · score ${!hasVerifiedReportScore(report) ? "not verified" : report.score}`,
       // A pasted card is read without the screen, so the mode has to travel
       // with it. Absent is left out rather than guessed.

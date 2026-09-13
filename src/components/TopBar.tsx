@@ -9,7 +9,7 @@ import "./topbar.css";
 export type View = "live" | "calls" | "practice" | "deadlines" | "lessons" | "about";
 
 /**
- * The CallFlag mark: a swallowtail flag knocked out of a disc.
+ * The The Hard Call mark: a swallowtail flag knocked out of a disc.
  *
  * It lives at 20px in the bar and 16px in the tab, and on a phone the wordmark
  * is hidden entirely, so below 940px this is the whole brand. Every feature is
@@ -99,7 +99,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
     <header className="topbar" ref={barRef}>
       <div className="wordmark">
         <Mark />
-        CallFlag
+        The Hard Call
       </div>
       <nav className="tabs" aria-label="Sections" ref={navRef}>
         {/* Not rendered until it has been measured. The ink's width is

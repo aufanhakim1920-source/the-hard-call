@@ -1,4 +1,4 @@
-# CallFlag
+# The Hard Call
 
 **An assistant that listens to a bank's hardship calls and raises a live danger sign carrying the
 reply-due date and one question to ask next.** After the call it grades the worker, not the
@@ -20,7 +20,7 @@ Built in 48 hours for *Forward: AI in Business Hackathon* (DSCubed and RAID, Uni
 Melbourne, 12–14 Sep 2026). **Track 3 — Solve a Business Problem**, entered alongside the
 **Built With ElevenLabs** track.
 
-> The product is **CallFlag**. The repository, the folder, the package and the deployed URL stay
+> The product is **The Hard Call**. The repository, the folder, the package and the deployed URL stay
 > `the-hard-call` — the Pages deploy and four branches key off that path, so only the interface
 > carries the product name.
 
@@ -154,7 +154,7 @@ deterministic code applying the law.
 | Balto, Cresta, Observe.AI, Google Agent Assist | Live prompts for contact centres | General purpose; no Australian hardship law, no 21-day clock |
 | Aveni Detect (UK) | Vulnerability flags across calls | UK rules, QA-shaped, not live coaching |
 | Hyperbound, Yoodli, Second Nature | AI practice customers | Sales calls, not hardship |
-| **CallFlag** | Live sign, the reply-due date, the next question, the report card, and practice built from your own calls | The first we could find doing all of it together, for Australian hardship law |
+| **The Hard Call** | Live sign, the reply-due date, the next question, the report card, and practice built from your own calls | The first we could find doing all of it together, for Australian hardship law |
 
 ## How it is built
 
