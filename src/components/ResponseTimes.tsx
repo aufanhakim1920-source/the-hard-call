@@ -4,8 +4,8 @@ import { fmtGap, gapParts, niceSpan, responseGaps, tickStep } from "./report-mat
 import "./report-visuals.css";
 
 // The product's whole claim, drawn as the thing it actually is: a duration.
-// Every lane starts at the moment its sign fired and ends where the worker's
-// cited words landed, all against one shared seconds axis — a position
+// Every lane starts at the words that raised the sign and ends where the
+// worker's cited answer landed, all against one shared seconds axis — a position
 // judgement on a common scale, which Cleveland & McGill measured as the most
 // accurately read encoding there is (1.4–2.5x better than length alone).
 //
@@ -24,6 +24,7 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
 
   if (lanes === 0) return null;
 
+  const answers = gaps.filter((g) => g.hasAnswer).length;
   const measured = gaps.filter((g) => g.gapMs !== undefined).map((g) => g.gapMs as number);
   const axis = niceSpan(measured.length > 0 ? Math.max(...measured) : 10000);
   const step = tickStep(axis);
@@ -37,12 +38,26 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
     <section className="rv-rt" style={{ "--rv-tick": `${(step / axis) * 100}%` } as CSSProperties}>
       <div className="rv-corners">
         <span>Answer time</span>
-        <span>sign raised → the worker&rsquo;s words</span>
+        {/* Named for what is actually subtracted. It used to read "sign
+            raised", which was the moment the model's answer came back. */}
+        <span>the words that raised it → the worker&rsquo;s answer</span>
       </div>
 
       <div className="rv-rt-rows">
-        {gaps.map(({ item, gapMs }, i) => {
+        {gaps.map(({ item, gapMs, hasAnswer }, i) => {
           const has = gapMs !== undefined;
+          // Whatever a lane cannot time, it says exactly which thing is
+          // absent, because the card underneath quotes the answer. "No answer
+          // found" over a quoted answer is the card calling itself a liar; an
+          // answer that exists and could not be timed is a different fact and
+          // gets its own words. Nothing here invents a duration.
+          const nil = !hasAnswer
+            ? item.verdict === "missed"
+              ? "not addressed"
+              : item.verdict === "unverified"
+                ? "not verified"
+                : "no answer found"
+            : "answered, not timed";
           return (
             <div
               className={"rv-rt-row " + item.verdict + (has ? "" : " none")}
@@ -77,7 +92,7 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
                     <span className="rv-unit">{gapParts(gapMs as number)[1]}</span>
                   </>
                 ) : (
-                  <span className="rv-rt-nil">{item.verdict === "missed" ? "not addressed" : "no answer found"}</span>
+                  <span className="rv-rt-nil">{nil}</span>
                 )}
               </div>
             </div>
@@ -97,16 +112,27 @@ export function ResponseTimes({ session, report }: { session: Session; report: R
 
       <div className="rv-facts">
         <span>
-          {/* NOT "answered" — the ledger above already answers that, and these
-              two counts are different questions. This one is how many answers
-              could be TIMED: the model sometimes cites a worker line that lands
-              before the sign fired, so the gap is dropped. Saying "answered"
-              here made one card give two different numbers 250px apart. */}
-          <b>{measured.length}</b> of <b>{gaps.length}</b> answer times measured
+          {/* The denominator is the ANSWERS, not the signs. Counting timings
+              against every sign printed "1 of 4 answer times measured" beside
+              a ledger reading "4 of 4 answered" — two numbers about different
+              things, 250px apart, and the card looked like it was arguing with
+              itself. Against the answers it can only ever narrow the ledger's
+              count, never contradict it. */}
+          {answers === 0 ? (
+            "no answers on this call to time"
+          ) : (
+            <>
+              <b>{measured.length}</b> of <b>{answers}</b> answers timed
+            </>
+          )}
         </span>
         <span>
           {fastest === undefined || slowest === undefined ? (
-            "no answer times could be measured"
+            // Silent when there was nothing to time — the count beside it has
+            // already said so, and saying it twice reads as two failures.
+            answers === 0 ? null : (
+              "none of them could be timed"
+            )
           ) : fastest === slowest ? (
             // One measurement is not a range, and printing it as one reads as
             // a coincidence rather than a single fact.

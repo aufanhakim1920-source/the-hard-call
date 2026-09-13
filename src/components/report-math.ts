@@ -13,14 +13,31 @@ export interface Gap {
   answeredMs?: number;
   /** answered − fired. Absent whenever either end is missing. */
   gapMs?: number;
+  /** The card quotes a worker answer for this sign, timed or not. */
+  hasAnswer: boolean;
 }
 
 export function responseGaps(session: Session, report: Report): Gap[] {
   const start = session.startedAt;
+  const spokenAt = new Map(session.lines.map((l) => [l.id, l.t]));
   return report.items.map((item) => {
     const sign =
       session.signs.find((s) => s.id === item.signId) ?? session.signs.find((s) => s.key === item.key);
-    const firedMs = sign ? Math.max(0, sign.t - start) : undefined;
+    // ⚠ The moment the trigger was SPOKEN — never `sign.t`, which the engine
+    // stamps with `Date.now()` when the flags call RETURNS and therefore
+    // carries the round trip. Measured on a throttled run of the demo: the
+    // four signs arrived 11.0, 20.8, 30.3 and 35.0 s after the words that
+    // raised them, all four AFTER the worker had already answered, so every
+    // gap came out negative, every one was dropped, and the strip printed NO
+    // ANSWER FOUND directly above four quoted answers. On a healthy run the
+    // same subtraction merely shortened each reading by the latency — 2.4 s
+    // printed where the worker actually took 4.0 s. The trigger line is on the
+    // sign, and the adjudicator only ever cites lines that FOLLOW it, so
+    // measuring from there is both the true duration and one that cannot come
+    // out negative. No fallback to `sign.t`: a number contaminated by network
+    // time is worse than a stated absence.
+    const triggerT = sign ? spokenAt.get(sign.lineId) : undefined;
+    const firedMs = triggerT !== undefined ? Math.max(0, triggerT - start) : undefined;
     // ⚠ A missed verdict CARRIES evidence too — the line where the worker spoke
     // and did not address the sign. Timing that would print "answered in 21 s"
     // over the word MISSED. Only a verdict that says the worker responded can
@@ -33,7 +50,7 @@ export function responseGaps(session: Session, report: Report): Gap[] {
     const answeredMs = offsets.length > 0 ? Math.min(...offsets) : undefined;
     const gapMs =
       firedMs !== undefined && answeredMs !== undefined && answeredMs >= firedMs ? answeredMs - firedMs : undefined;
-    return { item, firedMs, answeredMs, gapMs };
+    return { item, firedMs, answeredMs, gapMs, hasAnswer: answeredMs !== undefined };
   });
 }
 

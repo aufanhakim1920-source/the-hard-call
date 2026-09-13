@@ -319,7 +319,7 @@
   background: var(--gold-2);
 }
 
-/* ---------- answer times: the gap from sign to words ---------- */
+/* ---------- answer times: the words that raised it to the answer ---------- */
 .rv-rt {
   display: block;
   margin: 2px 0 26px;
@@ -399,8 +399,9 @@
   right: -1px;
   border-right: 1px solid var(--line-2);
 }
-/* Left edge = the sign fired. It is drawn on every lane, including the lanes
-   with no bar, so an empty lane reads as "it fired and nothing followed". */
+/* Left edge = the words that raised the sign, which is where the measurement
+   starts. It is drawn on every lane, including the lanes with no bar, so an
+   empty lane reads as "it fired and nothing followed". */
 .rv-rt-fire {
   position: absolute;
   top: -2px;
@@ -454,6 +455,9 @@
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  /* Two words wrap in this column, and a ragged left edge under a column of
+     right-aligned numbers reads as a different column. */
+  text-align: right;
   color: var(--grey);
 }
 .rv-rt-axis {
