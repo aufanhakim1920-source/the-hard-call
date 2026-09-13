@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 19:06 | laj07 | project + report | [rename to The Hard Call](../../commit/fd40cf3a4959414bcc4b633c6e1945cc4c9c5df5) | README.md, TEAM-LOG.md, DECISIONS.md +11 | +19 / -19 |
 | 13 Sept, 18:55 | aufanhakim1920-source | other | [how the submission film was cut, and what the footage forced](../../commit/0a951b264c678ef9bf437da4c563807bdf6afec6) | DECISIONS.md | +35 / -0 |
 | 13 Sept, 17:53 | aufanhakim1920-source | other | [the A/B link belongs on the submission, and PR #6 masks the demo](../../commit/5ca3b01371e8f02f5148769e90b81c7393d856e3) | DECISIONS.md, SUBMISSION.md | +48 / -1 |
 | 13 Sept, 17:20 | aufanhakim1920-source | engine | [the A/B generator writes to the page that actually ships](../../commit/4d671e445ec3eb8a3deae2dd0b7b834ab8843b0e) | build-demo.ts | +243 / -83 |
