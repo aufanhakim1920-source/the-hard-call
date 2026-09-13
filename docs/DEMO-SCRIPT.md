@@ -123,7 +123,7 @@ script gained its closing line; if you are timing the rehearsal to the second, t
 
 | At | You do | You say | What appears |
 |---|---|---|---|
-| 0:00 | Click **▶ Replay the demo call**, then **2x** | "A bank has twenty-one days to answer a hardship notice. The customer almost never says the word. Same call, handled two ways — this is the worker who was not told." | Transcript starts. Right column: **"Coaching is off for this call."** |
+| 0:00 | Click **▶ Play the demo call**, then **2x** | "A bank has twenty-one days to answer a hardship notice. The customer almost never says the word. Same call, handled two ways — this is the worker who was not told." | Transcript starts. Right column: **"Coaching is off for this call."** |
 | 0:07 | — | "Sarah is behind on a home loan." | "Honestly, I'm a bit behind on everything" |
 | 0:13 | — | "She has lost her job." | "Maybe. I got laid off last month" |
 | 0:15 | Point at the worker's line | "And there is the miss — he asks for a date instead. In 2025 NAB was fined $15.5 million over 345 hardship notices answered late. This is what that looks like in one sentence." | "So when do you think you could pay the full amount?" |
@@ -132,7 +132,7 @@ script gained its closing line; if you are timing the rehearsal to the second, t
 | 0:31 | — | "Same call, graded. Not one sign handled." | Report card. Lead line: **"The assistant ran silent on this call"**. Every sign unhandled; the count of missed rows is whatever the card says — 5 of 5 in the ten deployed runs archived on 13 Sep |
 | 0:34 | Point at the missed rows | "Every sign missed — and the one at the bottom is the legal one, the sentence that starts the clock. It started the clock anyway: the deadline is on the bank's list whether or not anyone on the call noticed." | Every row reads **MISSED · NOT ADDRESSED**, and **Reply due · 21 days** sits under ON THE CLOCK |
 | 0:38 | **Settings → Coaching during the call → ON**, close, **Live call** | "Now the same customer, with the assistant coaching." | Fresh call screen. This switch is the slowest thing you do — about six seconds |
-| 0:44 | Click **▶ Replay the demo call**, then **2x** | "Her words do not change. Watch the right column." | Transcript restarts |
+| 0:44 | Click **▶ Play the demo call**, then **2x** | "Her words do not change. Watch the right column." | Transcript restarts |
 | 0:49 | — | "About two seconds after she says it." | First sign card: **Customer says things are tight**. ⚠ Card arrival times were measured at 1x on the silent run only (7.6 s / 26.8 s / 36.6 s from the click); the coached run's on-screen times were not re-measured after the script changed |
 | 1:05 | Read the legal card aloud when it lands | "There it is. It names the duty, the date the bank has to reply by, and the exact question to ask next — and he asks it while she is still on the phone." | Gold **LEGAL** card: **Reply due · [today + 21 days] · 21 days · National Credit Code s72**, and **Ask next: …** |
 | 1:12 | Press **E**, but only once the legal card is on screen | — | Script finished |

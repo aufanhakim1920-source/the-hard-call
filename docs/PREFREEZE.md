@@ -377,3 +377,16 @@ outside it was closing it.
 
 ⭐ **A non-modal panel still has to answer to navigation. "Modeless" means it
 does not trap you, not that it survives you leaving.**
+
+## Still open after the cold-start fix
+
+**On a phone, the sheet clips the bottom 18px of the Listen button.** Measured
+at 375x812 idle: Listen occupies 642–682, the sheet rests at 664. Its centre is
+at 662, so `elementFromPoint` returns the button and it is still tappable — but
+it is visually cut, and one step of larger text would close that 2px margin.
+
+Left alone deliberately. The sheet's resting position has been broken and
+repaired twice already, and a change to its geometry the day before a freeze
+risks the whole phone layout to fix something that currently works. Whoever
+picks it up: the honest fix is clearance in the idle type row, not a new
+resting detent.

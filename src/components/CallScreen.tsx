@@ -227,12 +227,22 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
 
   const started = session.lines.length > 0;
   const canEdit = !started && mode === "live";
+  // Nothing has been said and the microphone is off, so there is no call. A
+  // clock counting up from zero and an "End call" button were the two things
+  // that made someone opening this cold read it as a session already running —
+  // and the only way in was the quietest control on the screen. While it is
+  // true, the header's action slot holds the way IN instead of the way out.
+  const idle = mode === "live" && !started && !speech.listening;
 
   return (
     <div className={"call" + (phone ? " phone" : "")}>
       <header className="call-head">
         {canEdit ? (
           <div className="setup">
+            {/* The running header carries a chip saying which kind of call this
+                is. Before one starts there was nothing, so the state had to be
+                inferred from a clock — and it read as a call in progress. */}
+            {idle && <span className="chip">not started</span>}
             <span className="label">Call with</span>
             <input className="field" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} aria-label="Customer name" />
             <input className="field" value={customer.product} onChange={(e) => setCustomer({ ...customer, product: e.target.value })} aria-label="Product" />
@@ -258,15 +268,24 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             ))}
           </div>
         )}
-        <div className="clock" aria-label="Call length">
-          {fmtClock(elapsed)}
+        <div className={"clock" + (idle ? " idle" : "")} aria-label={idle ? "No call started" : "Call length"}>
+          {idle ? "--:--" : fmtClock(elapsed)}
         </div>
-        {/* A practice call with nothing said used to be a trap: End call was
+        {/* One slot, one primary: start the call or end it. Before anything has
+            been said the loudest control on the screen must be the way in, not
+            the way out — there is nothing to end and no report to write.
+            A practice call with nothing said used to be a trap: End call was
             disabled, and the only escape was reloading the page. Leaving is
             always allowed — an empty call simply produces an empty report. */}
-        <button className="btn gold" onClick={() => void finish()} disabled={ending}>
-          {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
-        </button>
+        {idle && onDemo ? (
+          <button className="btn gold" onClick={onDemo}>
+            ▶ Play the demo call
+          </button>
+        ) : (
+          <button className="btn gold" onClick={() => void finish()} disabled={ending}>
+            {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
+          </button>
+        )}
       </header>
 
       {mode === "practice" && scenario && (
@@ -306,7 +325,9 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           <div className="words-head">
             <span className="label">Live words</span>
             <span className="small muted">
-              {mode === "live" && (speech.listening ? "listening" : "microphone off")}
+              {/* "microphone off" on a screen nothing has happened on yet reads
+                  as a fault. The chip in the header already says the state. */}
+              {mode === "live" && (idle ? "" : speech.listening ? "listening" : "microphone off")}
               {mode === "demo" && (demoDone ? "script finished — end the call for the report card" : "playing the demo script through the real engine")}
               {mode === "practice" && (practice.status === "connected" ? "both sides transcribed live" : "")}
             </span>
@@ -322,10 +343,31 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             flashId={flashId}
             emptyHint={
               mode === "live" ? (
-                <>
-                  <b>Put the call on speaker and press Listen.</b>
-                  The words appear here as they are said. Or type what the customer says. Nothing is stored — only the signs.
-                </>
+                idle ? (
+                  // The largest empty area on the screen, and the only place a
+                  // stranger will actually read. It has to answer two questions
+                  // before it offers anything: what is this, and what do I press.
+                  <>
+                    <b>This screen watches a hardship call as it happens.</b>
+                    The moment the customer says something that legally counts, a card appears on the right with the deadline and
+                    the one sentence to say next. Nothing is stored — only the signs.
+                    <span className="empty-do">
+                      <span>
+                        <strong>▶ Play the demo call</strong> — a real fifty-second script, run line by line through the same
+                        engine a live call uses.
+                      </span>
+                      <span>
+                        <strong>Listen</strong> — put your own call on speaker and the words appear here as they are said. Or type
+                        them.
+                      </span>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <b>Listening.</b>
+                    The words appear here as they are said. Or type what the customer says. Nothing is stored — only the signs.
+                  </>
+                )
               ) : mode === "practice" ? (
                 <>
                   <b>Start the practice call above.</b>
@@ -358,11 +400,11 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                   <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
                   <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
                 </form>
-                {onDemo && !started && (
-                  <button className="btn ghost" onClick={onDemo}>
-                    ▶ Replay the demo call
-                  </button>
-                )}
+                {/* The demo used to live here, ghost-styled beside a text box:
+                    the lowest-weight thing on a screen whose loudest button was
+                    End call. It is the header's primary while the call is idle,
+                    and a second copy would only split the one action a stranger
+                    has. Stop listening and it comes back where it now belongs. */}
                 {speech.error && <span className="warn">{speech.error}</span>}
               </>
             )}
@@ -460,13 +502,23 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
         <span>Only signs are kept. Words are never stored.</span>
         <span>Card and account numbers are masked before they leave this browser.</span>
         <span className="spacer" />
+        {/* Idle, H has no sign to mark and E is guarded by the line count, so
+            both were offering a key that does nothing. Only T works. */}
         <span className="hint">
-          {coaching && (
+          {idle ? (
             <>
-              <kbd>H</kbd> handle newest ·{" "}
+              <kbd>T</kbd> type
+            </>
+          ) : (
+            <>
+              {coaching && (
+                <>
+                  <kbd>H</kbd> handle newest ·{" "}
+                </>
+              )}
+              <kbd>E</kbd> end call · <kbd>T</kbd> type
             </>
           )}
-          <kbd>E</kbd> end call · <kbd>T</kbd> type
         </span>
       </footer>
     </div>

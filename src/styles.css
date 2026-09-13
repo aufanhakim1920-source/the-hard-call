@@ -471,6 +471,12 @@ select.field option {
   min-width: 70px;
   text-align: right;
 }
+/* No call yet, so the clock has no value to show. Grey, not cream: it must read
+   as a field waiting to be filled rather than a session already running.
+   --grey on --ink is 6.47:1, and this is 22px type. */
+.call-head .clock.idle {
+  color: var(--grey);
+}
 .call-head .spacer {
   flex: 1;
 }
@@ -482,6 +488,14 @@ select.field option {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+/* On a phone .setup is a two-column grid and a grid item stretches to fill its
+   column — which turned the state chip into something the width of a text
+   field, i.e. into something that looks typed in. It is a label. Both
+   properties are inert in the desktop flex row. */
+.setup .chip {
+  grid-column: 1 / -1;
+  justify-self: start;
 }
 
 .meter {
@@ -647,6 +661,18 @@ select.field option {
   font-weight: 600;
   display: block;
   margin-bottom: 4px;
+}
+/* The two ways into the product, named. Separated by space rather than a rule —
+   a 1px box is this project's default failure and there is nothing here it
+   would be doing. */
+.empty-do {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+.empty-do strong {
+  color: var(--cream);
+  font-weight: 600;
 }
 
 .inputs {
