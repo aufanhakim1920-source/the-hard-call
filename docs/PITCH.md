@@ -46,7 +46,7 @@ standing still. It works either way.
 |---|---|---|---|
 | **0:00** | Click **▶ Play the demo call**, then **2x** in the same breath | "Same call, handled two ways. CallFlag listens, and puts the reply-due date and the next question on the worker's screen while the customer is still on the phone." | 28 |
 | **0:09** | Nothing. Sarah's first two lines land underneath this | "Under the National Credit Code a hardship notice can be **spoken**. She never says the word, and the twenty-one days start when she speaks." | 24 |
-| **0:17** | Point at the worker's line | "He asks for a date instead. In August 2025 NAB and a related lender were penalised **$15.5 million** for failing to answer **345** customers’ hardship notices in time." | 28 |
+| **0:17** | Point at the worker's line | "He asks for a date instead. In August 2025 ASIC penalised NAB and AFSH Nominees **$15.5 million** — **345** customers gave notice, and never got an answer in time." | 28 |
 | **0:25** | Point at the right column | "The assistant heard all of it and said nothing — coaching is off." | 12 |
 | **0:29** | Press **E**. Say nothing; the fetch takes five seconds | — | — |
 | **0:34** | Let the card land | "Graded. Nothing handled — the legal one included. The clock started anyway." ⚠️ **Never say "the one at the bottom": the legal row is fourth of five.** Point at the row reading ON THE CLOCK, or keep your hands still | 11 |
