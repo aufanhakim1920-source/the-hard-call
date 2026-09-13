@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 10:46 | aufanhakim1920-source | project | [the correction to our own numbers was itself wrong](../../commit/b9c47c4cf312f5789e12a78cd7cc072900c72f3f) | .env.example, README.md, DECISIONS.md +2 | +263 / -98 |
 | 13 Sept, 10:21 | aufanhakim1920-source | design | [a11y: the thicker focus ring never applied to a text input](../../commit/d075d736f79aef94c036acd140653b1b6f805c4e) | TopBar.tsx, styles.css | +26 / -3 |
 | 13 Sept, 10:17 | aufanhakim1920-source | accounts + report | [the compare bar drew nothing, and the privacy wipe used an OS dialog](../../commit/1b406e58710f8b8e7487434d11cfe05ed8a1a543) | About.tsx, Account.tsx, CallHistory.tsx +5 | +208 / -52 |
 | 13 Sept, 10:02 | aufanhakim1920-source | other | [a number in a pitch is a claim and needs a harness](../../commit/8839c525d94b65fd698557ad807ef8db308356c7) | DECISIONS.md | +55 / -0 |
