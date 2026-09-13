@@ -2,7 +2,7 @@ import { hasVerifiedReportScore } from "../lib/reportScore";
 import { useEffect, useState, type ReactNode } from "react";
 import { postScenario } from "../lib/api";
 import { fmtDate, fmtWhen, parseISO } from "../lib/dates";
-import { levelLabel, pickVoice, scenarioFailure, scenarioFault } from "../lib/scenarios";
+import { levelLabel, pickVoice, scenarioDetail, scenarioEcho, scenarioFailure, scenarioFault } from "../lib/scenarios";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { PHONE, useMedia } from "../lib/useMedia";
@@ -17,6 +17,7 @@ import { ScoreRing } from "./ScoreRing";
 import { daysBetween, ledger } from "./report-math";
 import "./report-visuals.css";
 import "./report-lead.css";
+import "./scenario-draft.css";
 
 /**
  * How the call ran, and how the card was built — said once, above every number.
@@ -197,6 +198,17 @@ export function ReportCard({
   const [buildSec, setBuildSec] = useState(0);
   const [draft, setDraft] = useState<Scenario | null>(null);
   const [buildErr, setBuildErr] = useState<{ say: string; raw?: string } | null>(null);
+  // Discarding is a one-way door, so it asks first. Same arm-then-confirm the
+  // Deadlines tab and the About sheet already use; not a third mechanism.
+  const [discardArmed, setDiscardArmed] = useState(false);
+
+  // A call with nothing said in it cannot produce a customer: the server
+  // answers 400 "empty session", and every retry answers it again. The control
+  // says so instead of offering a road that ends in a wall.
+  const hasLines = Boolean(session && session.lines.length > 0);
+  // Only ever a repeat of a customer already approved — the draft is not in the
+  // store yet, so there is nothing here to match itself against.
+  const echo = draft ? scenarioEcho(draft, store.scenarios) : null;
 
   // A model call of several seconds behind a disabled button reads as a dead
   // screen, and this one is the third act of the pitch. Count the seconds out
@@ -230,6 +242,9 @@ export function ReportCard({
     setBuilding(true);
     setBuildSec(0);
     setBuildErr(null);
+    // A newly built customer must never arrive with the previous one's discard
+    // question already open under it.
+    setDiscardArmed(false);
     try {
       const s = await postScenario(session, report);
       const fault = scenarioFault(s);
@@ -237,15 +252,19 @@ export function ReportCard({
         // Never draw a half-invented customer. Blank fields on a person's card
         // read as a real caller with nothing to say, and `expectedSigns` coming
         // back undefined took the whole screen down.
-        setBuildErr({ say: `No practice customer was built. ${fault}`, raw: JSON.stringify(s).slice(0, 200) });
+        setBuildErr({ say: `No practice customer was built. ${fault}`, raw: JSON.stringify(s) });
         return;
       }
+      // Salted with the customer's own id, not the call's. The call id is one
+      // value, so two customers built from the same call were handed the same
+      // voice as well as the same story — the repetition compounding itself.
+      const id = uid("sc");
       setDraft({
-        id: uid("sc"),
+        id,
         name: s.name,
         age: s.age,
         voice: s.voice,
-        voiceId: pickVoice(s.voice, s.age, session.id).id,
+        voiceId: pickVoice(s.voice, s.age, id).id,
         job: s.job,
         product: s.product,
         situation: s.situation,
@@ -471,9 +490,19 @@ export function ReportCard({
         {/* Building a practice customer reads the call, so it exists only while
             the call still does. A dead button would be worse than no button. */}
         {session && (
-          <button className="btn" onClick={() => void buildScenario()} disabled={building || Boolean(draft)}>
+          <button
+            className="btn"
+            onClick={() => void buildScenario()}
+            disabled={building || Boolean(draft) || !hasLines}
+            aria-describedby={hasLines ? undefined : "no-lines-why"}
+          >
             {building ? `Building… ${buildSec}s` : draft ? "Built — it is below" : "Turn this into a practice customer"}
           </button>
+        )}
+        {session && !hasLines && (
+          <span className="hint" id="no-lines-why">
+            Nothing was said on this call, so there is nothing to build a customer from.
+          </span>
         )}
         {onCompare && (
           <button className="btn" onClick={onCompare}>
@@ -505,11 +534,23 @@ export function ReportCard({
       {buildErr && (
         <div className="rv-build failed" role="alert">
           <p className="rv-build-say">{buildErr.say}</p>
-          {buildErr.raw && <p className="rv-build-raw">{buildErr.raw}</p>}
+          {/* Kept, because a failure nobody can diagnose is its own problem —
+              but folded away, scrubbed of anything that identifies an account,
+              and capped. It used to be the whole JSON body of a Gemini 503,
+              printed at full length under the one sentence that mattered. */}
+          {scenarioDetail(buildErr.raw) && (
+            <details className="rv-raw">
+              <summary>What the server said</summary>
+              <p className="rv-build-raw">{scenarioDetail(buildErr.raw)}</p>
+            </details>
+          )}
           <div className="rv-build-acts">
-            <button className="btn sm" onClick={() => void buildScenario()}>
-              Try again
-            </button>
+            {/* Retrying an empty call only reaches the same refusal. */}
+            {hasLines && (
+              <button className="btn sm" onClick={() => void buildScenario()}>
+                Try again
+              </button>
+            )}
             <button className="btn ghost sm" onClick={() => setBuildErr(null)}>
               Dismiss
             </button>
@@ -544,6 +585,28 @@ export function ReportCard({
             </p>
             <p>Nothing below is saved anywhere until you approve it, and only the invented customer is saved — never the real call.</p>
           </div>
+          {/* The model repeats itself from one call, and a repeat presented as
+              a fresh invention is the claim breaking in front of whoever is
+              watching. Say it before the approve button, not after. */}
+          {echo && (
+            <div className="rv-build rv-echo" role="status">
+              <p className="rv-build-say">
+                Practice already has this person: <b>{echo.name}</b>, {echo.job}. The generator runs warm and repeats itself
+                from the same call — build another and you will usually get someone different.
+              </p>
+              <div className="rv-build-acts">
+                <button
+                  className="btn sm"
+                  onClick={() => {
+                    setDraft(null);
+                    void buildScenario();
+                  }}
+                >
+                  Build a different one
+                </button>
+              </div>
+            </div>
+          )}
           {store.scenarios.some((s) => s.id === draft.id) ? (
             <div className="actions" style={{ marginTop: 0 }}>
               <span className="badge">approved by you</span>
@@ -554,14 +617,42 @@ export function ReportCard({
               )}
             </div>
           ) : (
-            <div className="actions" style={{ marginTop: 0 }}>
-              <button className="btn gold" onClick={approve}>
-                Approve and add to Practice
-              </button>
-              <button className="btn ghost" onClick={() => setDraft(null)}>
-                Discard
-              </button>
-              <span className="hint">A person approves every practice customer before anyone can use it.</span>
+            <div className={"scen-discard" + (discardArmed ? " armed" : "")}>
+              <div className="actions" style={{ marginTop: 0 }}>
+                <button className="btn gold" onClick={approve}>
+                  Approve and add to Practice
+                </button>
+                <button
+                  className="btn ghost"
+                  aria-expanded={discardArmed}
+                  onClick={() => {
+                    setDiscardArmed(!discardArmed);
+                    play("tap");
+                  }}
+                >
+                  {discardArmed ? "Keep it" : "Discard"}
+                </button>
+                <span className="hint">A person approves every practice customer before anyone can use it.</span>
+              </div>
+              <div className="clear-ask" aria-hidden={!discardArmed}>
+                <div>
+                  <p className="clear-say">
+                    Discarding takes this customer off the screen for good. Nothing is written down, there is no undo, and the
+                    model call that wrote them has already been spent — building another one costs a fresh call.
+                  </p>
+                  <button
+                    className="btn danger sm"
+                    tabIndex={discardArmed ? undefined : -1}
+                    onClick={() => {
+                      setDraft(null);
+                      play("undo");
+                      say("Discarded. Nothing was saved.");
+                    }}
+                  >
+                    Discard this customer
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -1,0 +1,89 @@
+/* The draft practice customer: the question before a discard, the repeat
+   notice, and the folded-away server detail.
+
+   A new file rather than new blocks in report-visuals.css, which another agent
+   holds this round. Everything here re-uses a ground, a colour pair and a
+   motion that already exist in the build — no new palette, no second motion
+   language, and nothing that re-opens a contrast question already answered. */
+
+/* ---------- discard asks first ----------
+   The exact arm-then-confirm of the Deadlines tab's clear-history and the
+   About sheet's data wipe: `.clear-ask` is theirs and is already in the sheet
+   closed at `minmax(0, 0fr)`. Only the parent that opens it is different,
+   because a draft customer has no `.clear-data` border-top to sit under — a
+   1px rule between a button and its own question would be the box this build
+   does not use. `minmax(0, Nfr)`, never a bare fr; that is the css gate. */
+.scen-discard.armed .clear-ask {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* ---------- the repeat notice ----------
+   `.rv-build` carries the ground, the padding and the gold left rule; this
+   only changes which state the rule is speaking in. Amber-by-way-of-gold, not
+   red: a repeat is worth stopping for, but nothing has failed. */
+.rv-echo {
+  border-left-color: var(--gold);
+}
+
+/* ---------- the server's own words, folded ----------
+   Available, not shouted. The native marker is a browser default sitting where
+   a designed control belongs, so it is replaced by a caret that turns — a
+   transform, which survives a throttled tab, rather than anything that starts
+   at zero opacity. */
+.rv-raw {
+  margin: 8px 0 0;
+}
+.rv-raw > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 2px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--grey);
+  cursor: pointer;
+  list-style: none;
+}
+.rv-raw > summary::-webkit-details-marker {
+  display: none;
+}
+.rv-raw > summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 4px solid currentColor;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  transform: rotate(0deg);
+  transition: transform 180ms var(--ease-out);
+}
+.rv-raw[open] > summary::before {
+  transform: rotate(90deg);
+}
+.rv-raw > summary:hover {
+  color: var(--text-2);
+}
+.rv-raw > summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+:root.reduce-motion .rv-raw > summary::before {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-raw > summary::before {
+    transition: none;
+  }
+}
+
+/* Big targets makes every control thumb-sized; a disclosure is a control. */
+:root.big-targets .rv-raw > summary {
+  min-height: 44px;
+}
+:root[data-text="2"] .rv-raw > summary,
+:root[data-text="3"] .rv-raw > summary {
+  font-size: 13px;
+}
