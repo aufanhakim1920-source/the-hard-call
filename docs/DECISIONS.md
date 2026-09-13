@@ -46,9 +46,12 @@ model kept reading a *cause* ("I lost my job, nothing's coming in") as an *inabi
 The fix was to stop asking the model for a verdict and start asking it for a **fact**:
 
 ```ts
-// The model classifies what was said. This line decides.
-const periodOk = (s: ModelSign) =>
-  s.key !== "hardship-request" || s.period === "months_or_open_ended";
+// The model classifies what was said. Code decides what it means.
+// Three conditions, and the middle one is what kills "push it back two weeks".
+const isNotice = (s: ModelSign) =>
+  s.period === "months_or_open_ended" &&
+  s.recovery !== "named" &&          // a named payday is a timing gap, not a notice
+  quotedInThisTurn(s.inabilityQuote); // and the customer must actually have said it
 ```
 
 `period` is a required enum — `none` / `single_payment` / `near_term_recovery` /
@@ -77,8 +80,10 @@ and returns **no flag** on an API failure rather than guessing.
 | legal obligations | deterministic rules | a rule should not be a judgement call |
 | cause cues, and the question to ask next | Gemini | these genuinely are judgements |
 
-**The consequence that matters for a demo:** the flagging half **cannot be rate-limited**. We
-discovered this the hard way — see the quota section below.
+**The consequence that will matter for a demo, once it merges:** the flagging half **will not be
+rate-limitable at all**. ⚠️ It is not on `main` yet, so **do not say it in the present tense on
+stage** — today the flags still come from the model pass and can be throttled. We discovered the
+problem it solves the hard way; see the quota section below.
 
 ---
 
@@ -304,3 +309,575 @@ Two more of the same family, both fixed: a `transform` keyframe ending on `none`
 a toast for its whole entrance (**183 px off**, only while moving), and a list reorder cannot be
 animated by a transition at all — it changes node order, not a property, so a ticked deadline
 teleported until it was given a FLIP.
+
+## Choosing the model: precision over recall, on purpose
+
+Measured on the same 41 cases, same run:
+
+| | `gemini-2.5-flash` | **`gemini-flash-latest`** (deployed) |
+|---|---|---|
+| precision | 0.97 | **1.00** |
+| recall | 0.81 | **0.74** |
+| p50 latency | 1.89 s | **1.71 s** |
+
+We kept the lower-recall model deliberately. **A false notice starts a 21-day clock the bank does not
+owe** and puts a customer into a hardship process they never asked for. A miss costs a prompt the
+worker did not get. The two errors are not symmetrical, so the metric that matters is not symmetrical
+either. 2.5-flash catches one more hardship case and pays for it with a false positive on "the storm
+knocked our power out".
+
+**And the recall number is not what it looks like.** Every one of the 11 misses is a
+`hardship-request` — not one is a statutory notice. Under the two-tier rule those are *requests*: a
+hint that should prompt the worker to ask, starting no clock and stored nowhere. The engine already
+detects them; the legal gate correctly refuses to call them notices, and until the request tier exists
+there is nowhere to put them. **That recall figure is the shape of an unbuilt feature, not a quality
+problem** — which is worth saying out loud rather than quietly reporting the better-looking model.
+
+---
+
+## A tier that only exists in the docs will be dropped at a boundary
+
+The transcript adapter hard-coded `kind: "legal"` on every incoming flag. So a request — a live prompt
+that starts no clock — was silently promoted to an obligation the moment it crossed into the report.
+
+Proved end to end: a call with **no obligation at all** came back reporting `caught: 1`, which reads as
+the worker having missed something that was never owed.
+
+The adapter now carries an explicit `tier`, defaulting to `notice` so any caller predating the field
+behaves exactly as before, and `caught` counts obligations only — in the server and the browser
+fallback alike. **An agreement written in a document is not implemented until the type system carries
+it across every boundary.**
+
+## The before-and-after demo had nothing to compare
+
+The pitch runs the same call twice — coaching off, then on — and puts the two report cards side by
+side. It did not work, and the reason is embarrassing in hindsight: the demo replays a fixed
+transcript, so **the worker said the same words whether or not he had been prompted**. Measured over
+six runs: 3 of 4 answered coached, 3 of 4 silent, every time. The demo proved the switch worked. It
+never proved the product did.
+
+There are **two worker scripts now and one customer script**. Sarah says exactly the same words in
+both, so the engine raises exactly the same signs at exactly the same moments. The only variable is
+what the worker does about them.
+
+| | coached | silent |
+|---|---|---|
+| score | **95** | **20** |
+| signs caught | 4 | 3 |
+| handled | 3 | 0 |
+| missed | 0 | **3** |
+
+The silent worker is not a caricature — he is doing what people do under pressure, chasing the payment
+he rang about. He asks for part of it this week, pushes for a date straight after she says she was laid
+off, and closes by writing it down: *"I'll put a note on the file and someone will be in touch."* Every
+line is one a real worker says. He simply never offers a repayment change and never mentions that
+hardship assistance exists.
+
+⚠️ **This is a dramatisation and is described as one.** It is two workers handling one call, not a
+recording of the tool changing someone's words live. The honest framing, and the one the demo script
+uses, is *"the same call, handled two ways"*.
+
+**Generalises to:** an A/B demo has to vary the thing you are claiming to change. Ours varied the
+display and held the behaviour fixed, which is the one arrangement that can never show a difference.
+
+## A legal flag now has to quote the customer
+
+The request tier is built: a hint raises `ask-about-hardship`, which prompts the worker to ask and
+carries no clock, no deadline and no authority. Only a stated inability over a period becomes a notice.
+
+It emits under its **own key**, deliberately. The engine refuses to fire a key already on screen, so a
+shared key would have let a hint at turn 2 cancel the statutory notice at turn 4 — a hint silently
+eating the legal flag. That is tested turn by turn rather than argued.
+
+**And the notice now requires a checkable quote.** The model must copy the customer's own sentence
+saying they cannot meet the repayments, and code verifies that sentence appears in the turn being
+judged.
+
+That was not a preference. Asking the model to report a fact rather than a verdict made it report on
+more turns, and it began inflating the period from circumstances — firing **15.7 s and 18.7 s early**
+on two fixtures. The quote requirement caught a specific trick: it reached back three turns for "I
+don't think I'm going to make the next one" — a line it had itself classified as a *single payment*
+when it was said — and re-served it as a period because the picture had since got darker.
+
+| | before | after |
+|---|---|---|
+| precision | 1.000 | **1.000** |
+| recall | 0.738 | 0.690 |
+| notice timing, 3 fixtures | one **28.5 s early** | **all three exact** |
+
+Recall fell and we took the trade. **Firing a statutory clock 28 seconds early is the worst error this
+system can make** — it starts an obligation on words the customer had not yet said. Two cases moved
+from notice to request under the new rule; they are open questions for the rules owner, not relabelled.
+
+**The pattern, for the third time on this project:** when wording will not hold a rule, make the model
+produce something *checkable* and let code check it. First a classification, now a quotation.
+
+## The demo's argument is a row, not a score
+
+Twelve runs of the two-worker demo — seven coached, five silent — killed the comparison we thought we
+had:
+
+| | coached (7) | silent (5) |
+|---|---|---|
+| score | 95 twice, **"not verified" five times** | 30, 30, 40, 40, 45 |
+| fraction | 4 of 4 twice, 3 of 4 five times | 2 of 3, 2 of 3, 2 of 3, 1 of 3, 1 of 3 |
+| signs missed | **0, every run** | at least 1, every run |
+| **the statutory notice** | **handled 7 of 7** | **missed 5 of 5** |
+
+**The coached run usually returns no score at all.** The card withholds rather than invents whenever a
+sign cannot be verified from the transcript, and the hardship-process prompt often cannot be. So the
+*better* run is frequently the one with no number on it, and a "95 against 20" comparison was a lucky
+pair rather than a result.
+
+**The row that never wavered is the argument**: the statutory obligation was caught every single time
+the worker could see it and missed every single time he could not. That is also the claim the product
+actually makes. The demo points at that row now, and the script puts the score ring explicitly
+off-limits.
+
+**One asymmetry a judge will notice, so we say it first:** the coached run raises four signs and the
+silent one three. The extra is the hardship-process prompt, which can only fire because the coached
+worker said the words. It is a consequence of coaching rather than a rigged comparison — but an
+unexplained difference in the denominator looks like one.
+
+---
+
+## Two cards, one axis — and nothing subtracted
+
+Past reports get their own tab and a compare board that puts two calls on a shared axis, with the two
+ledgers sign by sign underneath.
+
+**Ledgers rather than two whole cards**, because the transcript is never stored. A card recalled from
+storage has no timeline, no answer times and no quoted worker lines, so two cards side by side would
+be one complete card next to one with holes in it. What survives storage is exactly what the argument
+is made of.
+
+**No difference is ever computed.** The same script does not score the same twice — an identical
+coached run gave 95 and then 90. The board prints both fractions and both columns, and states only
+what is true: that the scores are not repeatable, that the two calls raised different numbers of
+signs, that a degraded call was never judged at all. **Subtracting two numbers that are not repeatable
+produces a number that means nothing.**
+
+## The live engine is the only one that counts, and it had never been tested
+
+Every number up to this point — twelve demo runs, a fifteen-finding sweep, every eval figure — came
+from a **local** API on port 8787 running a different model from the deployed one. And a structural
+fact nobody had written down: **merging to `main` does not update what a judge talks to.** The site
+ships automatically from GitHub Actions; the edge function ships by hand.
+
+Checked against the live URL and the deployed function:
+
+| | result |
+|---|---|
+| `/health` | `ok`, **2 keys armed**, `gemini-flash-latest` |
+| a hint → a request, no clock | **5 of 5** |
+| a stated inability → the statutory notice | **2 of 2** |
+| the demo's own key line, in context | **3 of 3** |
+| live site | current — Calls tab present, zero sideways scroll, no unexpected console errors |
+
+**One real demo risk, and it is a timing one.** The engine makes one call per finished sentence and
+**serialises them**, because each call needs to know which signs are already on screen or it would fire
+duplicates. Each call takes about two seconds. At 2× speed the lines arrive every two to three seconds,
+so the queue runs behind the transcript and **the legal sign can land after the final line**. It does
+land — and ending the call waits for the queue, so the report card always contains it — but a presenter
+who says "and there's the legal sign" too early will be pointing at nothing.
+
+The demo script says: do not end the call until the sign is on screen. The serialisation is not a bug
+to fix; it is what keeps the de-duplication correct.
+
+**One empty result in seven**, on the first call after the function had been idle. Every repeat was
+correct. Warm the engine with one call before demoing.
+
+## A privacy claim belongs on the screen, not in the pitch
+
+Turning a finished call into a practice customer is the third act of the product, and it works: the
+call is read once, the model is told to invent a new name and job and change the age, suburb and every
+number, and **nothing is saved until a person approves it**. A real run turned "Sarah M., home loan,
+casual retail" into a primary school teacher named Emily Smith, and the next run into a part-time
+retail assistant with a different surname and age.
+
+None of that was visible. A judge had to take it on faith. **The card says it now** — that this person
+does not exist, and what was actually done to make sure of it. The wording was checked against the
+edge function before it was written, so it is true rather than generous.
+
+**A failure said nothing a worker could read.** This is the only model call on that screen with no
+local fallback, and its error surfaced as the server's own words — `/api/scenario failed (429)` — in a
+12 px line at the end of a row of buttons, in a colour measuring **1.73:1** on the light ground. A
+quota failure in front of a judge would have looked like a button that simply did nothing. Quota, a
+refused key, an unreachable server and an incomplete customer now each get a sentence, and every one
+of them ends by saying the call and its report card are untouched.
+
+That colour turned out to be **five** hardcoded literals, one of them behind "Report failed" — so a
+report failure was near-invisible on the light ground too. All five were one token away from correct.
+**Third time this project has been bitten by a colour chosen for one ground and used on both.**
+
+## The deterministic detector is wired, and it is not yet load-bearing
+
+The sign engine's legal tier goes through a model, so it can be throttled. The
+detector merged from `part/detection` reaches the same conclusion from a word
+list, in the browser, with no network call — which is why it now runs first on
+every line, mapped onto the keys this app already draws so the same obligation
+cannot produce two cards.
+
+What was measured rather than assumed:
+
+| check | result |
+|---|---|
+| agreement with `eval/cases.json` | 40 / 41 |
+| cases where it fires and the case expects silence | 0 |
+| its own fixtures | 4 / 4 |
+| **signs raised on the demo call with `/api/flags` forced to 429** | **0, from 23 blocked model calls** |
+
+The last row is the one that matters. The fallback is real code on a real path
+and it produces nothing on the call we actually demonstrate, because the demo's
+phrasing — "Just a few months without the full payment" — pairs a period with an
+implied inability and matches no entry in the lexicon.
+
+**So the claim that the legal half cannot be rate-limited stays out of the pitch
+until that line raises a sign.** A fallback that has never been seen to fire is
+a story, not a feature.
+
+## A lift that is a class cannot beat a transition that is already running
+
+The list animation carries a re-sorted row on its own opaque layer so its
+words are readable while it passes the rows it overtakes. The lift is a class.
+The rows it is applied to already transition the property the lift changes — a
+ticked deadline transitions `opacity`, a practice card transitions
+`background` — so adding the class did not set the property, it started a
+transition towards it, and a running transition outranks every rule in the
+stylesheet, `!important` included.
+
+Measured on the real list, ticking the top deadline of six, sampling the
+carried row's computed opacity at five points of its own 340 ms trip:
+
+| point in the trip | before | after |
+|---|---|---|
+| 0 ms | 0.45 | 1 |
+| 85 ms | 0.45 | 1 |
+| 170 ms | 0.45 | 1 |
+| 255 ms | 0.45 | 1 |
+| 340 ms | 0.45 | 1 |
+
+It was see-through for the whole journey — the one thing the lift exists to
+prevent — and in a tab that is not painting the transition never leaves its
+first frame, so it would stay that way for as long as the throttling lasts.
+
+**Rule: take the carry out of the transition's hands.** Nothing interpolates
+while a row is in the air; the transitions return on landing, which is where
+the dimming belonged. Re-measured after: 1 at all five points, dimming to 0.45
+where it lands.
+
+**Second defect, same function.** "Is this row passing anyone" was tested as
+*travels further than its own height*, which misses the commonest case of all:
+two neighbours swapping travel exactly one row each and cross in the middle,
+so neither was carried. The test is now *which row is moving against the
+traffic* — a re-sort displaces one row and everyone else shifts a single place
+to close the gap, so the minority direction is the traveller. Checked on a
+285 px trip, a 71 px adjacent swap, and Reopen (the row rises while five rows
+fall): the right row carried each time, and a removal heal carries nobody.
+
+**And a verification lesson worth more than either fix.** The Browser pane
+stops compositing when hidden — `requestAnimationFrame` never fires, so any
+script that awaits a frame hangs. Watching motion frame by frame is impossible
+there. What works instead: pause the animation and seek it to fixed times,
+reading computed style at each. It is frame-independent, exact, and it doubles
+as the throttled-tab test — which is the only reason the frozen transition was
+caught at all.
+
+## Dimming text with `opacity` is choosing a colour blind
+
+A sweep for one failing value found 23. Almost every one was a single mistake
+repeated: `--ink` inverts with the theme and `--gold` does not, so every
+ink-on-gold surface became cream on gold the moment the light ground was
+selected — the primary button, the legal sign card's body, its "Mark handled"
+button, the skip link, the sheet counter, `::selection`. All measured 2.18:1;
+all now 6.56:1.
+
+Two rules came out of it, both more useful than the list:
+
+**1 · `opacity` on text is a colour you have not looked at.** The same 0.75
+measured **8.56:1** on the plain card and **3.93:1** on the gold one. A dimmed
+token is a different colour on every surface it lands on, and nothing warns
+you. Use a per-ground token, not a dimmed one.
+
+**2 · A colour that passes on one ground can fail on the other, and the token
+is where that gets decided.** Three literal `#1c1f24` patches in the light
+block turned out to be one missing token wearing three costumes. No stylesheet
+here now has a colour literal in a text declaration.
+
+## A contrast sweep reports phantom failures during an entrance
+
+Verifying the above independently, a composited sweep of the light ground
+returned **11 failures, two of them at ratio 1.00** — text supposedly the exact
+colour of its background, i.e. invisible. The screenshot showed all eleven
+perfectly legible.
+
+The sweep folds every ancestor's `opacity` into the foreground alpha, which is
+correct; but it ran while the page's entrance was still playing, so an
+ancestor was legitimately part-way to opaque. Re-run after motion settled:
+**0 failures, on both grounds.**
+
+⭐ **Rule: measure contrast only after entrances have finished, and screenshot
+before believing any failure.** This is the mirror image of the older lesson
+that a gate reads what you declare rather than what is painted — the same
+blindness, pointing the other way. An instrument that cannot see the screen
+produces false alarms as readily as false passes, and a false alarm wastes the
+time of whoever chases it.
+
+## The report card was showing the wrong answer first
+
+The split bar inflated from zero, which held **"0 of 4" on screen for 820 ms**
+on a card whose whole job is to be understood in two seconds — 40% of the
+glance spent on a wrong number, and the denominator counted too, so every
+intermediate frame made a different claim.
+
+The bar and the history strip are now true on frame one and arrive by a 7 px
+rise; only the numerator counts, 620 ms → 420 ms. Measured in a genuinely
+throttled tab the segments freeze at **644 px + 215 px**, the real 75/25,
+where before they froze at zero.
+
+The answer-time bars kept their sweep, because there the growth *is* the
+value. That is the line: animate a quantity only when the animation is saying
+something true about it.
+
+One more thing the reduced-motion pass caught: the global rules squash
+`transition-duration` but **not** `transition-delay`, so a staggered arrival
+left a reduced-motion reader watching an invisible wait. Stagger must be
+zeroed explicitly.
+
+## A frozen tab is where an entrance's real cost shows up
+
+Three separate faults this round were one shape: **an animation that never
+advances past its first frame holds that frame forever.** A tab that is not
+painting does that, and so does a slow machine at exactly the wrong moment.
+
+| what | frozen at | cost |
+|---|---|---|
+| the active-tab underline | width 0 | which section you are in was carried by colour alone |
+| the view container | `translateY(6px)` | 6 px of vertical scroll clipping the privacy footer at 1280×720 |
+| the phone's bottom sheet | `translateY(0)` | sheet top 243 instead of 664 — covering the transcript, Listen and the type row |
+
+**The fix for a transition is to mount already placed.** A transition never
+runs on an element's first style, so applying the resting value on the first
+commit costs nothing and removes the frozen state entirely; later changes
+still animate. Measured on the tab underline: width 46 at t+0 on the same
+throttled load that previously gave 0.
+
+**The fix for the view was to delete the entrance.** A transform on a
+container is not free: besides freezing, *any* transform makes the element a
+containing block for every `position: fixed` descendant — and the view
+contains several, including the phone's sheet. There is no version that keeps
+the move and drops the costs, because the move *is* the transform. The
+contents already animate on their own, so the container's 6 px rise was the
+least valuable motion in the app and the most expensive.
+
+⭐ **Animate the contents, not the frame.**
+
+## A single-key shortcut needs to ask "is anyone interacting", not "is this an input"
+
+The shortcut guard skipped `INPUT`, `TEXTAREA` and `SELECT`. The Settings
+panel is deliberately non-modal, because a worker may need it during a live
+call, so focus can sit on its controls while the call is still listening on
+`window`. Measured: tab into the open panel, press **e**, and the call ends —
+report written, panel still floating above it.
+
+The guard now also ignores a dialog, a listbox, the select popup and anything
+contenteditable. ⭐ **The question a global key handler must ask is whether
+the user is interacting with something, not whether that something is a form
+field.**
+
+## My own verification was wrong twice, the same way
+
+Both times I sampled the page 1.6–1.8 s after load, while it was still
+settling, and both times the reading looked like a real defect:
+
+- a composited contrast sweep returned **11 failures, two at ratio 1.00** —
+  text supposedly invisible. The screenshot showed all eleven legible. An
+  ancestor was mid-entrance and its opacity folded into the foreground.
+- the tab strip reported `mask-image: none` while visibly cut off, which read
+  as the edge fade being broken. It was present — the observer that marks the
+  edge had not run yet.
+
+⭐ **Rule: sample after entrances have finished, and screenshot before
+believing any failure.** This is the mirror of the older lesson that a gate
+reads what you declare rather than what is painted. An instrument that cannot
+see the screen produces false alarms exactly as readily as false passes, and a
+false alarm costs whoever chases it.
+
+## Nobody had reset `background` on `button`
+
+The customer's quoted words — the evidence a legal sign rests on — were drawn
+with the **native Windows button face**: grey `#6B6B6B`, a 2 px outset white
+border, centred italic text. It measured **3.10:1** and failed AA. It was the
+second-heaviest object on the product's hero card and the least important
+thing on it.
+
+Worth saying plainly because it is the cheapest kind of defect to carry for
+days: a control that has never been given a background gets the operating
+system's, and the operating system's is louder than anything in the design.
+**Sweep for unstyled native controls once per project**, not per component.
+
+The rest of the card had the same shape of fault a level up — everything after
+the title was one undifferentiated block of 12–13 px mono, so the **reply
+date, which a 21-day statutory clock hangs on, was set at the same size as the
+statute reference printed beside it.** The date is 19 px now in its own block;
+the statute is 10 px underneath. The block appears only on legal cards,
+because starting a clock *is* the difference between the two kinds of sign.
+
+⭐ **Rank type by consequence, not by category.** A date with a legal deadline
+attached and a citation that merely says where the rule lives are not the same
+kind of small grey text.
+
+## A moved node restarts its CSS animation
+
+Ticking a sign re-sorts the stack, React moves the DOM node, and a moved node
+**replays its CSS entrance**. Measured: the ticked card ran its 420 ms entrance
+*while* the FLIP was carrying it to its new position — two animations writing
+`transform` at once, still at scale 1.0008 when the trip ended.
+
+⭐ **One owner per property.** The FLIP owns `transform` during a reorder, so
+the card's CSS entrance was deleted rather than tuned. A list that animates its
+own reordering cannot also let its rows animate themselves.
+
+## A bar that reads "nothing" is not a subtler wrong picture
+
+The obvious fix for a deadline bar animating `width` was to swap it for a
+`scaleX` sweep. Checked against the component instead of pasted, and the sweep
+was wrong: it measured **zero length past 2000 ms** on a page that was visible
+but not compositing, because a CSS transition needs frames exactly as
+`requestAnimationFrame` does and the only guard was `document.hidden`.
+
+On the row carrying a statutory reply date, a bar reading "no time left" is not
+a gentler error than a missing bar — it is a false statement about a legal
+deadline. The bar is true on the first frame now (452 px at 0, 80, 160, 320 ms)
+and the row arrives instead, transform only.
+
+⭐ **Animate a quantity only when the animation is saying something true about
+it, and only when its frozen state is also true.**
+
+**And the same measurement found a case that had never once rendered
+correctly:** past the due date, "time left" computes to zero, so an overdue
+deadline drew a 0 px bar — and the hatch the stylesheet keeps for exactly that
+case had never appeared in the app's life. Now 452 px of hatch where there was
+nothing. A stylesheet rule with no way to reach it is not a safety net.
+
+## The two report cards were nearly identical in the first second
+
+The demo's whole argument is holding the coached card and the silent card side
+by side. Judged as a stranger: both led with the customer's name, which is the
+same on both; the only difference was one leading digit, "0 of 3" against
+"4 of 4", in the same colour at the same size; and **the word carrying the
+legal consequence, MISSED, was 10 px uppercase grey — the smallest type in the
+region.** The one unmistakable difference was the score ring, the reading the
+research deliberately demoted and which reads "not verified" on most real calls.
+
+The miss count now sits under the name at 62 px in a state colour, and the
+consequence is stated in words rather than implied by a number. A card where
+nothing could be checked against the transcript renders **no verdict at all**
+rather than a confident "0 missed".
+
+⭐ **If two things are meant to be compared, measure how they differ in the
+first second — not whether the difference is present somewhere on the page.**
+
+## A guard cannot un-freeze a transition, only choose when it starts
+
+Third instance tonight, and the one that finally generalises. The answer-time
+bars grew from `scaleX(0)` behind a `requestAnimationFrame`, with a
+`setTimeout` as the rescue. Measured with the transition paused and seeked:
+**0 px of a 200 px bar at t=0.** And the rescue was no rescue — the timer only
+*starts* the same transition, so a tab that cannot paint would have held
+"answered instantly" on all four lanes **indefinitely**, not for 900 ms.
+
+⭐ **A quantity that animates up from zero has no safe guard.** Whatever is
+painted first is what a frozen tab holds, and a guard only decides when that
+first paint happens. The fix is never a better guard; it is to make the value
+true on the first frame and let the row *arrive* with a transform instead.
+
+The deeper reason the sweep was expendable here: **the distance already said
+the duration in space. The sweep said it again in time, and time is the half
+that can lie.**
+
+## Gold as the only signal made the worst call look like the best
+
+When a call goes entirely one way the split bar is a single segment. So the
+coached card drew 860 px of gold tint, and the silent card drew 860 px of flat
+gold. At a glance both read as *one long gold bar* — and since gold is the
+positive accent everywhere else in this product, the flat slab read as the
+**fuller** of the two. Backwards, on the screen the entire pitch rests on.
+
+The missed segment is now hazard bars cut out of the solid: 2 px of the card's
+own ground every 6 px at 45°. Texture rather than hue, so it survives
+greyscale, colour blindness and print; and under reduce-transparency the
+answered tint goes solid while the stripes stay, so the two never converge.
+
+⭐ **One accent colour cannot carry two verdicts.** The moment a chart can be
+100% of a single category, length stops distinguishing anything and fill has
+to. This is the fourth time on this project that meaning resting on colour
+alone has failed — and the first time it failed while every individual colour
+still passed its contrast check.
+
+## A head and the first card beneath it are one object
+
+The phone sheet's head announced the newest sign *by time*. The stack orders
+open-legal first, then open tips, then handled. On the demo call the legal
+sign is third of four in time — so the head named a tip while the gold legal
+card sat directly underneath it.
+
+⭐ **Two orderings of the same list is the worst version of both.** The head
+now takes the stack's order. The sheet's auto-lift still keys on the genuinely
+newest sign, because *that* is a question about what just happened rather than
+about what matters most.
+
+## The numbers in our own pitch had never been measured
+
+`eval/demo-runs.ts` replays the demo script through the real engine — the same
+detector pass, the same `/flags`, the same `/report` — and archives every run.
+Nineteen silent and seven coached judgements were recorded **before** anything
+was changed.
+
+- **"Silent 20 / 3 caught / 0 handled / 3 missed" appeared in 0 of 19 runs.**
+- **"Coached 95 / 4 caught / 3 handled / 0 missed" appeared in 0 of 7.**
+
+Both were printed in the README as measurements. They came from a handful of
+early runs that happened to land that way.
+
+**The cause was not a race, and no sign was ever dropped.** The signs raised
+were byte-identical across every run — same keys, same trigger lines. Calling
+`/report` six times on one byte-identical session returned missed = **1, 1, 1,
+1, 2, 2**. The entire variance lives in the written review. The model's own
+note said why: *"You noted the file for someone to follow up."* The silent
+worker's script contained *"I can give you a couple of weeks before the next
+reminder goes out"* and *"someone will be in touch"* — on those words, partial
+discharge of the obligation is a fair reading. **The script was sitting exactly
+on the line it was supposed to be clearly one side of.**
+
+So the script stopped promising what that worker never meant to offer, and both
+scripts gained a neutral sign-off so a sign raised on the final line still has a
+worker line to be judged against. Sarah's words are untouched to the character,
+because that property is what makes the comparison honest.
+
+**After — 10 runs on the deployed engine, every counted field identical:**
+
+| | coached (4 runs) | silent (6 runs) |
+|---|---|---|
+| signs raised | 4 | **5** |
+| answered | **4 of 4** | **0 of 5** |
+| the statutory notice | **handled 4/4** | **missed 6/6** |
+| withheld as unverified | 0 | 0 |
+| score | 88 · 88 · 88 · 85 | 10 · 10 · 10 · 10 · 15 · 10 |
+
+Only the score still moves, by three points at most, which is why the docs
+already say never to quote it. **The line to say out loud is the fraction:
+four of four answered against zero of five.**
+
+And the silent run now raises *more* signs than the coached one, which reads
+oddly for a second and is then the better story: the worker who never mentions
+hardship assistance earns a prompt telling him to, and the worker who does
+never triggers one. **The absence is the thing being measured.**
+
+⭐ **Two rules out of this.** First: **a number in a pitch is a claim, and a
+claim needs a harness, not a memory of a good run.** Ours survived in the
+README for a day because nobody had a cheap way to re-run it; the harness cost
+an hour and would have caught it on day one. Second: **a dev server that never
+reloads its handlers will lie to you for as long as it is up.** The local API
+had been running eleven hours and was still serving the pre-request-tier
+engine — every "unreproducible" run measured against it was measuring old code.

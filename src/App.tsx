@@ -1,6 +1,7 @@
 import { getStoreScope, subscribe } from "./lib/store";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { About } from "./components/About";
+import { CallHistory } from "./components/CallHistory";
 import { CallScreen } from "./components/CallScreen";
 import { Deadlines } from "./components/Deadlines";
 import { Lessons } from "./components/Lessons";
@@ -89,7 +90,13 @@ function AppContent() {
       <div className="view" id="main" key={`${view}-${result ? result.report.callId : call.key}`}>
       {view === "live" &&
         (result ? (
-          <ReportCard report={result.report} session={result.session} onNew={startLive} onPractice={startPractice} />
+          <ReportCard
+            report={result.report}
+            session={result.session}
+            onNew={startLive}
+            onPractice={startPractice}
+            onCompare={() => setView("calls")}
+          />
         ) : (
           <CallScreen
             key={call.key}
@@ -101,6 +108,7 @@ function AppContent() {
             onAssistant={setAssistant}
           />
         ))}
+      {view === "calls" && <CallHistory onNewCall={startLive} />}
       {view === "practice" && <Practice onStart={startPractice} />}
       {view === "deadlines" && <Deadlines />}
       {view === "lessons" && <Lessons />}

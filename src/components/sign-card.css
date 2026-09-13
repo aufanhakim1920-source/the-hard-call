@@ -1,0 +1,351 @@
+/* The sign card — the one object this product exists to show.
+ *
+ * A worker reads this mid-call, with someone upset on the line, in about two
+ * seconds. Three facts have to land in that order and never tie:
+ *   1. what happened      — the title
+ *   2. when the reply is due — the clock, legal cards only
+ *   3. what to say next   — the ask
+ * Everything else on the card is evidence or an action and must stay below
+ * all three.
+ *
+ * Every selector here carries one extra class so it outranks the base card
+ * rules in styles.css whatever order the bundler injects the two files in.
+ * Colours are tokens only: a hardcoded rgba() is what made every worker line
+ * invisible the first time a light ground existed.
+ */
+
+/* ---------- the card as an object ---------- */
+
+/* A card is a raised block on the sunken column, not a hairline box. Four
+ * outlined rectangles were separated from their ground by one pixel, which is
+ * the weakest separator there is; ground and weight survive both themes, high
+ * contrast and a bad screen.
+ */
+.signs-list .sign.tip {
+  background: var(--ink-3);
+  border-color: transparent;
+}
+.signs-list .sign.legal {
+  border-color: var(--gold);
+}
+/* Handled: the card sinks back into the column. Height and ground carry
+ * "done" between them — a tall block still wants you, a flat quiet line does
+ * not — so the stack can be read without reading a word of it. */
+.signs-list .sign.done {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+  padding-bottom: 10px;
+}
+/* A transparent edge is still an edge at 2px, and the contrast mode is where
+ * someone needs the card's boundary most. */
+.high-contrast .signs-list .sign.tip {
+  border-color: var(--line-2);
+}
+.high-contrast .signs-list .sign.done {
+  border-color: var(--line);
+}
+
+/* ---------- 1 · what happened ---------- */
+
+.signs-list .sign .title {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+/* The kind label was a 10px word in the corner, the same 10px word on both
+ * kinds, told apart by the card's colour. A filled pill against plain text is
+ * a difference in SHAPE: it survives greyscale, a colour-blind reader and the
+ * high-contrast ground, which colour alone does not. */
+.signs-list .sign .kind {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  opacity: 1;
+  padding-top: 2px;
+}
+.signs-list .sign.legal .kind {
+  background: var(--on-gold);
+  color: var(--gold);
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-weight: 500;
+  line-height: 1;
+}
+.signs-list .sign.tip .kind {
+  color: var(--text-2);
+}
+.signs-list .sign.done .kind {
+  color: var(--text-2);
+}
+.signs-list .sign.legal.done .kind {
+  background: var(--line-2);
+  color: var(--cream);
+}
+
+/* ---------- 2 · when the reply is due ---------- */
+
+/* The date was 13px inside a run of 12px mono separated by interpuncts — it
+ * read as metadata about the sign rather than as the clock the sign started.
+ * It is now the largest non-serif thing on the card, on its own line, under a
+ * label that says what it is. */
+.signs-list .sign .clock {
+  margin: 10px 0 0 28px;
+  font-family: var(--mono);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+}
+.signs-list .sign .clock-label {
+  flex: 0 0 100%;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.signs-list .sign .clock-date {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.signs-list .sign .clock-left {
+  font-size: 12px;
+  font-weight: 500;
+}
+/* The statute is the quietest thing on the card: it is what a manager asks
+ * for afterwards, never what the worker acts on. Size carries that, not a
+ * fade — an opacity composites against whatever is behind it, and on the gold
+ * ground ink at 0.8 lands on 4.60:1 with no margin left. */
+.signs-list .sign .clock-law {
+  flex: 0 0 100%;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  margin-top: 3px;
+}
+.signs-list .sign.tip .clock-law,
+.signs-list .sign.done .clock-law {
+  color: var(--text-2);
+}
+/* Handled: the date stays — it is still the obligation — and only shrinks. */
+.signs-list .sign.done .clock {
+  margin-top: 7px;
+}
+.signs-list .sign.done .clock-date {
+  font-size: 14px;
+}
+
+.signs-list .sign .detail {
+  margin: 8px 0 0 28px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ---------- 3 · what to say next ---------- */
+
+/* Collapsed by a grid row, not a max-height. max-height: 200px guessed a
+ * number: measured at text size 3 with line spacing and the hyperlegible face,
+ * one question needed 217px and 17px of it was cut off by overflow: hidden.
+ * A grid row interpolates the real measured height and cannot clip. */
+.signs-list .sign .slot {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows 300ms var(--ease-out);
+}
+.signs-list .sign .slot > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.signs-list .sign.done .slot {
+  grid-template-rows: minmax(0, 0fr);
+}
+
+.signs-list .sign .ask {
+  margin: 10px 0 0 28px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.35;
+  max-height: none;
+  overflow: visible;
+  transition: none;
+}
+.signs-list .sign .ask small {
+  opacity: 1;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+/* The base stylesheet collapses the ask itself on a handled card. The row
+ * above is doing that now, so the panel must be left alone or it snaps to zero
+ * height on the first frame while the row is still closing over it. */
+.signs-list .sign.done .ask {
+  max-height: none;
+  opacity: 1;
+  margin: 10px 0 0 28px;
+  padding: 9px 12px;
+}
+.signs-list .sign.tip .ask small {
+  color: var(--text-2);
+}
+
+/* ---------- the evidence, and the actions ---------- */
+
+/* This was a bare <button>: no background reset anywhere in the stylesheet, so
+ * it rendered with the browser's own button face — grey #6B6B6B with a 2px
+ * outset white border and centred text, measured at 3.10:1 on the legal card
+ * and 3.60:1 on a tip. Both fail AA. It is a quotation, so it is set as one:
+ * a rail, the customer's words, and nothing else. */
+.signs-list .sign .said {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: calc(100% - 28px);
+  margin: 9px 0 0 28px;
+  /* WCAG 2.5.8 is 24px, and a one-line quote is 19px of text. The padding is
+     what makes it tappable rather than a min-height, so a two-line quote still
+     grows with the words. */
+  padding: 5px 0 5px 11px;
+  min-height: 30px;
+  background: none;
+  border: 0;
+  border-left: 2px solid var(--line-2);
+  border-radius: 0;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.4;
+  color: inherit;
+  opacity: 1;
+  cursor: pointer;
+  transition:
+    border-color 140ms var(--ease-out),
+    padding-left 140ms var(--ease-out);
+}
+.signs-list .sign.legal .said {
+  border-left-color: var(--on-gold-line);
+}
+.signs-list .sign .said:hover {
+  border-left-color: currentColor;
+  padding-left: 13px;
+  text-decoration: none;
+}
+.signs-list .sign .said:hover .said-text {
+  text-decoration: underline;
+}
+.big-targets .signs-list .sign .said {
+  min-height: 44px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.signs-list .sign .foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 11px 0 0 28px;
+  flex-wrap: wrap;
+}
+.signs-list .sign.done .foot {
+  margin-top: 9px;
+}
+.signs-list .sign .handled-at {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+/* A gold focus ring on a gold card is a 1:1 contrast ratio — the legal sign
+ * was the one card where a keyboard user could not see where they were. */
+.signs-list .sign.legal:not(.done) :focus-visible {
+  outline-color: var(--on-gold);
+}
+
+/* The dual-use colour trap, one card later. --on-gold is ink, and it is right
+ * for as long as the legal card IS gold — the moment the handled card gives up
+ * its ground, ink sits on the near-black column and the Undo button measured
+ * 1.04:1. Anything the gold ground justified has to be handed back with it. */
+.signs-list .sign.legal.done .btn {
+  color: var(--cream);
+  border-color: var(--line-2);
+}
+.signs-list .sign.legal.done .btn.ghost {
+  border-color: transparent;
+  color: var(--grey);
+}
+.signs-list .sign.legal.done .btn:hover {
+  background: var(--line);
+  color: var(--cream);
+}
+.signs-list .sign.legal.done .said {
+  border-left-color: var(--line-2);
+}
+/* And the colour lands at once rather than crawling there.
+ *
+ * A running transition outranks every rule in the stylesheet, and in a tab
+ * that is not painting it never leaves its first frame. The card's own ground
+ * does not crawl with it — the FLIP suspends the card's transitions for the
+ * trip — so the two desynchronise: measured, the Undo button sat at the gold
+ * card's ink on the near-black column it had just landed on, 1.04:1, with
+ * currentTime stuck at 0. The fill and the edge still move on hover; only the
+ * one property that can make a label vanish is taken out of the interpolation. */
+.signs-list .sign .btn {
+  transition-property: background, border-color, transform;
+}
+
+/* ---------- the icons ---------- */
+
+.signs-list .sign .head svg {
+  width: 19px;
+  height: 19px;
+  margin-top: 1px;
+}
+.signs-list .sign.legal .head svg .knock {
+  fill: var(--gold);
+}
+/* The tick lands rather than appears. Transform only: a frozen entrance in a
+ * throttled tab must cost the mark its motion, never its visibility. */
+.signs-list .sign .head svg.mark-done {
+  animation: signTick 260ms var(--ease-back);
+}
+@keyframes signTick {
+  from {
+    transform: scale(0.62);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ---------- arriving, and moving ---------- */
+
+/* ONE owner for `transform`, and it is the FLIP.
+ *
+ * The card's CSS entrance had to go. Ticking a sign re-sorts the list, React
+ * moves the node, and a moved node restarts its CSS animation — measured: the
+ * ticked card replayed its whole 420ms entrance while the FLIP was carrying it
+ * to the bottom, two animations writing the same property, and at 340ms it was
+ * still at scale 1.0008 instead of settled. The FLIP already gives a brand-new
+ * row its own transform-only rise (260ms), so arrival is covered and nothing
+ * competes for the property.
+ */
+.signs-list .sign {
+  animation: none;
+}
+/* Same reason: a resting scale(0.985) on the handled card is a transform the
+ * FLIP has to hand back to, so the row snapped 4px at the end of its trip.
+ * "Done" is carried by ground and height here, which is louder anyway. */
+.signs-list .sign.done {
+  transform: none;
+}
+/* A row that travels past three others travels SOLID. The handled card is
+ * deliberately ground-less at rest, so it needs one for the trip or the words
+ * it passes are drawn straight through it. */
+.signs-list .sign.done.is-moving {
+  background: var(--ink-2);
+}

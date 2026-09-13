@@ -4,8 +4,9 @@ import { actions, useStore } from "../lib/store";
 import { play } from "../lib/sfx";
 import { AccountChip } from "./Account";
 import { AccessibilityPanel } from "./Accessibility";
+import "./topbar.css";
 
-export type View = "live" | "practice" | "deadlines" | "lessons" | "about";
+export type View = "live" | "calls" | "practice" | "deadlines" | "lessons" | "about";
 
 /**
  * The CallFlag mark: a swallowtail flag knocked out of a disc.
@@ -31,6 +32,9 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
   const openDeadlines = store.deadlines.filter((d) => !d.done).length;
   const tabs: { id: View; label: string; count?: number }[] = [
     { id: "live", label: "Live call" },
+    // Next to Live because it is where the card from the last call goes. Before
+    // this tab existed, navigating away from a report card lost it for good.
+    { id: "calls", label: "Calls", count: store.reports.length },
     { id: "practice", label: "Practice" },
     { id: "deadlines", label: "Deadlines", count: openDeadlines },
     { id: "lessons", label: "Lessons", count: store.lessons.length },
@@ -46,7 +50,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
       // On a phone the strip scrolls; bring the chosen tab fully into view.
       el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
     }
-  }, [view, openDeadlines, store.lessons.length]);
+  }, [view, openDeadlines, store.lessons.length, store.reports.length]);
 
   // The call screen sizes itself as viewport minus the bar, and it used to
   // subtract a fixed 56px. The bar is TWO rows below 980px and taller again at
@@ -85,7 +89,12 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
       el.removeEventListener("scroll", mark);
       ro.disconnect();
     };
-  }, [tabs.length]);
+    // The observer catches the strip changing WIDTH; it does not catch the strip
+    // changing CONTENT. A count badge appearing on Lessons, or Calls going from
+    // 9 to 10, widens scrollWidth inside an unchanged box — and the fade would
+    // still be describing the tabs from two calls ago. Same dependencies as the
+    // ink, for the same reason.
+  }, [tabs.length, openDeadlines, store.lessons.length, store.reports.length]);
   return (
     <header className="topbar" ref={barRef}>
       <div className="wordmark">
@@ -93,7 +102,14 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
         CallFlag
       </div>
       <nav className="tabs" aria-label="Sections" ref={navRef}>
-        <span className="tab-ink" style={{ transform: `translateX(${ink.left}px)`, width: ink.width }} aria-hidden="true" />
+        {/* Not rendered until it has been measured. The ink's width is
+            transitioned over 340ms, and a transition frozen in a throttled tab
+            holds the FIRST value — measured on a backgrounded load, width 0,
+            which left the underline missing and "which section am I in" carried
+            by the tab's colour alone. Mounting it already placed skips that: a
+            transition never runs on an element's first style, so it appears
+            where it belongs and only later MOVES animate. */}
+        {ink.width > 0 && <span className="tab-ink" style={{ transform: `translateX(${ink.left}px)`, width: ink.width }} aria-hidden="true" />}
         {tabs.map((t) => (
           <button
             key={t.id}

@@ -314,7 +314,8 @@ To finish this, from a machine with the key:
 
 ```
 cp .env.example .env      # then put the real GEMINI_API_KEY in .env, never in chat
-npm run eval              # all 44 cases; rewrites both artifacts
+npm run eval              # preview only; published artifacts stay unchanged
+npm run eval -- --publish # real full run only; rewrites artifacts if no API errors
 ```
 
 Expect `hardship-request` recall to rise from 0.533 with no engine change,
@@ -492,7 +493,27 @@ aufan re-measured. Nothing is wrong with the published numbers — they describe
 the 41 cases they were run on — but the suite is ahead of them, which is the
 same class of mismatch `77d20fe` set out to remove.
 
-`npm run eval` regenerates both artifacts and needs a key, which this machine
+`npm run eval -- --publish` regenerates both artifacts and needs a key, which this machine
 does not have. Until someone re-runs it, quote the published table as a run of
 41 cases, not as a run of the suite. A partial run cannot make this worse: a
 `--limit` run now publishes nothing.
+
+
+## Latest main integration and evaluation publication
+
+Integrated the latest main request/notice keys, deterministic first pass, and
+report presentation while retaining speaker confidence, verified-score checks,
+and account isolation. An inferred turn remains at most `ask-about-hardship`;
+it cannot consume the later `hardship-request` notice key. The dependent process
+tip now checks notices remaining after evidence/confidence validation.
+
+The deterministic bridge excludes inferred and unknown turns and links each
+flag to its originating transcript line. This does not separate mixed audio:
+source-separated practice or manually identified speakers remain necessary for
+verified attribution. Live-call owner should review these integration changes.
+
+Evaluation defaults to preview, including a full mocked/oracle run. Explicit
+`npm run eval -- --publish` is required to replace the artifacts, and partial,
+blind, empty or API-error runs cannot do so. Never pass --publish to a mock:
+the runner cannot authenticate whether its transport was replaced. No live
+Gemini evaluation or deployment was performed for this integration.

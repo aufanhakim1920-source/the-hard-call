@@ -180,3 +180,67 @@ Have a realistic call. If the worker offers a concrete next step that fits your 
 export function levelLabel(l: 1 | 2 | 3): string {
   return l === 1 ? "Level 1 · opens up" : l === 2 ? "Level 2 · defensive" : "Level 3 · hides it";
 }
+
+/**
+ * What the level asks of the WORKER, not what it says about the customer.
+ *
+ * "Hides it" was the only thing the practice roster said about a level, and it
+ * describes the customer's behaviour — which leaves the worker with no idea
+ * what they are supposed to do differently. The prompt in `buildPrompt` already
+ * encodes the answer; this is the same three rules said to the person who has
+ * to act on them.
+ */
+export function levelAsk(l: 1 | 2 | 3): string {
+  return l === 1
+    ? "One caring question is enough. Ask what changed and they tell you."
+    : l === 2
+      ? "They will not volunteer it. Ask an open question about what changed before you ask for a date — push for money and they shut down."
+      : "They deflect and apologise. Slow down, check it is a safe time to talk, and take one piece at a time.";
+}
+
+/**
+ * Why a generated customer could not be built, in words a worker can act on.
+ *
+ * This is the one model call on the report card with no local fallback — a card
+ * degrades to what the browser recorded, but a customer cannot be half-invented.
+ * So the failure has to SAY something. The raw strings are written for a
+ * developer ("/api/scenario failed (429)"), and the third act of the pitch
+ * failing quietly is worse than it failing loudly.
+ */
+export function scenarioFailure(raw: string): string {
+  const m = (raw ?? "").toLowerCase();
+  if (/429|quota|rate.?limit|exhausted/.test(m)) {
+    return "No practice customer was built: the free daily limit on the model has been reached. The call and its report card are untouched, and the customers already in Practice still work.";
+  }
+  if (/401|403|unauthor|forbidden|api.?key/.test(m)) {
+    return "No practice customer was built: the server refused the request. Its key to the model may have expired. The call and its report card are untouched.";
+  }
+  if (/failed to fetch|networkerror|network|timeout|abort|502|503|504|econn/.test(m)) {
+    return "No practice customer was built: the server could not be reached. Check the connection and try again — the call and its report card are untouched.";
+  }
+  return "No practice customer was built. The call and its report card are untouched, so nothing was lost — try again.";
+}
+
+/**
+ * Whether a generated customer is complete enough to put on screen.
+ *
+ * The model is asked for eleven fields and can return ten. `expectedSigns`
+ * arriving undefined threw inside the draft card's `.join()`, which takes the
+ * whole report screen with it — a blank page at the end of the demo. Check it
+ * before it is drawn, and fail in a sentence instead.
+ *
+ * Returns the reason it cannot be used, or null when it can.
+ */
+export function scenarioFault(s: Partial<Scenario> | null | undefined): string | null {
+  if (!s || typeof s !== "object") return "The model returned nothing usable.";
+  const words = ["name", "job", "product", "situation", "hiddenProblem", "firstMessage", "whyThisOne"] as const;
+  const missing = words.filter((k) => typeof s[k] !== "string" || !(s[k] as string).trim());
+  if (missing.length) return `The customer came back with no ${missing.join(", no ")}.`;
+  if (typeof s.age !== "number" || !Number.isFinite(s.age) || s.age < 18 || s.age > 100) {
+    return "The customer came back without a believable age.";
+  }
+  if (s.voice !== "female" && s.voice !== "male") return "The customer came back without a voice to speak in.";
+  if (s.level !== 1 && s.level !== 2 && s.level !== 3) return "The customer came back without a difficulty level.";
+  if (!Array.isArray(s.expectedSigns)) return "The customer came back with nothing to test.";
+  return null;
+}

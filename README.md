@@ -61,10 +61,40 @@ customer who hides the real problem until you ask well, and a **learning loop** 
 be turned into a de-identified practice customer, and a manager correcting a sign teaches the engine.
 
 **Coaching can be switched off.** The assistant still listens, still judges, still starts the legal
-clock, and says nothing during the call. Measured on the same scripted call: coaching off gives
-**0 sign cards on screen and 3 signs recorded and judged**, the same deadline, the same score band as
-coaching on. That is both what makes the demo honest and a real rollout path — run it silent for a
-month to measure what is being missed, then turn coaching on.
+clock, and says nothing during the call. That is both a real rollout path — run it silent for a month
+to measure what is being missed, then turn coaching on — and the thing that makes the demo honest.
+
+**The demo runs one customer's call twice: "the same call, handled two ways."** Sarah's lines are
+identical to the character in both, so the engine hears the same thing; the two workers are not. It
+is a dramatisation and we say so — there are two worker scripts in `src/lib/demoScript.ts`, and an
+earlier version with only one proved nothing, because the worker said the same words either way.
+
+**Measured, not claimed.** `eval/demo-runs.ts` replays the demo script through the real engine —
+the same detector pass, the same `/flags`, the same `/report` — and archives every run. The numbers
+below are **10 runs on the deployed engine**, 4 coached and 6 silent, on 13 Sep:
+
+| | Coaching **on** | Coaching **off** |
+|---|---|---|
+| Sign cards on screen during the call | 4 | **0** |
+| Signs recorded and judged | 4 | **5** |
+| Signs answered | **4 of 4, every run** | **0 of 5, every run** |
+| The statutory notice (NCC s72) | **handled, 4 of 4** | **missed, 6 of 6** |
+| 21-day deadline created | yes | **yes — with nothing on screen** |
+| Withheld as unverified | 0 | 0 |
+| Score | 88 · 88 · 88 · 85 | 10 · 10 · 10 · 10 · 15 · 10 |
+
+The silent run raises **more** signs than the coached one, which reads oddly until you see why: the
+worker who never mentions hardship assistance earns a prompt telling him to, and the worker who does
+mention it never triggers one. The absence is the thing being measured.
+
+**The score is still the least trustworthy row and we do not lead with it.** It moves by up to three
+points between identical runs, because the written review is generated and the counted fields are
+not. The comparison to say out loud is the fraction: **four of four answered against zero of five.**
+
+⚠️ **An earlier version of this table quoted "95 against 20".** Those numbers came from a handful of
+runs and did not survive measurement — across 19 silent and 7 coached judgements, neither figure
+appeared once. They were replaced rather than defended, and the archived run records are in
+`eval/demo-runs.json` so anyone can check these.
 
 ## A hint is not a notice
 
@@ -77,7 +107,8 @@ The single most important rule in the product, and the one that took the longest
 
 *"Can you push it back two weeks, I get paid on the twentieth"* is a timing gap, not a statutory
 notice. Firing on it is the worst error this system can make: it starts a process the customer never
-asked for and a clock the bank never owed. Verified on the live app — that sentence raises nothing.
+asked for and a clock the bank never owed. Checked against the **deployed** engine: "push it back two
+weeks, I get paid on the 20th and I am fine after that" raises nothing at all.
 
 Three rounds of prompt wording could not hold that line. The fix was to stop asking the model for a
 verdict and ask it for a fact: a required `period` enum (`none` / `single_payment` /
@@ -108,8 +139,10 @@ localStorage today. Only signs, report cards, deadlines and lessons — never a 
 ```
 
 - **`supabase/functions/_shared/signs.ts`** — the taxonomy: 2 legal signs (hardship request, 21 days,
-  NCC s72; complaint, 30 days, RG 271) and 9 cause cues (job loss, health, bereavement, separation,
-  safety, gambling, disaster, stress, scam). **Deadlines are computed in code, never by the model.**
+  NCC s72; complaint, 30 days, RG 271), 9 cause cues (job loss, health, bereavement, separation,
+  safety, gambling, disaster, stress, scam), and 1 duty prompt (tell them the hardship process
+  exists — the ABA duty staff most often forget under pressure). A 12th sign is **derived**:
+  `ask-about-hardship`, the request tier. **Deadlines are computed in code, never by the model.**
 - **`supabase/functions/api/flags.ts`** — one call per finished sentence: the last 14 lines in,
   speaker plus new signs out, deduplicated by key on both sides so a sign fires once. Manager lessons
   are appended to the prompt.
@@ -148,24 +181,39 @@ page) is measured against **the model the deployed function actually uses**, `ge
 | | |
 |---|---|
 | Precision | **1.00** (no false positives) |
-| Recall | **0.74** |
-| Exact set match | **30 of 41** |
+| Recall | **0.69** |
+| Exact set match | **28 of 41** |
 | Speaker accuracy | **41 of 41** |
-| Latency | **p50 1.71 s · p95 3.61 s** |
+| Latency | **p50 1.94 s · p95 3.30 s** |
+
+**Per key, the picture is sharper.** Nine cause cues and the complaint sign score **1.00 precision and
+1.00 recall** — every one, no misses. The entire recall figure comes from a single key:
+
+| key | precision | recall |
+|---|---|---|
+| complaint, job loss, health, bereavement, separation, safety, gambling, disaster, stress, scam | **1.00** | **1.00** |
+| hardship-request | **1.00** | **0.19** |
 
 **Read that table the right way round.** For this product precision is the number that matters:
 a false notice starts a 21-day clock the bank does not owe and puts a customer into a process they
 never asked for. Recall costs a prompt the worker did not get; a false positive costs a legal
 obligation invented out of nothing.
 
-**And every one of the 11 misses is a `hardship-request`** — not one is a statutory notice. Under the
+**And every one of the 13 misses is a `hardship-request`** — not one is a statutory notice. Under the
 two-tier rule the team agreed, those are **requests**: a hint that should prompt the worker to ask,
-starting no clock and stored nowhere. The request tier is not built yet, which is exactly where that
-recall number is sitting.
+starting no clock and stored nowhere.
 
-The same run against `gemini-2.5-flash` scores **0.97 / 0.81**. It catches one more hardship case and
-buys that with a false positive on "the storm knocked our power out". We chose the model that never
-invents an obligation.
+**The request tier is built, and 9 of those 13 "misses" are the engine firing correctly under the
+other key** (`ask-about-hardship` — the run records them). `eval/cases.json` predates the tier and has
+no label for a request, so under its flat labels a correct request can only ever score as a miss.
+The results file marks that block `"scored": false` for exactly this reason. **Recall here is a
+measurement of the labels, not of the engine** — which is why it is printed next to a precision of
+1.00 rather than alone.
+
+A one-off control run against `gemini-2.5-flash` scored **0.97 / 0.81** — one more hardship case
+caught, bought with a false positive on "the storm knocked our power out". Only the
+`gemini-flash-latest` run is committed, so treat that comparison as a measurement we took rather than
+one you can reproduce from this repo. We chose the model that never invents an obligation.
 
 **We did not edit the test to flatter the code.** Recall fell the day the strict legal gate landed,
 and the cases it "missed" are ones we had labelled wrongly against the actual law. They were left
@@ -177,8 +225,9 @@ passing**, and on the clear-hardship call the legal sign fires **0.0 s off** the
 third is an open contract question between two engines, not a defect, and it is written down rather
 than tuned away.
 
-Measured end to end on the live app, not in-process: a sign lands **about 3 seconds** after the
-sentence, and the report card **3.7–6.8 seconds** after the call ends.
+Measured end to end in the browser against the real engine, not in-process: a sign lands **1.7–2.7
+seconds** after the sentence that caused it, and the report card **3.0–3.8 seconds** after the call
+ends (twelve runs, 13 Sep).
 
 ## Privacy, enforced by the schema
 

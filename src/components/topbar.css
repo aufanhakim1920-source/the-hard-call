@@ -1,0 +1,55 @@
+/* The tab strip, at the widths the phone rules do not reach.
+ *
+ * `.tabs` already scrolls at EVERY width — the comment in styles.css says so,
+ * because a breakpoint is a guess about content width and the strip must be
+ * free to shrink. But the two rules that make a scrolling strip READABLE, the
+ * nowrap and the edge fade, were both left inside `@media (max-width: 980px)`.
+ *
+ * Measured at 1024x768 with bigger buttons and the largest text on — a laptop
+ * plugged into a projector with the accessibility settings a real worker would
+ * use: the six labels wrapped onto two lines each (tab height 63px instead of
+ * 44), the strip still had 55px of tabs hidden, "About" was entirely off the
+ * end, and `mask-image` computed to `none`. So the last section of the app was
+ * invisible AND the strip gave no hint that anything was there.
+ *
+ * These are the same declarations as the ones in the phone block, lifted out of
+ * the media query so they hold at every width. Fold them back into styles.css
+ * when that file is free.
+ */
+.topbar .tab {
+  white-space: nowrap;
+}
+
+/* The fade sits on the side that actually has hidden tabs — never on both when
+   there is nothing there, because a fade over nothing lies about the content. */
+.topbar .tabs[data-edge="right"] {
+  mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent);
+}
+.topbar .tabs[data-edge="left"] {
+  mask-image: linear-gradient(90deg, transparent, #000 34px);
+}
+.topbar .tabs[data-edge="both"] {
+  mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent);
+}
+
+/* Nowrap costs width: on one line the six labels need 94px more than the strip
+ * has at 1024, so two whole sections went behind the fade. The words on the two
+ * controls that have an ICON are worth 97px of that — the same trade the phone
+ * bar already makes, just starting higher up.
+ *
+ * 1160, measured, not guessed: with the words shown the bar needs 1118px at the
+ * default text size and 1150px at the largest, so it stops fitting somewhere in
+ * there and the breakpoint sits just above both. `clip-path`, never
+ * `display: none` — the name still reaches a screen reader.
+ */
+@media (max-width: 1160px) {
+  .topbar .a11y-chip-label,
+  .topbar .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

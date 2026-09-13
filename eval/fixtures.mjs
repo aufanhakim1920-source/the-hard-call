@@ -95,7 +95,7 @@ async function runCall(call) {
     );
     for (const s of signs) {
       keys.add(s.key);
-      raised.push({ key: s.key, rule_id: RULE_FOR[s.key] ?? null, kind: s.kind, title: s.title, atMs: t.start_ms, turn: i, evidence: s.evidence });
+      raised.push({ key: s.key, rule_id: RULE_FOR[s.key] ?? null, kind: s.kind, tier: s.tier, title: s.title, atMs: t.start_ms, turn: i, evidence: s.evidence });
     }
   }
   return raised;
@@ -132,7 +132,15 @@ function score(call, raised) {
       out.notes.push(`ok    ${never.rule_id} correctly did not fire`);
     }
   }
-  const tips = raised.filter((r) => r.kind === "tip").map((r) => r.title);
+  // Requests are printed, never scored. laural's ground truth names rules —
+  // NCC_72_ORAL_NOTICE, ABA_INFORM_HARDSHIP_PROVISIONS — and a request invokes
+  // no rule. Showing them is how you can see the engine noticed an early turn
+  // without claiming it raised an obligation there.
+  const requests = raised.filter((r) => r.tier === "request");
+  if (requests.length) {
+    out.notes.push(`      requests (not scored): ${requests.map((r) => `${r.atMs}ms "${r.evidence}"`).join("; ")}`);
+  }
+  const tips = raised.filter((r) => r.kind === "tip" && r.tier !== "request").map((r) => r.title);
   if (tips.length) out.notes.push(`      tips (not scored): ${tips.join("; ")}`);
   return out;
 }

@@ -1,10 +1,12 @@
 import { hasVerifiedReportScore } from "../lib/reportScore";
-import { SEEDS, levelLabel, voiceFor } from "../lib/scenarios";
+import { SEEDS, levelAsk, levelLabel, voiceFor } from "../lib/scenarios";
 import { useFlip, useRowExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { AGENT_ID } from "../lib/practice";
 import type { Scenario } from "../lib/types";
+// The only stylesheet this agent owns; the two classes it needs live there.
+import "./report-visuals.css";
 
 export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const store = useStore();
@@ -57,7 +59,25 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                   voice: {voiceFor(s).name} · {voiceFor(s).note}
                 </div>
               </div>
-              <div className="sit">{s.whyThisOne}</div>
+              {/* One cell, not two. .scen is a four-column grid and a fifth
+                  child pushed the footer into an implicit column, squeezing the
+                  situation text to one word per line. */}
+              <div className="why">
+                <div className="sit">{s.whyThisOne}</div>
+                {/* The level said "hides it" — which describes the CUSTOMER and
+                    leaves the worker with no idea what to do differently. This
+                    is the same rule, said to the person who has to act on it. */}
+                <div className="ask-of-you">{levelAsk(s.level)}</div>
+                {/* The card said "from your call", which is exactly the half
+                    that worries a privacy-minded reader. Say the other half
+                    here, where the invented person is. */}
+                {s.source === "generated" && (
+                  <p className="rv-made-up">
+                    <strong>Invented.</strong> Built from one of your calls with a new name and job and every number changed, and approved by a
+                    person before it appeared here. The real call was never stored.
+                  </p>
+                )}
+              </div>
               <div className="foot">
                 <span className="stats2">{p ? `${p} ${p === 1 ? "go" : "goes"} · best ${b}` : "not tried yet"}</span>
                 <span style={{ display: "flex", gap: 6 }}>

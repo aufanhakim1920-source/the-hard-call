@@ -147,6 +147,14 @@ export const actions = {
         : s.pendingDeletes,
     }));
   },
+  /** The call history only — the report cards, and the deadlines those cards
+      started. A deadline exists only because a report created it, so the two
+      clear together or the survivor is an orphan.
+      Lessons and practice customers are the learning loop the team built; a
+      tidy-up before a demo must not take them. That is what `wipe` is for. */
+  clearCallHistory() {
+    update((s) => ({ ...s, reports: [], deadlines: [] }));
+  },
   wipe() {
     commit(EMPTY);
   },

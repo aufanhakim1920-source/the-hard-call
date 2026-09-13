@@ -12,6 +12,51 @@
    on cream and is only ever a tint (--gold-dim) or a fill with ink on top.
    Tokens only. No boxes: hairlines, channels and gaps do the separating. */
 
+/* ---------- how this card arrives ----------
+
+   Heer & Robertson measured STAGED transitions as read more accurately than
+   simultaneous ones. The card arrives in the order it is read — the fraction,
+   then the split, then the answer times one lane at a time — instead of one
+   undifferentiated 900ms swell where every chart moves at once.
+
+   Two rules came out of applying that here:
+
+   1. NOTHING here grows from zero any more, including the answer-time bars,
+      which were the last holdout. The argument for their sweep was that the
+      distance travelled IS the duration — but a transition holds its first
+      style for as long as a tab is not compositing, and that first style was
+      zero length. A chart's failure mode has to be "less pretty", never "a
+      different number", and there is no version of a sweep whose first frame
+      is true. Every quantity on this card is correct on the frame it appears
+      and arrives by rising into place.
+
+   2. Nothing moves by width or height. Those relay out the row on every frame,
+      and four answer lanes, three ledger segments and a history strip all
+      reflowing together was the most expensive thing this card did.
+
+   --grow is a REGISTERED property so a scale and its counter-scale read the
+   same interpolated number on every frame — that is what keeps the 2px leading
+   edge exactly 2px the whole way across. Unregistered, it is a plain variable,
+   the transition is skipped and every chart simply arrives finished: the
+   failure mode of a decoration is "less pretty", never "not there". */
+@property --grow {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* An entrance moves an element that is ALREADY VISIBLE. Frozen at frame 0 in a
+   throttled tab this reads correctly, 7px low — never absent, never zero.
+   See the vault note "An Entrance Must Not Gate Visibility". */
+@keyframes rvRise {
+  from {
+    transform: translateY(7px);
+  }
+  to {
+    transform: none;
+  }
+}
+
 /* ---------- shared plate ---------- */
 .rv-label {
   font-family: var(--mono);
@@ -30,7 +75,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--grey);
-  opacity: 0.8;
 }
 .rv-facts {
   display: flex;
@@ -46,6 +90,33 @@
   font-weight: 400;
   color: var(--cream);
 }
+/* How the call ran, above every number on the card. A hairline and a gap do
+   the separating — no rule down the side, no tint, nothing that would spend
+   the accent on something that is not a sign. The line that changes how the
+   numbers read is set in cream; the one that only confirms the normal case
+   stays grey. Grey on ink is 6.47:1 and on cream 5.01:1, both above AA. */
+.rv-run {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin: 0 0 20px;
+}
+.rv-run-line {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--grey);
+}
+.rv-run-line.key {
+  color: var(--cream);
+}
+:root[data-text="2"] .rv-run-line,
+:root[data-text="3"] .rv-run-line {
+  font-size: 16px;
+}
+
 .rv-empty {
   margin: 0;
   padding: 12px 4px;
@@ -53,6 +124,52 @@
   border-bottom: 1px solid var(--line);
   font-size: 13px;
   color: var(--grey);
+}
+
+/* ---------- clearing the call history (Deadlines tab) ----------
+   Lives in this file rather than the main stylesheet only because that sheet is
+   held elsewhere. The question opens IN PLACE, under the control that asked it,
+   rather than in a native confirm() box: the space is made first and the words
+   arrive in it, which is the same open the rest of the build uses.
+   `minmax(0, Nfr)` and not a bare `Nfr` — a bare fr track is what the css gate
+   exists to catch. */
+.clear-data {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.clear-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+}
+.clear-ask {
+  display: grid;
+  grid-template-rows: minmax(0, 0fr);
+  transition: grid-template-rows 340ms var(--ease-out);
+}
+.clear-data.armed .clear-ask {
+  grid-template-rows: minmax(0, 1fr);
+}
+.clear-ask > div {
+  overflow: hidden; /* REQUIRED — the row is what animates, not the content */
+}
+.clear-say {
+  max-width: 60ch;
+  margin: 12px 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cream);
+}
+.clear-done {
+  margin: 0;
+  font-size: 14px;
+  color: var(--grey);
+}
+.clear-done:focus-visible {
+  outline: none;
 }
 
 /* ---------- the ledger: one part-to-whole, not four percentages ---------- */
@@ -101,10 +218,14 @@
   gap: 2px;
   height: 14px;
   margin-bottom: 11px;
+  animation: rvRise 320ms var(--ease-out) both;
 }
+/* No transition. The three segments are at their true widths on the first
+   frame, so the boundary between answered and missed never moves — which is
+   the one thing a part-to-whole bar is read for. They used to inflate
+   independently, so every boundary slid and there was nothing to track. */
 .rv-seg {
   min-width: 0;
-  transition: width 820ms var(--ease-out);
 }
 /* Three treatments, not three hues: a tint with an edge, a solid, and an empty
    dashed slot. All three survive greyscale and the high-contrast setting. */
@@ -113,9 +234,18 @@
   background: var(--gold-dim);
   box-shadow: inset 0 0 0 1px var(--gold-2);
 }
+/* Hazard bars cut out of the solid signal. On a call that went entirely one
+   way this segment is the WHOLE bar, and a full-width solid gold bar was
+   reading as a finished one — gold is the positive accent everywhere else in
+   this app, so the worst call in the demo looked like the best. The stripes are
+   the card's own ground showing through, which is a second channel: it survives
+   greyscale, every kind of colour blindness, and a printed page, because it is
+   texture rather than hue. 2px of ground every 6px at 45deg — coarse enough to
+   count at 14px tall, fine enough to still read as one bar. */
 .rv-seg.missed,
 .rv-key.missed i {
-  background: var(--gold-2);
+  background-color: var(--gold-2);
+  background-image: repeating-linear-gradient(45deg, var(--ink) 0 2px, transparent 2px 6px);
 }
 /* Quieter than the other two on purpose: "not verified" is a caveat, not an
    alarm, and a dense pattern would out-shout the signal colour. */
@@ -150,9 +280,11 @@
   font-size: 12px;
   color: var(--cream);
 }
+/* No fade. --grey is already the quiet tier and the bold count beside it is
+   --cream; 0.72 on top took this to 2.92:1 on the light ground, which is a
+   colour nobody chose — it is what the alpha happened to composite to. */
 .rv-key em {
   font-style: normal;
-  opacity: 0.72;
 }
 .rv-key em::before {
   content: "· ";
@@ -173,11 +305,15 @@
   gap: 5px;
   border-bottom: 1px solid var(--line-2);
 }
+/* Five calls in order, so they arrive in order: 60ms apart, left to right,
+   ending on this one. The heights are correct from the first frame — a
+   benchmark that starts flat is a benchmark that lies for a second. */
 .rv-hist-bar {
   width: 8px;
   flex: none;
   background: var(--line-2);
-  transition: height 900ms var(--ease-out);
+  animation: rvRise 300ms var(--ease-out) both;
+  animation-delay: calc(var(--rv-i, 0) * 60ms);
 }
 .rv-hist-bar.here {
   background: var(--gold-2);
@@ -199,8 +335,15 @@
   gap: 0 18px;
   align-items: center;
 }
+/* Staged arrival, top to bottom: Heer & Robertson measured a staged transition
+   as read more accurately than a simultaneous one, and four durations landing
+   at once is the arrangement in which none of them can be compared as it
+   lands. A transform rise only — nothing in the row moves by width, and
+   nothing starts from a value that would be wrong if it stopped there. */
 .rv-rt-row {
   padding: 9px 2px;
+  animation: rvRise 320ms var(--ease-out) both;
+  animation-delay: calc(var(--rv-i, 0) * 90ms);
 }
 .rv-rt-row + .rv-rt-row {
   border-top: 1px solid var(--line);
@@ -266,15 +409,29 @@
   width: 2px;
   background: var(--gold-2);
 }
+/* The bar spans the fire line to where the worker's words landed, and that
+   distance IS the duration printed beside it. It is drawn at its true width on
+   the first frame.
+
+   It used to sweep out from zero. A transition never advances past its first
+   style in a tab that is not compositing, and its first style was scaleX(0):
+   measured with the transition paused and seeked, 0px of a 200px bar at t=0, and
+   the setTimeout that was meant to rescue it only STARTED the same transition,
+   so the rescue froze at zero too. Four lanes reading "instant" is not a subtler
+   picture of the call, it is the opposite one. The length already says the
+   duration in space; the sweep only said it again in time, and it is the half
+   that can lie. The lanes still arrive one at a time — by a 7px rise, which
+   frozen at its first frame is 7px low and still true. */
 .rv-rt-bar {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  width: 0;
+  min-width: 2px;
   background: var(--gold-dim);
+  /* The leading edge is where the answer landed on the axis, and box-sizing
+     keeps it inside the true width, so the cap's outer edge IS the reading. */
   border-right: 2px solid var(--gold-2);
-  transition: width 760ms var(--ease-out);
 }
 .rv-rt-value {
   grid-area: value;
@@ -359,13 +516,19 @@
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
+/* --grow is registered with an initial value of 1, so this is a no-op until
+   DeadlineTrack passes it; the width transition is what animates today. That
+   component belongs to another lane — the one-line change that moves this bar
+   off a layout animation is in the handover note. */
 .rv-dl-left {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 0;
   background: var(--gold-dim);
-  transition: width 820ms var(--ease-out);
+  transform: scaleX(var(--grow));
+  transform-origin: left center;
+  transition: width 820ms var(--ease-out), --grow 820ms var(--ease-out);
 }
 .rv-dl-now {
   position: absolute;
@@ -468,21 +631,32 @@
   stroke: var(--slate);
   stroke-width: 1;
 }
+/* The sign card's two shapes at chart scale — a solid triangle for a legal
+   sign, a ring for a tip. Both in --gold-2, per the colour rule at the top of
+   this file: a marker that has to be seen against the ground. Composited
+   against the real chart ground it measures 8.45:1 on ink and 4.91:1 on cream,
+   where plain --gold was 2.18:1 on cream — below the 3:1 WCAG 1.4.11 asks of a
+   graphic, on the one mark that carries a statutory obligation. */
 .rv-tl-legal {
-  fill: var(--gold);
-  transition: fill 140ms var(--ease-out);
+  fill: var(--gold-2);
+  stroke: var(--gold-2);
+  stroke-width: 0;
+  transition: stroke-width 140ms var(--ease-out);
 }
 .rv-tl-tip {
   fill: none;
-  stroke: var(--gold);
-  stroke-width: 1;
-  transition: stroke 140ms var(--ease-out);
+  stroke: var(--gold-2);
+  stroke-width: 1.4;
+  transition: stroke-width 140ms var(--ease-out);
 }
+/* Hover changes WEIGHT, not hue. Every other colour on this chart means
+   something — cream is where the worker answered — so a marker that changed
+   colour under the pointer would borrow a meaning for a moment. */
 .rv-tl-mark:hover .rv-tl-legal {
-  fill: var(--gold-2);
+  stroke-width: 2;
 }
 .rv-tl-mark:hover .rv-tl-tip {
-  stroke: var(--gold-2);
+  stroke-width: 2.4;
 }
 .rv-tl-hit {
   fill: transparent;
@@ -495,10 +669,13 @@
   stroke-width: 1;
   opacity: 0.8;
 }
+/* 0.55 measured 2.20:1 on cream. These are the marks that say where a sign
+   fired and where an unverified answer landed — WCAG 1.4.11 wants 3:1 for a
+   graphic that carries meaning, and 0.8 reads 4.64:1 on ink, 3.38:1 on cream. */
 .rv-tl-from {
   stroke: var(--gold-2);
   stroke-width: 1;
-  opacity: 0.55;
+  opacity: 0.8;
 }
 .rv-tl-ans {
   stroke: var(--cream);
@@ -517,7 +694,7 @@
 }
 .rv-tl-drop.unver {
   stroke: var(--grey);
-  opacity: 0.6;
+  opacity: 0.8;
 }
 .rv-tl-missed {
   fill: var(--gold-2);
@@ -675,4 +852,621 @@
 .reduce-transparency .rv-rt-bar,
 .reduce-transparency .rv-dl-left {
   background-color: var(--ink-3);
+}
+
+/* ---------- the compare board: two calls on one axis ----------
+   Same vocabulary as the rest of the card, on purpose. The channel is the open
+   one from Instruments 2b (rails and overhung end caps, a tick per sign inside
+   it), and the three fills are the ledger's three: a tint with an edge for
+   answered, the solid signal for missed, an empty dashed slot for a verdict
+   the transcript could not support. Nothing new to learn, and the two charts
+   cannot drift apart.
+
+   The axis is the LARGER of the two sign counts, so a call that raised three
+   signs draws a shorter channel than one that raised four. That difference is
+   a caveat the board has to make, and hiding it by stretching both bars to the
+   same width would be the lie. */
+.cmp {
+  margin: 4px 0 30px;
+}
+.cmp-rows {
+  margin: 12px 0 4px;
+}
+.cmp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) minmax(0, 8.5rem);
+  grid-template-areas: "head track read";
+  align-items: center;
+  gap: 10px 18px;
+  padding: 14px 0;
+}
+.cmp-row + .cmp-row {
+  border-top: 1px solid var(--line);
+}
+.cmp-head {
+  grid-area: head;
+  min-width: 0;
+}
+.cmp-who {
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 3px;
+}
+.cmp-when {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--grey);
+  margin-top: 2px;
+}
+.cmp-track {
+  grid-area: track;
+  position: relative;
+  min-width: 0;
+  height: 18px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background-image: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px var(--cmp-step, 25%));
+}
+.cmp-track::before,
+.cmp-track::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+}
+.cmp-track::before {
+  left: -1px;
+  border-left: 1px solid var(--line-2);
+}
+.cmp-track::after {
+  right: -1px;
+  border-right: 1px solid var(--line-2);
+}
+/* One thing moves per row: the whole bar grows out to the call's sign count.
+   The segments inside keep their proportions the whole way, so the reading
+   never passes through a wrong ratio on its way to the right one. */
+.cmp-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 2px;
+  width: 0;
+  overflow: hidden;
+  transition: width 820ms var(--ease-out);
+}
+.cmp-bar > i {
+  min-width: 0;
+  height: 100%;
+}
+.cmp-read {
+  grid-area: read;
+  min-width: 0;
+  text-align: right;
+}
+.cmp-frac {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0 7px;
+}
+.cmp-frac b {
+  font-family: var(--mono);
+  /* Big goes lighter, like every other number on this card. */
+  font-weight: 300;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+}
+.cmp-frac i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.cmp-sub {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.cmp-sub:first-of-type {
+  margin-top: 5px;
+}
+/* A call with no judgement on it gets words, not a bar. A zero-length channel
+   would read as "answered none of them", which is a different and wrong claim. */
+.cmp-why {
+  /* Named areas create their own -start/-end lines, so the sentence spans the
+     channel and the reading instead of being squeezed into one of them. */
+  grid-column: track-start / read-end;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--grey);
+}
+
+.cmp-notes {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid var(--line);
+  padding-top: 11px;
+  margin-bottom: 22px;
+}
+.cmp-note {
+  margin: 0;
+  max-width: 66ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--grey);
+}
+.cmp-note.key {
+  color: var(--cream);
+}
+
+/* ---------- the two ledgers, sign by sign ----------
+   The union of both calls. A sign only one of them raised keeps its row with an
+   empty slot opposite, because the alternative — dropping it — would make two
+   calls that saw different things look like they saw the same thing. */
+.cmp-signs {
+  border-top: 1px solid var(--line);
+}
+.cmp-sign-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 9rem) minmax(0, 9rem);
+  gap: 8px 14px;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cmp-sign-row.head {
+  padding: 8px 0 7px;
+}
+.cmp-sign-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.cmp-sign-name em {
+  font-style: normal;
+  margin-left: 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-2);
+}
+.cmp-col {
+  text-align: center;
+}
+.cmp-cell {
+  min-width: 0;
+  text-align: center;
+}
+/* The column label travels inside the cell, spoken at every width and drawn
+   only where the header row is too far away to bind to. */
+.cmp-cell-lab {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cmp-v {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+  color: var(--grey);
+}
+.cmp-v.handled {
+  border-color: rgba(159, 201, 168, 0.5);
+  color: var(--ok);
+}
+.cmp-v.partly {
+  border-color: var(--gold-line);
+  color: var(--gold-2);
+}
+.cmp-v.missed {
+  border-color: rgba(217, 83, 79, 0.5);
+  color: var(--bad);
+}
+/* Not raised and not judged are absences, not verdicts, so neither gets a
+   border to sit in. */
+.cmp-v.absent,
+.cmp-v.none {
+  border-color: transparent;
+  background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 5px);
+}
+
+.cmp-keys {
+  margin: 0 0 18px;
+}
+
+/* ---------- the call list ---------- */
+.call-list {
+  margin-top: 30px;
+}
+.call-list-head {
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--line);
+}
+.call-row {
+  display: grid;
+  grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) minmax(0, 10rem) auto;
+  gap: 8px 14px;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+/* A picked row is marked on its leading edge — the accent that means "this one"
+   everywhere else in the app — rather than by drawing a box around it. */
+.call-row.on {
+  box-shadow: inset 2px 0 0 var(--gold-2);
+}
+.call-mode {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.call-mode.coached {
+  color: var(--gold-2);
+}
+.call-open {
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: color 140ms var(--ease-out);
+}
+.call-open b {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+.call-open span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--grey);
+}
+.call-open:hover b {
+  color: var(--gold-2);
+}
+.call-read {
+  min-width: 0;
+  text-align: right;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.call-read b {
+  display: block;
+  font-weight: 400;
+  font-size: 15px;
+}
+.call-read span {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.call-nil {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.back-to-calls {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Below about 680px the three-part row leaves the channel under 150px and the
+   fraction under 90, and neither is readable. Same two-row fold the answer-time
+   rows already use. */
+@media (max-width: 680px) {
+  .cmp-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+    grid-template-areas:
+      "head head"
+      "track read";
+    gap: 10px 14px;
+  }
+  .cmp-frac b {
+    font-size: 26px;
+  }
+  .cmp-sign-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "name name"
+      "a b";
+    gap: 7px 12px;
+  }
+  .cmp-sign-row.head {
+    display: none;
+  }
+  .cmp-sign-name {
+    grid-area: name;
+  }
+  .cmp-cell {
+    text-align: left;
+  }
+  .cmp-cell-lab {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    clip-path: none;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--grey);
+  }
+  .call-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 8rem);
+    gap: 6px 12px;
+  }
+  .call-mode {
+    grid-column: 1 / -1;
+  }
+  .call-read {
+    text-align: right;
+  }
+  .call-row > .btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+/* The words on this board are the argument, so they answer the text-size
+   setting the way the report card's own prose does. The 10px mono ref-labels
+   stay put — those are chrome, and the setting is for the words that matter. */
+:root[data-text="2"] .cmp-note,
+:root[data-text="3"] .cmp-note {
+  font-size: 15px;
+}
+:root[data-text="2"] .cmp-sign-name,
+:root[data-text="3"] .cmp-sign-name,
+:root[data-text="2"] .call-open b,
+:root[data-text="3"] .call-open b {
+  font-size: 16px;
+}
+:root[data-text="2"] .cmp-who,
+:root[data-text="3"] .cmp-who {
+  font-size: 17px;
+}
+:root[data-text="2"] .cmp-v,
+:root[data-text="3"] .cmp-v {
+  font-size: 12px;
+}
+:root[data-text="2"] .cmp-sub,
+:root[data-text="3"] .cmp-sub {
+  font-size: 11px;
+}
+
+/* The largest text sizes fold the same way at any width. */
+:root[data-text="3"] .cmp-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+  grid-template-areas:
+    "head head"
+    "track read";
+}
+:root[data-text="3"] .cmp-sign-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "name name"
+    "a b";
+}
+:root[data-text="3"] .cmp-sign-row.head {
+  display: none;
+}
+:root[data-text="3"] .cmp-sign-name {
+  grid-area: name;
+}
+:root[data-text="3"] .cmp-cell {
+  text-align: left;
+}
+:root[data-text="3"] .cmp-cell-lab {
+  position: static;
+  display: block;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+:root[data-text="2"] .cmp-track,
+:root[data-text="3"] .cmp-track {
+  height: 22px;
+}
+
+.high-contrast .cmp-track {
+  border-top-color: var(--line-2);
+  border-bottom-color: var(--line-2);
+}
+.high-contrast .cmp-v.absent,
+.high-contrast .cmp-v.none {
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+/* A tint fill disappears when transparency is turned down. */
+.reduce-transparency .cmp-bar > i.answered {
+  background-color: var(--ink-3);
+}
+
+/* ---------- building a practice customer: the wait, and the failure ----------
+   The model call takes several seconds and can fail, and both used to show as
+   nothing more than a disabled button. Neither state gets a 1px box: the panel
+   is a step in the ground with one gold rule down its left, the same device the
+   practice cards use for what a level asks of you.
+
+   The bar moves by TRANSFORM only, and never by opacity — a running animation
+   in a throttled tab is frozen at its first keyframe, and a keyframe that
+   starts at `opacity: 0` pins the element invisible. That cost this project a
+   bug once already. */
+.rv-build {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border-left: 2px solid var(--gold-line);
+  background: rgba(154, 163, 173, 0.06);
+  border-radius: 0 var(--r-ctl) var(--r-ctl) 0;
+  max-width: 68ch;
+}
+.rv-build.failed {
+  border-left-color: var(--bad);
+}
+.rv-build-say {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cream);
+}
+.rv-build.failed .rv-build-say {
+  color: var(--bad);
+}
+.rv-build-sec {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--grey);
+}
+/* The server's own words, kept so a failure can be diagnosed, sized so they
+   never read as the message. */
+.rv-build-raw {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--grey);
+  overflow-wrap: anywhere;
+}
+.rv-build-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* One thing moving, and you can point at it: a single gold sweep in a channel.
+   Not a percentage — we do not know how long the model will take, and a bar
+   that claims to know is a lie the wait will expose. */
+.rv-build-bar {
+  height: 2px;
+  margin: 0 0 10px;
+  background: var(--line);
+  overflow: hidden;
+  border-radius: 2px;
+}
+.rv-build-bar i {
+  display: block;
+  height: 100%;
+  width: 34%;
+  background: var(--gold);
+  transform: translateX(-110%);
+  animation: rvSweep 1500ms var(--ease-io) infinite;
+}
+@keyframes rvSweep {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+:root.reduce-motion .rv-build-bar i {
+  animation: none;
+  width: 100%;
+  transform: none;
+}
+
+/* ---------- the fiction is the claim, so it gets said on the card ----------
+   A judge has to take "de-identified" on faith unless the screen says what was
+   done. Ground and weight separate it, not a border box. */
+.rv-fiction {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: var(--gold-dim);
+  border-radius: var(--r-ctl);
+  max-width: 68ch;
+}
+.rv-fiction p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.rv-fiction p + p {
+  margin-top: 6px;
+}
+.rv-fiction strong {
+  color: var(--cream);
+}
+:root[data-text="2"] .rv-fiction p,
+:root[data-text="3"] .rv-fiction p,
+:root[data-text="2"] .rv-build-say,
+:root[data-text="3"] .rv-build-say {
+  font-size: 15px;
+}
+
+/* The same claim, one line, on a customer that is already in Practice. */
+.scen .why .rv-made-up {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--grey);
+}
+.scen .why .rv-made-up strong {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+/* The global rules squash every transition and animation to 1ms but leave the
+   DELAY alone — and a staged arrival is built out of delays. Without this a
+   reduced-motion reader would watch an invisible 340ms wait before the last
+   answer lane appeared. Both switches, because the app's own one does not set
+   the media query. */
+.reduce-motion .rv-whole,
+.reduce-motion .rv-hist-bar,
+.reduce-motion .rv-rt-row {
+  animation-delay: 0ms !important;
+  transition-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-whole,
+  .rv-hist-bar,
+  .rv-rt-row {
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
 }

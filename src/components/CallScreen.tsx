@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useA11y } from "../lib/a11y";
 import { fmtClock } from "../lib/dates";
-import { DEMO_SCRIPT } from "../lib/demoScript";
+import { demoScriptFor } from "../lib/demoScript";
 import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
 import { play, setCallMode } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
-import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
+import type { AssistantState, Customer, Mode, Report, Scenario, Session, Sign, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
 import { PHONE, useMedia } from "../lib/useMedia";
 import { Select } from "./Select";
@@ -75,6 +75,24 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const signCount = session.signs.length;
   const newestSign = signCount ? session.signs[signCount - 1] : undefined;
   const openCount = session.signs.filter((g) => !g.handled).length;
+  // What the sheet's handle names. NOT the newest sign: the stack is ordered
+  // open legal, then open tips, then handled, so the newest is often a tip
+  // sitting BELOW the legal card the head was naming it over. The head and the
+  // first card are read as one object — a head naming a different card than the
+  // one under it is the worst version of both.
+  //
+  // SignStack owns this order; this mirrors it because the two files cannot
+  // share a helper without another lane's file being opened. If the stack's
+  // order changes, this changes with it.
+  const leadSign = useMemo<Sign | undefined>(() => {
+    const newestFirst = (a: Sign, b: Sign) => b.t - a.t;
+    const open = session.signs.filter((s) => !s.handled);
+    return (
+      open.filter((s) => s.kind === "legal").sort(newestFirst)[0] ??
+      open.filter((s) => s.kind !== "legal").sort(newestFirst)[0] ??
+      [...session.signs].sort((a, b) => (b.handledAt ?? 0) - (a.handledAt ?? 0))[0]
+    );
+  }, [session.signs]);
   // On a phone, a legal sign lifts the sheet by itself; tips wait in the peek.
   // With coaching off it must not — a sheet rising on its own is the loudest
   // prompt on the screen.
@@ -91,6 +109,8 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   }, [phone, newestSign, signCount, coaching]);
   const speedRef = useRef(speed);
   speedRef.current = speed;
+  const coachingRef = useRef(coaching);
+  coachingRef.current = coaching;
   const typeRef = useRef<HTMLInputElement>(null);
 
   // Demo mode: the script plays through the real engine.
@@ -106,14 +126,20 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     let cancelled = false;
     let timer = 0;
     let i = 0;
+    // Which worker: the one who had the signs, or the one who did not. The
+    // customer's words are identical in both, so the engine raises the same
+    // signs at the same moments and the only variable is what was done about
+    // them. Read once at mount — flipping the setting mid-call would splice two
+    // different workers into one transcript.
+    const script = demoScriptFor(coachingRef.current);
     const step = () => {
-      if (cancelled || i >= DEMO_SCRIPT.length) return;
-      const line = DEMO_SCRIPT[i];
+      if (cancelled || i >= script.length) return;
+      const line = script[i];
       timer = window.setTimeout(() => {
         if (cancelled) return;
         addLine(line.text, line.speaker);
         i += 1;
-        if (i >= DEMO_SCRIPT.length) setDemoDone(true);
+        if (i >= script.length) setDemoDone(true);
         else step();
       }, (line.gap * 1000) / speedRef.current);
     };
@@ -155,8 +181,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   // keyboard: H = handle newest, E = end, T = type
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+      // A bare letter must not reach the call while the person is somewhere
+      // else. Typing was already covered; a floating panel was not. Settings is
+      // deliberately non-modal — the worker may be on a live call — so focus can
+      // sit on its Reset button with the call still listening on window.
+      // Measured: Tab into the open panel, press "e", and the call ended
+      // ("Writing report…") with the panel still open over it.
+      if (el?.isContentEditable || el?.closest('[role="dialog"], [role="listbox"], .sel-pop')) return;
       // H marks the newest sign handled — with nothing on screen there is
       // nothing to mark, and a silent keystroke that changes hidden state is
       // worse than a key that does nothing.
@@ -178,7 +212,12 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     if (!typed.trim()) return;
     addLine(typed, typedAs);
     setTyped("");
-    setTypedAs((s) => (s === "customer" ? "worker" : "customer"));
+    // It used to alternate, on the theory that a call alternates. It does not
+    // reliably, and the cost is asymmetric: typing the customer's sentence while
+    // the box has silently flipped to Worker raises NOTHING. Measured — the same
+    // hardship sentence gave 0 signs in 16s as Worker and the legal sign in 2.7s
+    // as Customer. Anyone typing during questions hits it. It stays where it was
+    // put; the person typing knows who is speaking.
     play("tap");
   };
 
@@ -346,7 +385,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                     </button>
                   ))}
                 </div>
-                <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
+                <span className="hint">{coaching ? "Watch what the worker does the moment each sign lands." : "Watch line 7: the worker asks for money instead of answering the sign."}</span>
               </>
             )}
             {mode === "practice" && (
@@ -377,9 +416,9 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
               <>
                 <span className={"sheet-count" + (openCount ? " on" : "")}>{signCount}</span>
                 <span className="sheet-title">
-                  {newestSign ? (
+                  {leadSign ? (
                     <>
-                      <b>{newestSign.title}</b>
+                      <b>{leadSign.title}</b>
                       <span className="small muted"> · {openCount} open</span>
                     </>
                   ) : (

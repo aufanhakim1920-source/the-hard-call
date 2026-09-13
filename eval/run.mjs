@@ -10,9 +10,11 @@
 //   node eval/run.mjs --blind    send the newest line as speaker "unknown" so
 //                                speaker accuracy measures inference, not echo
 //
-// Writes eval/results.json and public/eval-results.json.
+// Preview by default. --publish writes both artifacts after a full, error-free
+// standard run. Never pass --publish with mocked model responses.
 
 import fs from "node:fs";
+import { publishResults } from "./publish.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,13 +26,14 @@ const RETRYABLE = /\b(429|503)\b|RESOURCE_EXHAUSTED|UNAVAILABLE|overloaded|fetch
 
 // ---------------------------------------------------------------- args
 function parseArgs(argv) {
-  const out = { model: undefined, limit: Infinity, concurrency: 3, blind: false };
+  const out = { model: undefined, limit: Infinity, concurrency: 3, blind: false, publish: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--model") out.model = argv[++i];
     else if (a === "--limit") out.limit = Number(argv[++i]);
     else if (a === "--concurrency") out.concurrency = Number(argv[++i]);
     else if (a === "--blind") out.blind = true;
+    else if (a === "--publish") out.publish = true;
   }
   if (!Number.isFinite(out.concurrency) || out.concurrency < 1) out.concurrency = 3;
   if (!(out.limit > 0)) out.limit = Infinity;
@@ -127,7 +130,7 @@ async function main() {
   }
   console.log(`key: ${keySource === "environment" ? "environment" : path.basename(keySource)}`);
 
-  const [{ handle: handler }, { SIGN_KEYS }] = await Promise.all([
+  const [{ handle: handler }, { SIGN_KEYS, REQUEST_KEY }] = await Promise.all([
     import("../supabase/functions/api/flags.ts"),
     import("../supabase/functions/_shared/signs.ts"),
   ]);
@@ -216,14 +219,27 @@ async function main() {
     return { id: c.id, ok: false, got: [], signs: [], speaker: "error", model: undefined, ms: null, modelMs: null, attempts, error: lastError.slice(0, 400) };
   }
 
+  // The two tiers are different outcomes, and cases.json has no vocabulary for
+  // the second one: every label is a flat key, written before the request tier
+  // existed. So the headline score is computed on the NOTICE tier alone — the
+  // same arithmetic over the same labels as every previous run, directly
+  // comparable — and requests are reported beside it, never folded into it.
+  // Relabelling a case to absorb the new outcome is the one thing that would
+  // make these numbers meaningless.
+  const isRequest = (key) => key === REQUEST_KEY;
+  const noticeKeys = (keys) => keys.filter((k) => !isRequest(k));
+  const requestKeys = (keys) => keys.filter(isRequest);
+
   const results = await pool(cases, args.concurrency, async (c) => {
     const r = await runCase(c);
     const exp = new Set(c.expect);
-    const got = new Set(r.got);
+    const got = new Set(noticeKeys(r.got));
+    const asked = requestKeys(r.got);
     const verdict = !r.ok ? "ERR " : setEq(exp, got) ? "PASS" : "FAIL";
     const spk = r.ok && r.speaker !== c.line.speaker ? `  speaker=${r.speaker}!` : "";
+    const req = asked.length ? `  +request` : "";
     console.log(
-      `${verdict} ${c.id}  ${padL(r.ms ?? "-", 5)}ms  expect [${c.expect.join(", ")}]  got [${r.got.join(", ")}]${spk}${r.ok ? "" : "  " + r.error.split("\n")[0].slice(0, 120)}`,
+      `${verdict} ${c.id}  ${padL(r.ms ?? "-", 5)}ms  expect [${c.expect.join(", ")}]  got [${noticeKeys(r.got).join(", ")}]${req}${spk}${r.ok ? "" : "  " + r.error.split("\n")[0].slice(0, 120)}`,
     );
     return r;
   });
@@ -235,10 +251,31 @@ async function main() {
   let speakerRight = 0;
   const failures = [];
 
+  const naive = { tp: 0, fp: 0, fn: 0 };
+  const tierRows = [];
+
   results.forEach((r, i) => {
     const c = cases[i];
     const exp = new Set(c.expect);
-    const got = new Set(r.got);
+    const got = new Set(noticeKeys(r.got));
+
+    // The second, deliberately unflattering number: score the request as if it
+    // were a prediction against these labels. It is what the flat label set
+    // would say, and it is why a tier-aware label set is a question for laural.
+    const gotAll = new Set(r.got);
+    for (const k of exp) {
+      if (gotAll.has(k)) naive.tp++;
+      else naive.fn++;
+    }
+    for (const k of gotAll) if (!exp.has(k)) naive.fp++;
+
+    if (c.expect.includes("hardship-request")) {
+      tierRows.push({
+        id: c.id,
+        outcome: got.has("hardship-request") ? "notice" : requestKeys(r.got).length ? "request" : "silent",
+        text: c.line.text,
+      });
+    }
     for (const k of exp) {
       perKey[k].support++;
       if (got.has(k)) perKey[k].tp++;
@@ -258,9 +295,10 @@ async function main() {
         direction: c.direction,
         text: c.line.text,
         expect: c.expect,
-        got: r.got,
+        got: noticeKeys(r.got),
+        requests: requestKeys(r.got),
         missing: c.expect.filter((k) => !got.has(k)),
-        extra: r.got.filter((k) => !exp.has(k)),
+        extra: noticeKeys(r.got).filter((k) => !exp.has(k)),
         speaker: r.speaker,
         evidence: r.signs.map((s) => `${s.key}: "${s.evidence}" (${s.confidence})`),
         ...(r.ok ? {} : { error: r.error }),
@@ -304,10 +342,30 @@ async function main() {
   if (failures.length) {
     console.log(`\nFAILURES (${failures.length})`);
     for (const f of failures) {
-      const why = f.error ? `ERROR ${f.error.split("\n")[0].slice(0, 100)}` : `missing [${f.missing.join(", ")}] extra [${f.extra.join(", ")}]`;
+      const why = f.error
+        ? `ERROR ${f.error.split("\n")[0].slice(0, 100)}`
+        : `missing [${f.missing.join(", ")}] extra [${f.extra.join(", ")}]${f.requests?.length ? " raised-a-request" : ""}`;
       console.log(`  ${f.id}  ${why}  "${f.text.length > 70 ? f.text.slice(0, 67) + "..." : f.text}"`);
     }
   }
+
+  // ------------------------------------------------------- the second tier
+  // Not folded into the score above. cases.json labels a case
+  // "hardship-request" or nothing; it cannot say "this is a request, not a
+  // notice", so the only honest thing to print is what actually happened.
+  const naivePRF = prf(naive.tp, naive.fp, naive.fn);
+  const counts = { notice: 0, request: 0, silent: 0 };
+  for (const row of tierRows) counts[row.outcome]++;
+  console.log(`\nTIER — the ${tierRows.length} cases labelled hardship-request`);
+  console.log(`  notice   ${counts.notice}   s72 engaged, 21-day clock, stored and scored`);
+  console.log(`  request  ${counts.request}   worker prompted to ask; no clock, not stored, not scored`);
+  console.log(`  silent   ${counts.silent}   nothing raised`);
+  for (const row of tierRows.filter((r) => r.outcome !== "notice")) {
+    console.log(`    ${pad(row.outcome, 8)} ${row.id}  "${row.text.length > 62 ? row.text.slice(0, 59) + "..." : row.text}"`);
+  }
+  console.log(
+    `\n  cases.json has no label for a request, so the score above counts only the notice tier —\n  the same arithmetic over the same labels as every earlier run. Scored the other way, with\n  a request treated as a prediction against these flat labels: P ${fmt(naivePRF.precision)}  R ${fmt(naivePRF.recall)}  F1 ${fmt(naivePRF.f1)}.`,
+  );
 
   // ---------------------------------------------------------------- write
   const out = {
@@ -331,38 +389,42 @@ async function main() {
         { support: v.support, predicted: v.predicted, tp: v.tp, fp: v.fp, fn: v.fn, precision: round(v.precision), recall: round(v.recall), f1: round(v.f1) },
       ]),
     ),
+    // The headline `overall` above is the NOTICE tier only. These two are the
+    // request tier, kept separate on purpose: a request is a different
+    // outcome, and no label in cases.json expresses it.
+    requestTier: {
+      key: REQUEST_KEY,
+      scored: false,
+      labelledHardship: tierRows.length,
+      outcomes: counts,
+      rows: tierRows,
+      ifScoredAgainstFlatLabels: {
+        precision: round(naivePRF.precision),
+        recall: round(naivePRF.recall),
+        f1: round(naivePRF.f1),
+        tp: naive.tp,
+        fp: naive.fp,
+        fn: naive.fn,
+      },
+    },
     speakerAccuracy: round(n ? speakerRight / n : null),
     latency,
     failures,
     cases: results.map((r, i) => ({
       id: cases[i].id,
       expect: cases[i].expect,
-      got: r.got,
+      got: noticeKeys(r.got),
+      requests: requestKeys(r.got),
       ok: r.ok,
       speaker: r.speaker,
       ms: r.ms,
       attempts: r.attempts,
     })),
   };
-  const text = JSON.stringify(out, null, 2) + "\n";
-  const resultsPath = path.join(HERE, "results.json");
-  const publicDir = path.join(ROOT, "public");
-  fs.mkdirSync(publicDir, { recursive: true });
-  const publicPath = path.join(publicDir, "eval-results.json");
-  // public/eval-results.json is served by the deployed site — it is the number a
-  // judge reads. A partial run is a real measurement of a subset, not of the
-  // engine, so it prints its table and publishes nothing. Overwriting the
-  // published score with a --limit 3 run is a footgun that fires silently.
-  if (cases.length < allCases.length) {
-    console.log(
-      `\nran ${cases.length} of ${allCases.length} cases, so nothing was written. ` +
-        `Drop --limit to publish ${path.relative(ROOT, resultsPath)} and ${path.relative(ROOT, publicPath)}.`,
-    );
-    return;
-  }
-  fs.writeFileSync(resultsPath, text);
-  fs.writeFileSync(publicPath, text);
-  console.log(`\nwrote ${path.relative(ROOT, resultsPath)} and ${path.relative(ROOT, publicPath)}`);
+  console.log(publishResults({
+    publish: args.publish, blind: args.blind, total: allCases.length, results: out,
+    paths: [path.join(HERE, "results.json"), path.join(ROOT, "public/eval-results.json")],
+  }));
 }
 
 try {

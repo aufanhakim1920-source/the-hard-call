@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { motionOff } from "../lib/a11y";
+import type { CSSProperties } from "react";
 import type { Report } from "../lib/types";
 import { useCountUp } from "../lib/useCountUp";
 import { ledger } from "./report-math";
@@ -10,36 +9,23 @@ import "./report-visuals.css";
 // same fact as a rate (Gigerenzer 2011), and one part-to-whole comparison is
 // one reading where four independent bars are four.
 //
-// Three treatments, never three hues: answered is a quiet tint, missed is the
-// solid signal, and a verdict the transcript could not support is an empty
-// dotted slot. All three survive greyscale and high contrast, and the accent
+// Three treatments, never three hues: answered is a quiet tint with a hairline
+// edge, missed is the solid signal cut with hazard bars, and a verdict the
+// transcript could not support is an empty dotted slot. Texture rather than
+// colour tells them apart, because a call that went entirely one way draws ONE
+// full-width segment — and the demo's whole argument is two of those cards held
+// side by side. All three survive greyscale and high contrast, and the accent
 // is spent on the one thing the worker still has to fix.
 
-const COUNT_MS = 620;
-
-/** Both charts on this card grow once, on arrival. Decided at first paint so a
-    throttled tab (which gets no animation frames) starts finished instead of
-    empty, with a timeout as the second net — the same discipline the score
-    ring and the answer-time rows use. */
-function useGrown(safetyMs = 900): boolean {
-  const [grown, setGrown] = useState(() => motionOff() || document.hidden);
-  useEffect(() => {
-    if (grown) return;
-    const raf = requestAnimationFrame(() => setGrown(true));
-    const safety = window.setTimeout(() => setGrown(true), safetyMs);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(safety);
-    };
-  }, [grown, safetyMs]);
-  return grown;
-}
+// Only the NUMERATOR counts. How many signs were raised was never in question
+// — it is the whole the fraction is read against — and counting it up put
+// "0 of 0", then "2 of 3", then the truth on screen in the first half second.
+// A denominator that moves makes every intermediate frame a different claim.
+const COUNT_MS = 420;
 
 export function ReportLedger({ report, previous }: { report: Report; previous: Report[] }) {
   const l = ledger(report.items);
-  const grown = useGrown();
   const nAnswered = useCountUp(l.answered, COUNT_MS);
-  const nTotal = useCountUp(l.total, COUNT_MS);
 
   if (l.total === 0) {
     return <p className="rv-empty">No signs were raised on this call, so there is nothing to score.</p>;
@@ -60,7 +46,11 @@ export function ReportLedger({ report, previous }: { report: Report; previous: R
     <section className="rv-ledger">
       <div className="rv-corners">
         <span>Signs raised</span>
-        <span>{report.coaching === false ? "assistant was silent" : `${report.mode} call`}</span>
+        {/* The run mode used to live here, in a 10px corner label, and the
+            ternary read a MISSING mode as a coached one. It is said once now,
+            in plain words above this chart. The corner is a chart reference,
+            not a place to hide the fact that changes how the chart reads. */}
+        <span>{report.mode} call</span>
       </div>
 
       <div className="rv-ledger-top">
@@ -68,14 +58,14 @@ export function ReportLedger({ report, previous }: { report: Report; previous: R
           <span className="sr-only">{sentence}</span>
           {nothingJudged ? (
             <span aria-hidden="true">
-              <b>{nTotal}</b>
+              <b>{l.total}</b>
               <em>signs raised · none verified</em>
             </span>
           ) : (
             <span aria-hidden="true">
               <b>{nAnswered}</b>
               <i>of</i>
-              <b>{nTotal}</b>
+              <b>{l.total}</b>
               <em>signs answered</em>
             </span>
           )}
@@ -83,10 +73,12 @@ export function ReportLedger({ report, previous }: { report: Report; previous: R
         <AnsweredHistory report={report} previous={previous} />
       </div>
 
+      {/* True widths on the first frame — the bar rises into place, it does not
+          inflate from zero. See the arrival note at the top of the stylesheet. */}
       <div className="rv-whole" aria-hidden="true">
-        {l.answered > 0 && <span className="rv-seg answered" style={{ width: grown ? pct(l.answered) : "0%" }} />}
-        {l.missed > 0 && <span className="rv-seg missed" style={{ width: grown ? pct(l.missed) : "0%" }} />}
-        {l.unknown > 0 && <span className="rv-seg unknown" style={{ width: grown ? pct(l.unknown) : "0%" }} />}
+        {l.answered > 0 && <span className="rv-seg answered" style={{ width: pct(l.answered) }} />}
+        {l.missed > 0 && <span className="rv-seg missed" style={{ width: pct(l.missed) }} />}
+        {l.unknown > 0 && <span className="rv-seg unknown" style={{ width: pct(l.unknown) }} />}
       </div>
 
       <div className="rv-keys" aria-hidden="true">
@@ -128,7 +120,6 @@ const HIST_MAX = 5;
 const HIST_H = 32;
 
 function AnsweredHistory({ report, previous }: { report: Report; previous: Report[] }) {
-  const grown = useGrown(1100);
   const earlier = previous.slice(0, HIST_MAX).reverse();
   const all = [...earlier, report].map((r) => ({ r, l: ledger(r.items) })).filter((x) => x.l.total > 0);
   if (all.length < 2) return null;
@@ -148,7 +139,7 @@ function AnsweredHistory({ report, previous }: { report: Report; previous: Repor
             <span
               className={"rv-hist-bar" + (here ? " here" : "")}
               key={x.r.callId + i}
-              style={{ height: grown ? h : 0 }}
+              style={{ height: h, "--rv-i": i } as CSSProperties}
               title={`${x.l.answered} of ${x.l.total} answered`}
             />
           );

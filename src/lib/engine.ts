@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { announce, coachingOn, getA11y } from "./a11y";
 import { postFlags, postReport } from "./api";
+import { localSigns } from "./detectorBridge";
 import { maskSensitive } from "./mask";
 import { play, playSigns } from "./sfx";
 import { actions, getStore, getStoreScope, lessonTexts } from "./store";
@@ -36,51 +37,62 @@ export function useCallEngine(opts: EngineOptions) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.mode, opts.customer.name, opts.scenarioId]);
 
+  // One place that puts a sign on the session, whichever pass found it, so the
+  // sound and the announcement cannot drift apart between the two.
+  const commitSigns = useCallback((fresh: Sign[]) => {
+    if (!fresh.length) return;
+    setSession((cur) => {
+      const have = new Set(cur.signs.map((g) => g.key));
+      const add = fresh.filter((g) => !have.has(g.key));
+      if (!add.length) return cur;
+      // Coaching off silences the call, not the engine: the signs are still on
+      // the session, so the report card, the deadlines and the timeline all see
+      // them. Only the card, the sound and the announcement — the three things
+      // the worker would notice — stop.
+      if (coachingOn()) {
+        playSigns(add);
+        for (const g of add) {
+          // A legal sign starts a clock, so it interrupts; a tip waits its turn.
+          const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
+          announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
+        }
+      }
+      return { ...cur, signs: [...cur.signs, ...add] };
+    });
+  }, []);
+
   const runFlags = useCallback(async (lineId: string) => {
     const s = sessionRef.current;
     const lines = s.lines.slice(-14);
     if (!lines.some((l) => l.id === lineId)) return;
     const existingKeys = s.signs.map((g) => g.key);
     const lessons = lessonTexts(getStore());
+
+    // The deterministic pass runs FIRST and needs no network, so a sign its
+    // rules can reach appears on the turn it was said instead of after a round
+    // trip — and it still appears when the model call is throttled or fails
+    // outright. Its keys are added to existingKeys so the model pass that
+    // follows cannot draw a second card for the same obligation.
+    const local = await localSigns(lines, lineId, existingKeys);
+    if (local.length) {
+      commitSigns(local);
+      for (const g of local) existingKeys.push(g.key);
+    }
+
     let attempt = 0;
     while (attempt < 3) {
       try {
         const res = await postFlags({ lines, newLineId: lineId, existingKeys, lessons, direction: s.customer.direction });
         setLastModel(res.model);
         const now = Date.now();
-        setSession((cur) => {
-          const have = new Set(cur.signs.map((g) => g.key));
-          const fresh: Sign[] = res.signs
-            .filter((g) => !have.has(g.key))
-            .map((g) => ({ ...g, id: uid("sg"), t: now, lineId, handled: false }));
-          // A dictated line arrives unattributed and this answer is what decides
-          // it — so carry HOW it was decided, not just the answer. Without the
-          // confidence, the session posted to /api/report presents every guessed
-          // line as known, and the report's attribution gate never fires for
-          // live dictation: a duty could be marked handled on a customer line
-          // misread as staff. laural's speaker_confidence contract; the gate
-          // itself lives in supabase/functions/_shared/reportItems.ts.
-          // res.speaker === "unknown" now also lands, as "unknown" rather than
-          // as an absent field that reads as known.
-          const linesNext = cur.lines.map((l) =>
-            l.id === lineId && l.speaker === "unknown"
-              ? { ...l, speaker: res.speaker, speakerConfidence: res.speakerConfidence }
-              : l,
-          );
-          // Coaching off silences the call, not the engine: the signs above are
-          // already on the session, so the report card, the deadlines and the
-          // timeline all see them. Only the card, the sound and the
-          // announcement — the three things the worker would notice — stop.
-          if (fresh.length && coachingOn()) {
-            playSigns(fresh);
-            for (const g of fresh) {
-              // A legal sign starts a clock, so it interrupts; a tip waits its turn.
-              const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
-              announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
-            }
-          }
-          return { ...cur, lines: linesNext, signs: [...cur.signs, ...fresh] };
-        });
+        const fresh: Sign[] = res.signs.map((g) => ({ ...g, id: uid("sg"), t: now, lineId, handled: false }));
+        setSession((cur) => ({
+          ...cur,
+          lines: cur.lines.map((l) =>
+            l.id === lineId && l.speaker === "unknown" ? { ...l, speaker: res.speaker, speakerConfidence: res.speakerConfidence ?? (res.speaker === "unknown" ? "unknown" : "inferred") } : l,
+          ),
+        }));
+        commitSigns(fresh);
         return;
       } catch (err) {
         attempt += 1;
@@ -89,7 +101,7 @@ export function useCallEngine(opts: EngineOptions) {
         if (attempt >= 3) console.warn("flags failed", err);
       }
     }
-  }, []);
+  }, [commitSigns]);
 
   const addLine = useCallback(
     (text: string, speaker: Speaker = "unknown") => {
