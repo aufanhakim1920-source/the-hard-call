@@ -4,6 +4,10 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 19:15 | laj07 | other | [the demo script raises nothing in rules mode](../../commit/14f6c02cb8c94c2f1ab1458eba689a2ba44c0f97) | DETECTOR.md | +57 / -7 |
+| 13 Sept, 18:20 | laj07 | engine | [revert build-demo to main: my zip shipped a stale copy](../../commit/62b9024d032db4c8ebcd15e253a39565cac0cc6e) | ab-demo.html, build-demo.ts | +243 / -309 |
+| 13 Sept, 18:18 | laj07 | engine | [honour existingKeys when scoring hardship agreement](../../commit/d2aa2cd56e02b7ac8ff9d3114d73c6a6c9c46bcc) | event-schema.md, cross-check-cases.ts | +20 / -6 |
+| 13 Sept, 18:14 | laj07 | engine | [fix four review findings from PR #3](../../commit/cef69d90fd8e1f3ecd87fd6a4b912bb5e7b1fa75) | ab-demo.html, DETECTOR.md, event-schema.md +4 | +453 / -277 |
 | 13 Sept, 19:35 | aufanhakim1920-source | project + report | [the product is CallFlag - revert the rename](../../commit/9af2dbf5db146cc3b7c4158602c241ddbd6c87c1) | README.md, TEAM-LOG.md, DECISIONS.md +11 | +19 / -19 |
 | 13 Sept, 19:06 | laj07 | project + report | [rename to The Hard Call](../../commit/fd40cf3a4959414bcc4b633c6e1945cc4c9c5df5) | README.md, TEAM-LOG.md, DECISIONS.md +11 | +19 / -19 |
 | 13 Sept, 18:55 | aufanhakim1920-source | other | [how the submission film was cut, and what the footage forced](../../commit/0a951b264c678ef9bf437da4c563807bdf6afec6) | DECISIONS.md | +35 / -0 |
