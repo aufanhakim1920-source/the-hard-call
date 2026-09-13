@@ -4,6 +4,8 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 16:55 | aufanhakim1920-source | pitch | [291 words of narration inside an 88-second slot, and a legal line only laural could correct](../../commit/a1672214c9b676ebda7ea6376667ba5c0346c12a) | DEMO-SCRIPT.md, PITCH.md, SUBMISSION.md | +268 / -87 |
+| 13 Sept, 16:55 | aufanhakim1920-source | live call | [the accent now belongs to the legal card alone](../../commit/afb54d8bbc356da12e692bb7dbbb23d1f8a99104) | Sheet.tsx, sheet.css, sign-card.css | +86 / -0 |
 | 13 Sept, 16:33 | laj07 | other | [state the privacy claim precisely, the absolute version over-claimed](../../commit/7b550ab64853006b0bcadec0e7f6e323405dbcc1) | hardship-flag-rules.md, transcript-schema.md | +6 / -2 |
 | 13 Sept, 16:23 | laj07 | engine | [fix parameter properties in replay driver, build was red](../../commit/ecb98db48396b57f200c63102d7e1ee32faf6888) | replay.ts | +9 / -4 |
 | 13 Sept, 16:20 | laj07 | engine | [chase unresolved requests at day 7, A/B demo page](../../commit/9276f1e7c99a5cc298041a88b4fc60b9c341b44a) | ab-demo.html, event-schema.md, run-detector.ts +4 | +61 / -6 |
