@@ -148,10 +148,13 @@ Runs the detector over `eval/cases.json` and reports where the two systems
 disagree. It is a report, not a gate — the systems are allowed to differ, we
 just need to know where.
 
-Current state on the cases checked: **41/44 agree.** Three disagreements, all
-known: `c41` (below), and `c42`/`c44`, where the detector fires and the case
-expects nothing. Both of those cases are about the ABA inform duty rather than
-the notice, so the comparison may be reading the wrong key — not yet confirmed.
+Current state on the cases checked: **43/44 agree, zero false positives.**
+
+`c42` and `c44` were reported as false positives until the report was fixed. Both
+carry `existingKeys: ["hardship-request"]` — the notice is already on record — and
+`expect` lists only the delta the new line should add. The detector correctly
+re-finds that notice in the context turns; the report was ignoring `existingKeys`.
+`c43` is the control: the same question as `c42`, no notice on record, silent.
 Every hard negative stays silent, including `c19` (a *worker* line containing the
 word "hardship") and `c35` (distress with no money ask).
 
