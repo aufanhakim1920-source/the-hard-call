@@ -81,23 +81,35 @@ export function useCallEngine(opts: EngineOptions) {
     }
   }, []);
 
+  // The deterministic pass is local and needs no network, so it must not sit in
+  // the serial queue behind another line's failing model call. Measured on the
+  // deployed URL: one 502'd line delayed the NEXT line's local card by up to 9s
+  // of retry backoff (1500 + 3000 + 4500), which is how a legal sign ends up
+  // arriving after End call.
+  const runLocal = useCallback(
+    async (lineId: string) => {
+      const s = sessionRef.current;
+      const lines = s.lines.slice(-14);
+      if (!lines.some((l) => l.id === lineId)) return;
+      const local = await localSigns(
+        lines,
+        lineId,
+        s.signs.map((g) => g.key),
+      );
+      if (local.length) commitSigns(local);
+    },
+    [commitSigns],
+  );
+
   const runFlags = useCallback(async (lineId: string) => {
     const s = sessionRef.current;
     const lines = s.lines.slice(-14);
     if (!lines.some((l) => l.id === lineId)) return;
+    // Includes whatever runLocal already committed: commitSigns updates
+    // sessionRef synchronously and dedupes on key regardless, so the model pass
+    // cannot draw a second card for an obligation already on screen.
     const existingKeys = s.signs.map((g) => g.key);
     const lessons = lessonTexts(getStore());
-
-    // The deterministic pass runs FIRST and needs no network, so a sign its
-    // rules can reach appears on the turn it was said instead of after a round
-    // trip — and it still appears when the model call is throttled or fails
-    // outright. Its keys are added to existingKeys so the model pass that
-    // follows cannot draw a second card for the same obligation.
-    const local = await localSigns(lines, lineId, existingKeys);
-    if (local.length) {
-      commitSigns(local);
-      for (const g of local) existingKeys.push(g.key);
-    }
 
     let attempt = 0;
     while (attempt < 3) {
@@ -135,6 +147,9 @@ export function useCallEngine(opts: EngineOptions) {
       // so the model has context and can catch e.g. a worker skipping a sign.
       pending.current += 1;
       setAssistant("thinking");
+      // Local pass outside the queue so a previous line's retry backoff can
+      // never delay it. Only the model pass is serialised.
+      void runLocal(line.id);
       queue.current = queue.current
         .then(() => runFlags(line.id))
         .finally(() => {
@@ -142,7 +157,7 @@ export function useCallEngine(opts: EngineOptions) {
           if (pending.current === 0) setAssistant((a) => (a === "paused" ? "idle" : "idle"));
         });
     },
-    [runFlags],
+    [runFlags, runLocal],
   );
 
   const markHandled = useCallback((id: string, handled = true) => {
