@@ -1397,3 +1397,36 @@ The hook had exactly one consumer and was deleted rather than left behind. ⭐
 **A helper whose whole premise is "start a quantity at zero and decide later"
 is a loaded gun for the next chart** — the same reason its sibling went this
 morning.
+
+## The same fault, four times in one day
+
+Four screens, four passes, and every time the answer to one question was wrong:
+
+> **What is the loudest thing on this screen, and is it the thing that matters most?**
+
+| screen | loudest | what mattered |
+|---|---|---|
+| report card | the score ring, 132 px, round, saturated, top-right | the miss count, 65 px on flat page |
+| compare board | the customer name, **identical on both rows** | the mode, 10 px grey, the only thing that differs |
+| Lessons | **the empty text input**, 17,388 px2 of sunken ground | four lessons, flat page, 1 px rules |
+| Deadlines | nothing; all open rows identical | an overdue clock versus one due in 16 days |
+
+The compare board is the sharpest: the loudest type in each row was **the part that is the same in
+both rows.** The screen exists to show a difference and was shouting the similarity. Lessons is the
+most embarrassing: the box you type *into* outranked the corpus you have built, which is the only
+proof the product's central claim is true.
+
+**Type ranks within a surface. Between regions, the ranking is ground and air, and with neither there
+is no ranking at all however good the type is.** Measured: the report card had **0** painted surfaces
+over 8000 px2 against **25** hairlines; the compare board had **1**, and it was a data segment rather
+than a region ground, against **53**.
+
+A hairline under a row is not a ranking, it is a fence. And **four equal cards is not the cure for
+four flat rows** - one continuous raised surface is; equal cards is the same failure wearing
+containers.
+
+**The standing cost, paid every single time:** changing a ground re-opened a contrast question that
+ground had already answered. A Practice badge at 4.48:1, a deadline's "3 days left" at 4.48:1, a
+plate needing two different tokens per ground, and `reduce-transparency` repainting a data fill to
+the exact colour of the plate newly behind it. **After moving a ground, re-measure everything sitting
+on it, including what the accessibility settings repaint.**
