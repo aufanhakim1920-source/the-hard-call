@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 14 Sept, 00:14 | aufanhakim1920-source | other | [the film's third cut - cuts, not zooms](../../commit/3df86745bf55a4685a186bceb9273bcf1ccbf0c6) | DECISIONS.md | +19 / -0 |
 | 13 Sept, 23:29 | aufanhakim1920-source | other | [the film's second cut, from the team's notes](../../commit/ed1d81136eba8d24cc58dbc771dfe9beae3efa3e) | DECISIONS.md | +32 / -0 |
 | 13 Sept, 23:01 | aufanhakim1920-source | other | [the two facts laural caught, and the number nobody could source](../../commit/a4fc67ea3a2f871bd114044346fe13c22399b1f3) | About.tsx | +3 / -2 |
 | 13 Sept, 19:15 | laj07 | other | [the demo script raises nothing in rules mode](../../commit/14f6c02cb8c94c2f1ab1458eba689a2ba44c0f97) | DETECTOR.md | +57 / -7 |
