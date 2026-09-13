@@ -1543,3 +1543,22 @@ pattern only matched two digits (`1b`, `4a`, `4b` are letters) — the film was 
 before the pattern was widened. A word-pinned beat whose word no longer exists falls back silently to
 an offset, so re-voicing a line means re-reading its scene: the worker beat kept printing "junior,
 undertrained" for one render after the voice had stopped saying it.
+
+## The film, third cut: the zoom was the mistake, and the team said so in one voice
+
+v2's ambient camera — a linear push and pan on every scene, added to satisfy the studio's dead-still
+gate — was the thing everyone noticed: Tron ("zooming in for the entire 3 min is not good", "text
+goes out of frame"), laural ("it's happening a lot", "2:13 must stay static, it shows the
+difference"), Aufan ("I don't like the zooming thingy, leave it like before"). **A gate-chasing
+change that no viewer asked for is exactly what a viewer sees first.**
+
+What Aufan meant by "dormant" was different: when the voice points at something, the picture should
+**cut** into it — "zoom in right away, not slowly." So v3 has no ambient camera at all, and pointing
+is done with cuts: the legal card's four parts on their words, the report card's lead then its
+rows, the click. The About page was re-shot after its facts were fixed (laural asked whether it had
+been). The practice-voice slot is cut — laural checked, nothing end to end exists in the ElevenLabs
+history. Real stamp sounds on the four stamps; the ticking shortened and lowered ("a bit dragging").
+
+The studio's postflight now treats this film's register explicitly: the dead-still percentage and
+the still-run check are reported, not gated, because the holds are the team's direction; the
+frozen-ending check still gates it, and the film ends on a running second hand and the mark arriving.
