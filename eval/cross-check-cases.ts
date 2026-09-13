@@ -25,6 +25,12 @@ import { caseToTranscript } from "../src/lib/speaker.js";
 type Case = {
   id: string;
   context?: Array<{ speaker: string; text: string }>;
+  /**
+   * Keys the sign engine already has on record before this line. `expect` is the
+   * DELTA given these, not the total — so a case whose context already contains a
+   * notice lists it here and leaves it out of `expect`.
+   */
+  existingKeys?: string[];
   line: { speaker: string; text: string };
   expect: string[];
   note?: string;
@@ -68,13 +74,18 @@ async function main() {
         (f.kind === "request" || f.kind === "obligation") &&
         f.rule_id !== OBLIGATION_LABELS.complaint
     );
-    const wantsHardship = c.expect.includes("hardship-request");
+    // `expect` is the delta. A notice already on record via existingKeys is
+    // still a correct thing for the detector to find in the context turns;
+    // scoring that as an overfire was a bug in this report, not in the detector.
+    // c43 is the control: same line as c42, empty existingKeys, stays silent.
+    const onRecord = (c.existingKeys ?? []).includes("hardship-request");
+    const wantsHardship = c.expect.includes("hardship-request") || onRecord;
     const cues = c.expect.filter((e) => CUE_LABELS.has(e));
 
     const kinds = emitted.map((f) => `${f.kind}:${f.rule_id}`).join(", ") || "silent";
 
     if (wantsHardship && emitted.length > 0) {
-      agree.push(`${c.id}  ${kinds}`);
+      agree.push(`${c.id}  ${kinds}${onRecord ? " (already on record)" : ""}`);
     } else if (wantsHardship && emitted.length === 0) {
       missed.push(c);
     } else if (!wantsHardship && emitted.length > 0) {

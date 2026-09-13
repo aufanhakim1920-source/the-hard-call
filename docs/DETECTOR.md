@@ -74,28 +74,110 @@ gets counted twice.
 | Mode | Behaviour | Cost |
 |---|---|---|
 | `rules` (default) | Deterministic. Fires only when both halves of the test are explicit. `unclear` candidates never fire. | Zero |
-| `hybrid` | Same, but `unclear` candidates go to an adjudicator for the inability-vs-delay call. Clear cases still skip the model. | ~0–1 model calls per call |
+| `hybrid` | Same, but `unclear` candidates go to an adjudicator for the inability-vs-delay call. Clear cases still skip the model. | one call per ambiguous turn, once |
 
 Given the shared free-tier quota, `rules` mode is what runs in the demo. Hybrid
 is the upgrade path and the answer to "does this generalise beyond your three
 fixtures".
 
-Failure policy in hybrid: if the model is rate-limited or down, the adjudicator
-returns *no flag* rather than guessing. The deterministic pass has already
-caught every unambiguous notice, so a 429 degrades recall on genuinely
-ambiguous calls instead of inventing obligations.
+`LiveDetector` re-runs the whole of `detect()` on every new turn, so without a
+cache each still-unclear candidate was re-adjudicated once per subsequent turn —
+Aufan measured 18 calls on a 21-turn call. It now carries a memo keyed by the
+triggering turn's `start_ms`, so each turn is judged once: the same call is 1.
+
+Failure policy in hybrid: if the model is rate-limited, down, or the transport
+fails outright, the adjudicator returns *no flag* rather than guessing, and
+`detect()` catches a thrown adjudicator so a third-party failure can never take
+the obligations the deterministic pass already found. Both paths are verified,
+not assumed.
+
+### What rules mode does and does not reach
+
+Aufan cross-checked stage 1 against all 41 cases in `eval/cases.json` and found
+`MEDIUM_TERM` matching **zero** of them, so `NCC_72_ORAL_NOTICE` fired 0/41
+outside the fixtures it was written alongside. That is a real limitation and it
+was overfitting: the duration patterns were written against four hand-authored
+calls.
+
+Two open-ended phrasings have since been added (`since <month>`, `till/until I
+find work`) and the notice now fires on c06 and c13. The distribution is still
+lopsided — 2 inability, 12 unclear, 27 with no candidate at all — and the honest
+statement is this:
+
+> **Rules mode carries the request tier and cannot be rate-limited. The model
+> carries most of the notice tier today.** The deterministic path fires a
+> statutory notice only on phrasings its rules reach, and on an independent set
+> that is a small minority.
+
+Do not say "the legal half is deterministic" in a pitch, and do not say the
+flagging cannot be silenced by quota either — the next section measures a script
+where rules mode raises nothing at all, not even a request. The wording that
+survives someone running the code is: *clear statutory notices can be raised
+locally without an API call, while the model handles less explicit language.*
+
+### Measured: the demo script fires nothing in rules mode
+
+`src/lib/demoScript.ts` — the script behind "Play the demo call", and the one in
+the submission video — produces **zero flags** in rules mode. Twelve turns, no
+API calls, nothing raised. Shawn caught this against the pitch wording. It is not
+a vocabulary gap, it is structural.
+
+The two halves of the s 72 test are split across three customer turns:
+
+| Turn | Text | Carries |
+|---|---|---|
+| 1 | "Things have been a bit tight lately." | inability — near miss, see below |
+| 2 | "Honestly, I'm a bit behind on everything." | inability — near miss |
+| 3 | "Maybe. I got laid off last month." | the **cause**, deliberately never counted |
+| 4 | "I don't know. I'm really stressed about all of it." | a cue, correctly silent |
+| 5 | "Just a few months without the full payment." | duration only |
+
+`classifyTurn` requires DIFFICULTY and MEDIUM_TERM **in the same customer turn**,
+so nothing assembles. Turns 1–2 carry no duration; turn 5 matches `MEDIUM_TERM`
+on "a few months" and is discarded anyway, because a turn with neither difficulty
+nor an ask returns `null` before the duration is ever looked at.
+
+Turns 1 and 2 are also near misses on wording, and fixing them would not help:
+
+- `things?\s+(are|is)\s+…tight` wants "things **are** tight", gets "things
+  **have been** tight".
+- `behind\s+on\s+(the\s+)?(payment|repayment|…)` wants "behind on **the
+  payment**", gets "behind on **everything**".
+
+**The real fix** is letting the two halves combine across the customer's turns
+inside `contextWindow`, which is how s 72 actually reads: the notice is what the
+borrower conveyed, not what fits in one sentence. That is a change to the core
+rule and needs the full fixture suite and all 44 cases re-run, so it was not made
+before the submission freeze. It is the highest-value change left in this layer.
+
+The offline A/B page is the worked example of what *does* hold: it is built from
+the fixtures, where both halves sit in one turn, so that artefact genuinely runs
+with no key at all.
+
+Reproduce it by importing `demoScript` and calling `detect(..., { mode: "rules" })`.
 
 ## Agreement with the sign engine
 
 `eval/cross-check-cases.ts` runs this layer over `eval/cases.json`. Current
-state: **28/29 agree, zero false positives.** Every hard negative stays silent,
-including `c19` (a *worker* line containing the word "hardship") and `c35`
-(distress with no money ask).
+state: **43/44 agree, zero false positives.** Every hard negative stays silent,
+including `c19` (a *worker* line containing the word "hardship"), `c35` (distress
+with no money ask) and `c43` (asking whether a process exists, with no notice on
+record).
 
-The one gap is `c41` — "Don't worry about it, I'll be fine in a month" — where
-inability is implied and brushed off. Rules mode stays silent; that implicature
-needs the model tier, and the case's own note says the live engine doesn't fire
-on it either.
+`c42` and `c44` read as false positives until the report was fixed. Both carry
+`existingKeys: ["hardship-request"]` — the notice is already on record — and
+`expect` lists only the delta the new line should add. The detector correctly
+re-finds that notice in the context turns; the report was ignoring
+`existingKeys`. `c43` is the control: same question as `c42`, nothing on record,
+silent.
+
+The one gap is `c41` — "Don't worry about it, I'll be fine in a month". Note
+that it does **not** reach the model tier either: `classifyTurn` returns null on
+that turn because nothing in `DIFFICULTY` or `REQUEST_ASK` matches, so no
+candidate is formed and hybrid mode never sees it. Catching it would need a
+lexicon addition, not an adjudicator — and the phrasings that would catch it are
+soft deflections, which is a bigger decision than it looks. The deployed engine
+is silent on it too.
 
 Eleven patterns were added to `DIFFICULTY` after that cross-check ("can't keep
 up", "haven't got it", "nothing left", "money's stretched" and similar). Each is
@@ -198,3 +280,15 @@ move a payment with a stated near-term recovery — the same situation as
 `eval/cases.json` c02. It must emit a `request` and no obligation. It is the
 boundary case between the two tiers, and the demo's answer to "how do you know
 you haven't just built a keyword matcher".
+
+
+## Known limitation: live and final can disagree
+
+`contextWindow` looks four turns ahead and the recovery suppressor reads them.
+Live, those turns do not exist yet, so a candidate can classify `inability` at
+turn N and `unclear` at turn N+2 once a recovery is stated — and
+`LiveDetector.emitted` never retracts. So a notice shown on screen mid-call can
+be absent from `finalise()`, in that direction only.
+
+Not fixed. Retracting a legal card mid-call is arguably worse than leaving it,
+and the report card is the record. Worth knowing before someone finds it.

@@ -54,16 +54,28 @@ function renderWindow(windowTurns: Turn[], candidate: Turn): string {
 export function geminiAdjudicator(opts: {
   apiKey: string;
   model?: string;
+  /** Abort after this long. A hung request would otherwise hold a live turn open. */
+  timeoutMs?: number;
   fetchImpl?: typeof fetch;
 }): Adjudicator {
   const model = opts.model ?? "gemini-flash-latest";
   const doFetch = opts.fetchImpl ?? fetch;
 
+  /** The verdict we return whenever anything at all goes wrong. */
+  const CLOSED = { is_hardship_notice: false, basis: "delay" as const, confidence: 0 };
+
   return async (windowTurns, candidate) => {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${opts.apiKey}`;
+    try {
+    // Key goes in a header, never the query string: this repo is public and
+    // query strings end up in logs. Matches supabase/functions/_shared/gemini.ts.
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     const res = await doFetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 8000),
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": opts.apiKey,
+      },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: ADJUDICATION_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: renderWindow(windowTurns, candidate) }] }],
@@ -83,23 +95,37 @@ export function geminiAdjudicator(opts: {
       }),
     });
 
-    if (!res.ok) {
-      // Rate limited or down: fail CLOSED (no flag) rather than guessing.
-      // The deterministic pass has already caught every unambiguous notice.
-      return { is_hardship_notice: false, basis: "delay", confidence: 0 };
-    }
+      if (!res.ok) {
+        // Rate limited or down: fail CLOSED (no flag) rather than guessing.
+        // The deterministic pass has already caught every unambiguous notice.
+        return CLOSED;
+      }
 
-    const data: any = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
-    try {
-      const parsed = JSON.parse(text);
+      const data = (await res.json()) as GeminiResponse;
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+      const parsed = JSON.parse(text) as Partial<{
+        is_hardship_notice: boolean;
+        basis: string;
+        confidence: number;
+      }>;
+      const raw = typeof parsed.confidence === "number" ? parsed.confidence : 0.5;
       return {
         is_hardship_notice: Boolean(parsed.is_hardship_notice),
         basis: parsed.basis === "inability" ? "inability" : "delay",
-        confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
+        // Clamped like everything else in the codebase.
+        confidence: Math.min(1, Math.max(0, raw)),
       };
     } catch {
-      return { is_hardship_notice: false, basis: "delay", confidence: 0 };
+      // A TRANSPORT failure never produces a response, so res.ok above can
+      // never see it: ECONNRESET, DNS, an abort on timeout, or malformed JSON
+      // all land here. Without this the exception propagated out of detect()
+      // and took the obligations the deterministic pass had already found with
+      // it — the opposite of the stated policy.
+      return CLOSED;
     }
   };
+}
+
+interface GeminiResponse {
+  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
 }

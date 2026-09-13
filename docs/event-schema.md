@@ -148,9 +148,15 @@ Runs the detector over `eval/cases.json` and reports where the two systems
 disagree. It is a report, not a gate — the systems are allowed to differ, we
 just need to know where.
 
-Current state on the cases checked: **28/29 agree, zero false positives.** Every
-hard negative stays silent, including `c19` (a *worker* line containing the word
-"hardship") and `c35` (distress with no money ask).
+Current state on the cases checked: **43/44 agree, zero false positives.**
+
+`c42` and `c44` were reported as false positives until the report was fixed. Both
+carry `existingKeys: ["hardship-request"]` — the notice is already on record — and
+`expect` lists only the delta the new line should add. The detector correctly
+re-finds that notice in the context turns; the report was ignoring `existingKeys`.
+`c43` is the control: the same question as `c42`, no notice on record, silent.
+Every hard negative stays silent, including `c19` (a *worker* line containing the
+word "hardship") and `c35` (distress with no money ask).
 
 The one disagreement is `c41` — *"Don't worry about it, I'll be fine in a
 month."* The detector stays silent in rules mode; the implicature needs the model
