@@ -1511,3 +1511,35 @@ not said (C2); the A/B page is described as what it is — plain rules in the br
 extra air went where the picture carries itself (the app at real speed, the two report-card
 holds), never into the argument. The sound guard refused the first cue list three times (one click
 file fifteen times, then four events in forty frames on the opening) — every refusal was right.
+
+## The film, second cut: what the team's notes changed
+
+v1 went to the group on Google Drive at 19:53 and every note that came back was applied (Discord,
+13 Sep 19:56–22:44). laural's six script corrections landed word for word — RG 271 named, "44
+labelled cases", the honest sentence about what plain rules catch versus what the model handles,
+AFSH Nominees named, "what she says on that call can be the legal notice", "on the phone all day,
+hearing someone's worst week", and her closing line. The About page carried the same two wrong
+facts plus a 58% training claim nobody could source; fixed, and the number is gone rather than on
+screen unsourced.
+
+**Aufan's three:** the delay between scenes (every pause cut; the three-minute floor is held by new
+beats, not air); the explanation reading as observed rather than done (the worker now presses *Mark
+handled* on the gold card, on camera, on the word; after the report the camera tours Deadlines, About
+scrolling, Practice — all real screens); and the two monotone stretches at 1:04 and 2:30 (the real
+legal card is read top to bottom by the camera — duty, date, question, tick; the About page scrolls
+beside the claims).
+
+**Tron's:** a phone ring on "they ring the bank", a clock ticking under every clock beat, laural's
+mouse click on the tick — all Mixkit, licences logged in the film project — and the narration
+denoised with a low cut.
+
+**Still open:** the practice customer's AI voice. It is real product audio and the only honest source
+is a recording from Aufan's ElevenLabs conversation history, which needs his login; the film carries a
+seven-second slot with a level meter that opens the moment a file exists. Background music is his,
+in CapCut, so the master ships without one.
+
+**What did not work:** the narration chain silently dropped the three new lines because its tag
+pattern only matched two digits (`1b`, `4a`, `4b` are letters) — the film was 2:48 for one render
+before the pattern was widened. A word-pinned beat whose word no longer exists falls back silently to
+an offset, so re-voicing a line means re-reading its scene: the worker beat kept printing "junior,
+undertrained" for one render after the voice had stopped saying it.
