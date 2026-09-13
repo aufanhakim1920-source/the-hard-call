@@ -7,6 +7,7 @@
 // curve. Two detents: peek (the newest sign) and full.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import "./sheet.css";
 
 export type Detent = "peek" | "full";
 

@@ -8,6 +8,42 @@
   --pill-done-ink: #f2eee7;
 }
 
+/* The TIP card's "ask next" panel.
+ *
+ * It was --gold-dim. Gold is this product's alarm colour, and by the end of a
+ * demo four tip cards were wearing it: ~100,000px2 of tint in the same column
+ * as the legal card, about the area of the legal card itself. The colour that
+ * says "this one matters" was spread across the things that matter least. The
+ * tinted ask now belongs to the legal card alone.
+ *
+ * Compensated, not deleted. The panel is still one of the three facts that
+ * have to land, so it keeps the SAME separation from the card it always had:
+ * measured against the tip card's --ink-3 ground, the gold tint sat at 1.23:1
+ * on the dark ground and 1.21:1 on the light one; these land on 1.23 and 1.20.
+ *
+ * A LIFT on dark and a RECESS on light, because the dark card is already
+ * within 1.05:1 of the ink the base panel darkens with — that near-invisible
+ * result is why the gold tint was reached for in the first place.
+ */
+:root {
+  --ask-tip: rgba(242, 238, 231, 0.08);
+}
+:root[data-theme="light"] {
+  --ask-tip: rgba(28, 31, 36, 0.1);
+}
+/* High contrast raises --gold-dim from .14 to .26 on the dark ground, so the
+   panel this replaces got LOUDER under that setting, not quieter. The neutral
+   one has to do the same, or turning the setting on would flatten a panel it
+   exists to sharpen: 1.54:1 dark against the tint's 1.56, and 1.44:1 light —
+   where the tint got no boost at all, because the light theme's --gold-dim
+   outranks the high-contrast one on specificity. */
+:root.high-contrast {
+  --ask-tip: rgba(242, 238, 231, 0.15);
+}
+:root[data-theme="light"].high-contrast {
+  --ask-tip: rgba(28, 31, 36, 0.18);
+}
+
 /* The sign card — the one object this product exists to show.
  *
  * A worker reads this mid-call, with someone upset on the line, in about two
@@ -211,6 +247,15 @@
   margin: 10px 0 0 28px;
   padding: 9px 12px;
 }
+/* Neutral, and it must beat `.sign.tip .ask` in the base sheet whatever order
+   the bundler emits the two files in — three classes to its two. */
+.signs-list .sign.tip .ask {
+  background: var(--ask-tip);
+}
+/* Re-measured on the new ground, because changing a ground re-opens every
+   contrast question that ground had answered: the question itself reads
+   9.36:1 dark and 9.66:1 light, and this 10px label 6.85:1 and 5.68:1. Under
+   high contrast, 7.50 / 8.08 and 5.63 / 5.15. */
 .signs-list .sign.tip .ask small {
   color: var(--text-2);
 }

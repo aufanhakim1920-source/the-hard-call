@@ -1,0 +1,40 @@
+/* The phone sheet's head.
+ *
+ * One rule, and it is about what the counter disc is allowed to claim.
+ *
+ * `.sheet-count.on` was a solid --gold disc, 784px2, and it turned on for ANY
+ * sign — a tip counts. So a phone with two tips and no statutory obligation
+ * showed the product's alarm colour in the corner of the only control on the
+ * screen, which is the same fault the call header's "End call" had: the accent
+ * on something that is not the thing it names.
+ *
+ * The disc now says what it is counting. Signs exist -> it fills, neutrally;
+ * one of them is an unhandled legal sign -> it goes gold. It reads the legal
+ * card that is already in its own body rather than taking a new signal: the
+ * detent cannot stand in for this, because a worker can drag the sheet to full
+ * with nothing but tips in it.
+ *
+ * Filled-vs-outlined and grey-vs-cream carry the "signs exist" state without
+ * colour, so it survives greyscale; the digit itself was always the count.
+ */
+
+/* Signs open, none of them statutory. Cream on --ink-3 is 11.47:1 on the dark
+   ground and 11.64:1 on the light one — the same filled-neutral the call
+   header's End call uses, so this is not a second language.
+   Three classes, so it settles against the base `.sheet-count.on` on
+   specificity and not on which file the bundler happens to emit last. */
+.sheet .sheet-count.on {
+  background: var(--ink-3);
+  border-color: var(--line-2);
+  color: var(--cream);
+}
+
+/* An unhandled legal sign is in the sheet. This is the one place on a phone
+   that is allowed to wear the accent while the card itself is out of sight.
+   :has() takes the specificity of its argument, so this is six classes deep
+   and cannot be undercut by the neutral rule above. */
+.sheet:has(.sign.legal:not(.done)) .sheet-count.on {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
