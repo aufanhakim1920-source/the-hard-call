@@ -370,3 +370,13 @@ ring, the miss count, the sentence naming the reply date, and the answered fract
   the number above it, and it is the thing worth showing rather than skimming.
 - Do not scroll while talking. Land, speak, scroll, speak.
 
+## Warm the engine before you present
+
+**Measured on the deployed function: the first flags call after it has been idle took 13.4 seconds.**
+Steady state is 1.6–3.0 s. The edge function cold-starts, and the first line of your demo is exactly
+where that cost lands — in silence, in front of a judge, on the beat where the product is supposed to
+look instant.
+
+**Play the demo call once a few minutes before you present, and let it finish.** That is the whole
+fix. It costs one run and it removes the worst thirteen seconds in the pitch.
+
