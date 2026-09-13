@@ -94,3 +94,41 @@ test("call_003: endpoint evaluates supplied flags and preserves worker evidence 
     if (key === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = key;
   }
 });
+
+test("speaker_confidence is optional, validated, and defaults to known", () => {
+  const base = fixture("call_003_missed_notice.json");
+  // Every existing fixture is silent on the field and must keep its meaning.
+  for (const line of adaptReportInput(base).lines) assert.equal(line.speakerConfidence, "known");
+
+  const marked = { ...base, transcript: { ...base.transcript, turns: base.transcript.turns.map((t, i) => (i === 0 ? { ...t, speaker_confidence: "inferred" } : t)) } };
+  const lines = adaptReportInput(marked).lines;
+  assert.equal(lines[0].speakerConfidence, "inferred");
+  assert.equal(lines[1].speakerConfidence, "known");
+
+  // A typo is refused rather than read as the safe default: silently trusting
+  // one is the failure the field exists to prevent.
+  for (const bad of ["Known", "guessed", "", null, 1]) {
+    const broken = { ...base, transcript: { ...base.transcript, turns: base.transcript.turns.map((t, i) => (i === 0 ? { ...t, speaker_confidence: bad } : t)) } };
+    assert.throws(() => adaptReportInput(broken), /Invalid transcript turn at index 0/, `${JSON.stringify(bad)} must be refused`);
+  }
+});
+
+test('detector kind and persist fields keep requests and transient cues out of the report', () => {
+ const input = structuredClone(positive);
+ const obligation = input.flags[0];
+ input.flags = [
+  { ...obligation, kind: 'obligation', persist: true },
+  { ...obligation, flag_id: 'request', rule_id: 'HARDSHIP_REQUEST', kind: 'request', persist: true },
+  { ...obligation, flag_id: 'cue', kind: 'cue', persist: false },
+  { ...obligation, flag_id: 'private', kind: 'obligation', persist: false },
+  { ...obligation, flag_id: 'legacy-request', tier: 'request' },
+ ];
+ assert.deepEqual(adaptReportInput(input).signs.map(s => s.id), [obligation.flag_id]);
+});
+
+test('unknown detector kinds and conflicting tiers are rejected', () => {
+ for (const patch of [{ kind: 'obligaton' }, { persist: 'false' }, { kind: 'request', tier: 'notice' }]) {
+  const input = structuredClone(positive); Object.assign(input.flags[0], patch);
+  assert.throws(() => adaptReportInput(input), /Invalid flag/);
+ }
+});

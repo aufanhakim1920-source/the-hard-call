@@ -10,9 +10,11 @@
 //   node eval/run.mjs --blind    send the newest line as speaker "unknown" so
 //                                speaker accuracy measures inference, not echo
 //
-// Writes eval/results.json and public/eval-results.json.
+// Preview by default. --publish writes both artifacts after a full, error-free
+// standard run. Never pass --publish with mocked model responses.
 
 import fs from "node:fs";
+import { publishResults } from "./publish.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,13 +26,14 @@ const RETRYABLE = /\b(429|503)\b|RESOURCE_EXHAUSTED|UNAVAILABLE|overloaded|fetch
 
 // ---------------------------------------------------------------- args
 function parseArgs(argv) {
-  const out = { model: undefined, limit: Infinity, concurrency: 3, blind: false };
+  const out = { model: undefined, limit: Infinity, concurrency: 3, blind: false, publish: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--model") out.model = argv[++i];
     else if (a === "--limit") out.limit = Number(argv[++i]);
     else if (a === "--concurrency") out.concurrency = Number(argv[++i]);
     else if (a === "--blind") out.blind = true;
+    else if (a === "--publish") out.publish = true;
   }
   if (!Number.isFinite(out.concurrency) || out.concurrency < 1) out.concurrency = 3;
   if (!(out.limit > 0)) out.limit = Infinity;
@@ -135,8 +138,14 @@ async function main() {
   const allCases = JSON.parse(fs.readFileSync(path.join(HERE, "cases.json"), "utf8"));
   const cases = allCases.slice(0, args.limit);
   for (const c of cases) {
-    for (const k of c.expect) {
-      if (!SIGN_KEYS.includes(k)) console.log(`WARNING ${c.id}: expect key "${k}" is not in signs.ts`);
+    for (const k of [...c.expect, ...(c.existingKeys ?? [])]) {
+      if (!SIGN_KEYS.includes(k)) console.log(`WARNING ${c.id}: key "${k}" is not in signs.ts`);
+    }
+    // The engine drops the ABA tip unless a notice is on record, so a case that
+    // expects it without one can never pass — say so rather than scoring a zero.
+    if (c.expect.includes("inform-hardship-provisions") &&
+        !c.expect.includes("hardship-request") && !(c.existingKeys ?? []).includes("hardship-request")) {
+      console.log(`WARNING ${c.id}: expects inform-hardship-provisions with no hardship-request on record`);
     }
   }
 
@@ -152,8 +161,12 @@ async function main() {
     const body = {
       lines,
       newLineId: newLine.id,
-      existingKeys: [],
-      lessons: [],
+      // A case may name signs already on screen. inform-hardship-provisions
+      // cannot be scored without this: its whole rule is that the duty exists
+      // only once a notice has been raised, and with this hardcoded to [] its
+      // precondition was unexpressible, which is why it sat at support 0.
+      existingKeys: c.existingKeys ?? [],
+      lessons: c.lessons ?? [],
       todayISO,
       direction: c.direction,
     };
@@ -408,14 +421,10 @@ async function main() {
       attempts: r.attempts,
     })),
   };
-  const text = JSON.stringify(out, null, 2) + "\n";
-  const resultsPath = path.join(HERE, "results.json");
-  const publicDir = path.join(ROOT, "public");
-  fs.mkdirSync(publicDir, { recursive: true });
-  const publicPath = path.join(publicDir, "eval-results.json");
-  fs.writeFileSync(resultsPath, text);
-  fs.writeFileSync(publicPath, text);
-  console.log(`\nwrote ${path.relative(ROOT, resultsPath)} and ${path.relative(ROOT, publicPath)}`);
+  console.log(publishResults({
+    publish: args.publish, blind: args.blind, total: allCases.length, results: out,
+    paths: [path.join(HERE, "results.json"), path.join(ROOT, "public/eval-results.json")],
+  }));
 }
 
 try {

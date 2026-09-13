@@ -65,7 +65,7 @@ function addDays(fromISO: string, days: number): string {
 function toTurns(lines: Line[]): Turn[] {
   const base = lines.length ? lines[0].t : 0;
   return lines
-    .filter((l) => l.speaker !== "unknown")
+    .filter((l) => l.speaker !== "unknown" && (l.speakerConfidence ?? "known") === "known")
     .map((l) => ({
       speaker: l.speaker === "worker" ? ("staff" as const) : ("customer" as const),
       start_ms: Math.max(0, l.t - base),
@@ -100,7 +100,7 @@ function toSign(flag: Flag, lineId: string, now: number, evidence: string): Sign
  * that are not already on screen. Never throws: a fault in the fast path must
  * not stop the model pass that follows it.
  */
-export async function localSigns(lines: Line[], lineId: string, existingKeys: string[]): Promise<Sign[]> {
+export async function localSigns(lines: Line[], _lineId: string, existingKeys: string[]): Promise<Sign[]> {
   try {
     const turns = toTurns(lines);
     if (turns.length === 0) return [];
@@ -112,7 +112,12 @@ export async function localSigns(lines: Line[], lineId: string, existingKeys: st
       const map = KEY_FOR[flag.rule_id];
       if (!map || have.has(map.key)) continue;
       const raised = turns.find((t) => t.start_ms === flag.raised_at.start_ms && t.speaker === flag.raised_at.speaker);
-      const sign = toSign(flag, lineId, now, raised?.text ?? "");
+      const base = lines[0]?.t ?? 0;
+      const source = lines.find((l) => l.speaker !== "unknown" && (l.speakerConfidence ?? "known") === "known" &&
+        Math.max(0, l.t - base) === flag.raised_at.start_ms &&
+        (l.speaker === "worker" ? "staff" : "customer") === flag.raised_at.speaker);
+      if (!source || !raised) continue;
+      const sign = toSign(flag, source.id, now, raised.text);
       if (!sign) continue;
       have.add(sign.key);
       out.push(sign);

@@ -1,4 +1,4 @@
-// node eval/tier.test.mjs — the two-tier gate, checked end to end.
+// npm run eval:tier — the two-tier gate, checked end to end.
 //
 // One question matters more than the rest: CAN A REQUEST EAT A NOTICE?
 // The engine refuses to fire a key that is already on screen, so if an early

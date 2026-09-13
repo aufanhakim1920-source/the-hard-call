@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { getStoreScope, subscribe } from "./lib/store";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { About } from "./components/About";
 import { CallHistory } from "./components/CallHistory";
 import { CallScreen } from "./components/CallScreen";
@@ -23,7 +24,13 @@ interface ActiveCall {
 
 const LIVE_DEFAULT: Customer = { name: "Sarah M.", product: "home loan", direction: "outbound" };
 
+const scopeEpoch = () => getStoreScope().epoch;
 export default function App() {
+  const epoch = useSyncExternalStore(subscribe, scopeEpoch);
+  return <AppContent key={epoch} />;
+}
+
+function AppContent() {
   const [view, setView] = useState<View>("live");
   const [call, setCall] = useState<ActiveCall>({ key: 1, mode: "live", customer: LIVE_DEFAULT });
   const [result, setResult] = useState<{ report: Report; session: Session } | null>(null);

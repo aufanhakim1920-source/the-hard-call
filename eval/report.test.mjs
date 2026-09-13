@@ -69,3 +69,96 @@ test("report endpoint counts missing judgements as unverified and suppresses sco
     else process.env.GEMINI_API_KEY = originalKey;
   }
 });
+
+// --- no definitive mark on an uncertain speaker (laural's contract) ---------
+
+const inferred = (id, transcript = lines) => transcript.map((l) => (l.id === id ? { ...l, speakerConfidence: "inferred" } : l));
+
+test("an inferred staff turn cannot satisfy a duty", () => {
+  // A customer line misread as staff would mark an obligation handled that
+  // nobody handled — a false compliance record, worse than recording a miss.
+  const result = build([judge()], inferred("w1"));
+  assert.equal(result.verdict, "unverified");
+  assert.deepEqual(result.evidence, []);
+});
+
+test("an inferred triggering turn records no judgement either way", () => {
+  // A staff line misread as the customer would put a 21-day clock on the bank's
+  // own words. Nothing definitive is said about it — not handled, not missed.
+  for (const verdict of ["handled", "partly", "missed"]) {
+    const result = build([judge({ verdict, note: "Something happened." })], inferred("c1"));
+    assert.equal(result.verdict, "unverified", `${verdict} must not stand on a guessed trigger`);
+    assert.match(result.note, /speaker of the triggering turn was not established/);
+  }
+});
+
+test("an unknown speaker is treated no better than an inferred one", () => {
+  const unknown = lines.map((l) => (l.id === "w1" ? { ...l, speakerConfidence: "unknown" } : l));
+  assert.equal(build([judge()], unknown).verdict, "unverified");
+});
+
+test("absent and explicit known are the same thing, so old transcripts are unchanged", () => {
+  const explicit = lines.map((l) => ({ ...l, speakerConfidence: "known" }));
+  assert.deepEqual(build([judge()], explicit), build([judge()]));
+  assert.equal(build([judge()]).verdict, "handled");
+});
+
+test("the report prompt names the turns nobody established the speaker of", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = "test-only";
+  let prompt = "";
+  globalThis.fetch = async (_url, options) => {
+    prompt = JSON.parse(options.body).contents[0].parts[0].text;
+    return Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify({
+      summary: "Review needed.", items: [], missedByAI: [], tip: "Check the response.", score: 50,
+    }) }] } }] });
+  };
+  try {
+    const transcript = [
+      lines[0],
+      { ...lines[1], speakerConfidence: "inferred" },
+      { ...lines[2], speakerConfidence: "unknown" },
+    ];
+    await handle(new Request("http://localhost/api/report", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session: {
+        id: "call1", mode: "live", customer: { name: "Demo", product: "Home loan", direction: "inbound" },
+        lines: transcript, signs: [{ ...sign, askNext: "Discuss support", evidence: "" }],
+        startedAt: 1000, endedAt: 4000,
+      } }),
+    }));
+    // The worker's own opening turn is known and must read exactly as before.
+    assert.match(prompt, /\] worker: Hello\./);
+    assert.match(prompt, /customer \(speaker inferred, not established\):/);
+    assert.match(prompt, /worker \(speaker unknown\):/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = originalKey;
+  }
+});
+
+
+test('an inferred response cannot establish that the worker missed the duty', () => {
+ assert.equal(build([judge({ verdict: 'missed', evidenceLineIds: [] })], inferred('w1')).verdict, 'unverified');
+});
+
+test('unknown triggering speaker stays unverified even without confidence metadata', () => {
+ const transcript = lines.map(l => l.id === 'c1' ? { ...l, speaker: 'unknown' } : l);
+ for (const verdict of ['handled', 'partly', 'missed']) {
+  assert.equal(build([judge({ verdict })], transcript).verdict, 'unverified');
+ }
+});
+
+test('a missing referenced trigger cannot be replaced with the detection time', () => {
+ const missing = { ...sign, lineId: 'not-in-transcript', t: 1000 };
+ assert.equal(buildReportItems([missing], lines, [judge()], 1000)[0].verdict, 'unverified');
+});
+
+test('an ambiguous later turn prevents an absence-based missed verdict', () => {
+ const transcript = [...lines, { id: 'u2', speaker: 'unknown', t: 2700, text: 'I can lodge the application.' }];
+ assert.equal(build([judge({ verdict: 'missed', evidenceLineIds: [] })], transcript).verdict, 'unverified');
+ // Positive evidence from an established worker still stands.
+ assert.equal(build([judge()], transcript).verdict, 'handled');
+});
