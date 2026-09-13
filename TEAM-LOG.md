@@ -4,6 +4,8 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 10:21 | aufanhakim1920-source | design | [a11y: the thicker focus ring never applied to a text input](../../commit/d075d736f79aef94c036acd140653b1b6f805c4e) | TopBar.tsx, styles.css | +26 / -3 |
+| 13 Sept, 10:17 | aufanhakim1920-source | accounts + report | [the compare bar drew nothing, and the privacy wipe used an OS dialog](../../commit/1b406e58710f8b8e7487434d11cfe05ed8a1a543) | About.tsx, Account.tsx, CallHistory.tsx +5 | +208 / -52 |
 | 13 Sept, 10:02 | aufanhakim1920-source | other | [a number in a pitch is a claim and needs a harness](../../commit/8839c525d94b65fd698557ad807ef8db308356c7) | DECISIONS.md | +55 / -0 |
 | 13 Sept, 10:00 | aufanhakim1920-source | project + engine | [the numbers in the pitch never existed, and the script sat on the line](../../commit/12223ba122358e11f592b5f7d22d9a2090aeec22) | README.md, DEMO-SCRIPT.md, demo-runs.json +2 | +3724 / -147 |
 | 13 Sept, 09:44 | aufanhakim1920-source | other | [a quantity that animates from zero has no safe guard, and one accent cannot carry two verdicts](../../commit/d962a0c51aca7fb24c38746cf5711c910d497ca6) | DECISIONS.md | +49 / -0 |
