@@ -187,8 +187,9 @@ export function About() {
       <h2>Why</h2>
       <p>
         People in money trouble almost never say the word "hardship". They say "I'm a bit behind". Under the National Credit Code that still counts, and the
-        bank has 21 days to reply in writing. In 2025 NAB was fined $15.5m over 345 hardship requests that were not answered in time. ASIC's review of ten
-        lenders found 35% of people who asked for help dropped out of the process, and that training staff to spot hardship lifted the number caught by 58%.
+        bank has 21 days to assess it and tell the customer its decision. In August 2025 ASIC penalised NAB and AFSH Nominees $15.5m because 345 customers
+        gave notice and did not get a response within the required period. ASIC's review of ten lenders found 35% of people who asked for help dropped out of
+        the process.
       </p>
 
       <h2>How it works</h2>
