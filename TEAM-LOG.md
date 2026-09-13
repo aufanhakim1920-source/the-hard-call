@@ -4,6 +4,22 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 11:31 | Shawn Lee | report | [preserve uncertainty through scoring and detector integration](../../commit/c4ef704536550a7287abed37dde0011eb0024896) | REPORT_HANDOFF.md, report-review.md, detector-report.mjs +10 | +189 / -32 |
+| 13 Sept, 00:56 | Shawn Lee | engine | [an inferred turn raises a request, and the relabelling is reverted](../../commit/ebd2644c6abc9efdde15815a792092dffee93f5c) | REPORT_HANDOFF.md, cases.json, flags.test.mjs +1 | +160 / -56 |
+| 13 Sept, 00:23 | Shawn Lee | report | [lock the demo's gold card against the speaker gate](../../commit/b6259bcd1b60e659bf969fbe07e327237a4a8ff4) | flags.test.mjs | +33 / -0 |
+| 13 Sept, 00:15 | Shawn Lee | report | [flag that the ground-truth correction contradicts the README](../../commit/1ce1e24c453f1158d115b1ebf427adfd398d9803) | REPORT_HANDOFF.md | +22 / -0 |
+| 13 Sept, 00:12 | Shawn Lee | live call | [a dictated line carries how its speaker was decided](../../commit/acbb3e2ca7b9443f0950155790a3e660b3900073) | REPORT_HANDOFF.md, engine.ts | +37 / -14 |
+| 13 Sept, 00:07 | Shawn Lee | report | [an uncertain speaker can no longer assert or discharge a duty](../../commit/bb430936ebc9de093cebbacf94f3038427d900c8) | REPORT_HANDOFF.md, flags.test.mjs, report-input.test.mjs +6 | +304 / -32 |
+| 13 Sept, 00:00 | Shawn Lee | report | [a card pulled from the cloud can say why its score is missing](../../commit/9ef21001e67516b8ee72bfb6c35c631e805ff2e6) | REPORT_HANDOFF.md, sync-isolation.md, sync.test.mjs +3 | +212 / -12 |
+| 12 Sept, 23:49 | Shawn Lee | engine | [a partial eval run no longer publishes over the real score](../../commit/cf0dd3d5cabc152062d532e7aa1a137d43871e78) | REPORT_HANDOFF.md, run.mjs | +41 / -0 |
+| 12 Sept, 23:45 | Shawn Lee | engine | [the transcript is evidence, never an instruction](../../commit/b2006decb7e22595b2445e5862052c7deff68953) | REPORT_HANDOFF.md, flags.test.mjs, flags.ts | +109 / -5 |
+| 12 Sept, 23:45 | Shawn Lee | engine | [the hardship cases expected a fire the law does not](../../commit/a21931a2ff3ff8b1b95d8f93b700e947bd559447) | cases.json, run.mjs | +106 / -35 |
+| 12 Sept, 23:27 | Shawn Lee | report | [a missing write-up says why instead of leaving an empty box](../../commit/8411aea9b15beccfb0937fd7365fb17b12f7ceaa) | ReportCard.tsx | +19 / -6 |
+| 12 Sept, 23:27 | Shawn Lee | report | [a legal clock cannot start from a quote the call never contained](../../commit/1e450d22a8270d6f633d3a857af4a978998de835) | REPORT_HANDOFF.md, flags.test.mjs, flags.ts | +341 / -3 |
+| 12 Sept, 23:27 | Shawn Lee | report | [persist account-scoped deletions and retry failed uploads](../../commit/b6079665d14a64f7f85e92c853bd659179868225) | sync-isolation.md, sync.test.mjs, store.ts +2 | +107 / -10 |
+| 12 Sept, 23:18 | Shawn Lee | report | [isolate account caches and retry failed cloud reads](../../commit/12a6b25fc8f2bb0e63bce7a0d1f8a37d78e6f66f) | sync-isolation.md, load-ts.cjs, sync.test.mjs +5 | +215 / -28 |
+| 12 Sept, 23:13 | Shawn Lee | report | [count completed practice calls even when scoring is unavailable](../../commit/94d3325301e86de2c30a7d6824ed5bfde334aa14) | Practice.tsx | +1 / -1 |
+| 12 Sept, 23:09 | Shawn Lee | report | [keep unverified fallback results out of handling scores](../../commit/e1886ace927b1c64f4590ea7d68ac76b04b5bfcb) | REPORT_HANDOFF.md, report-resilience.test.mjs, Practice.tsx +7 | +181 / -50 |
 | 13 Sept, 11:29 | aufanhakim1920-source | project + engine | [the claim that survives all 42 runs, and it is not the one we had](../../commit/4362145637c102544aef075a2442ec7c88ab7f6c) | README.md, DECISIONS.md, DEMO-SCRIPT.md +2 | +251 / -59 |
 | 13 Sept, 11:14 | aufanhakim1920-source | other | [a side effect in a state updater, and a sweep that only sees the states you render](../../commit/98ef26e47aa663295904a12ed8cd16b4b4f5da70) | DECISIONS.md | +63 / -0 |
 | 13 Sept, 11:13 | aufanhakim1920-source | live call | [the report failing was the one event with no sound](../../commit/6a5bd746423ac3753b960dac155cac8844b27c00) | CallScreen.tsx | +4 / -0 |
