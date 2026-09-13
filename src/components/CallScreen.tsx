@@ -173,6 +173,10 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
       const report = await endCall();
       onEnd(report, { ...session, endedAt: Date.now() });
     } catch (e) {
+      // The only event whose silence is ambiguous with success: the tap is
+      // muted during a live call, the report sound never comes, and the error
+      // sits on a screen the worker has just looked away from.
+      play("failed");
       setEndErr(e instanceof Error ? e.message : String(e));
       setEnding(false);
     }
