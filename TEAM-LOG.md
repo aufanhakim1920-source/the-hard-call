@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 15:40 | aufanhakim1920-source | other | [ignore the per-run scratch output, keep the archive](../../commit/cb102005db3732b26988fadc1193ba62508ed106) | .gitignore | +4 / -0 |
 | 13 Sept, 15:39 | aufanhakim1920-source | other | [the loudest thing on the compare board was the part that is identical](../../commit/e1801666dfb11fff2834fb2d209b709a027906c5) | CallHistory.tsx, call-history.css | +270 / -87 |
 | 13 Sept, 15:37 | aufanhakim1920-source | pitch | [the spoken script, and four documents that disagreed with each other](../../commit/a4f70f01f3caaf074a675afc66a427f250a01412) | README.md, EVIDENCE.md, FREEZE-EVE.md +3 | +590 / -3 |
 | 13 Sept, 15:17 | aufanhakim1920-source | other | [a card with zero surfaces has no reading order, and demoting in doctrine is not demoting in paint](../../commit/15fd019326c727f09f1418a7595502fed3a71789) | DECISIONS.md | +64 / -0 |
