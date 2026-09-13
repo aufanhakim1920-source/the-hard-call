@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 13:33 | aufanhakim1920-source | other | [the pre-freeze sweep and the first check of the deployed site](../../commit/6dd5b654c55f4d327f7913b9899775c46c671a8d) | DEPLOYED.md, PREFREEZE.md | +670 / -0 |
 | 13 Sept, 13:32 | aufanhakim1920-source | other | [a11y: Settings stayed open on top of the screen you navigated to](../../commit/0bbe6dddfa00a0276848f590b3f647cca5929b99) | Accessibility.tsx, TopBar.tsx | +21 / -2 |
 | 13 Sept, 13:30 | aufanhakim1920-source | other | [a11y: turning High contrast ON made the LEGAL badge worse](../../commit/dc0f69b7a1da11a3cb3db278fc7cd69e6da53bef) | DEMO-SCRIPT.md, sign-card.css | +41 / -2 |
 | 13 Sept, 13:17 | aufanhakim1920-source | other | [what a model error body can contain, and counting the irreversible clicks](../../commit/2e510e75c266a9f58d6bdfd66415976cfdb9d1ca) | DECISIONS.md | +47 / -0 |
