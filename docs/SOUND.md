@@ -1,6 +1,6 @@
 # Sound
 
-CallFlag is used by someone whose eyes are on a distressed customer, not on a screen. Sound is not
+The Hard Call is used by someone whose eyes are on a distressed customer, not on a screen. Sound is not
 decoration here — it is the channel that still works when nobody is looking at the monitor. That is
 also why there is so little of it: a channel that fires constantly stops being a channel.
 

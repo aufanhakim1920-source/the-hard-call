@@ -1,6 +1,6 @@
 # Decisions
 
-Why CallFlag is built the way it is — including the things we tried and rejected.
+Why The Hard Call is built the way it is — including the things we tried and rejected.
 
 Kept as a running log rather than a summary, because the reasoning is the part that normally
 disappears. Newest last. `README.md` says what it does; this says why.
