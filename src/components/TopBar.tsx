@@ -129,7 +129,7 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
         ))}
       </nav>
       <div className="spacer" />
-      <AccessibilityPanel />
+      <AccessibilityPanel view={view} />
       <AccountChip />
       <span className={"status-dot " + assistant} title={stateText}>
         <i />

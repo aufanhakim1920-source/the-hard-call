@@ -97,7 +97,7 @@ function Segmented({
   );
 }
 
-export function AccessibilityPanel() {
+export function AccessibilityPanel({ view }: { view?: string }) {
   const a = useA11y();
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
@@ -108,6 +108,25 @@ export function AccessibilityPanel() {
   // Focus goes back on the same frame the switch flips; only the node waits
   // behind to animate out, and it is inert while it does.
   const panel = useExit(open);
+
+  // The panel is deliberately non-modal, because a worker may need it during a
+  // live call — which means nothing outside it was closing it. Measured on the
+  // deployed site: open Settings, click "Live call", and the tab correctly
+  // takes aria-current while the panel stays open ON TOP of the call. At 375
+  // it covers the whole screen, so the app looks like it stopped responding.
+  //
+  // ⭐ A non-modal panel still has to answer to navigation. "Modeless" means it
+  // does not trap you, not that it survives you leaving. Focus is not given
+  // back here: the click that changed the view has already put focus where the
+  // user aimed it, and stealing it back would be the second surprise.
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setOpen(false);
+  }, [view]);
 
   const close = useCallback((giveFocusBack: boolean) => {
     setOpen(false);
