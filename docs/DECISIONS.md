@@ -1476,3 +1476,38 @@ that occasionally eats "Honestly" costs nothing, because nobody reads that copy.
 with the measurements rather than fixed, because `mask.ts` is Tron's file.
 
 ⚠️ **Do not merge PR #6 before the demo video is recorded.**
+
+## The submission film: the template carries the argument, the app carries the proof
+
+Built 13 Sep evening in Remotion on the SOME BRANDS template — a white studio, a green floor for
+the stage beats, one real cut-out per beat with a contact shadow, red extruded type, a halftone
+over everything, smears instead of fades. 1920×1080 rather than the template's portrait
+container, because the app is landscape and so are the judges' laptops. Narration is Aufan's
+cloned voice at the settled neutral setting; every scene boundary is a line and every internal
+beat is the frame a word is spoken, so re-voicing re-cuts the film.
+
+**The first nine lines are laural's problem segment, word for word**, with her three citations
+on screen at their beats. Nothing after it says a number the repo cannot back: 44 labelled
+utterances and 0 false positives are in `public/eval-results.json`; "cannot be rate-limited" is
+not said (C2); the A/B page is described as what it is — plain rules in the browser, no network.
+
+**Three things the footage forced, all measured off the deployed app:**
+
+- **The legal card lands on Sarah's LAST line**, not on "I got laid off" — 50.0 s into a 55 s
+  call, on *"Just a few months without the full payment"*, because the notice needs both halves
+  in one thing she says. The first recording pressed End call 2 s after the script finished and
+  the card never reached the screen. Re-recorded with a wait for the gold card; narration line 15
+  re-voiced to name the sentence the card actually answers.
+- **The deployed `/flags` returned 502 six times across the first two recordings** (18:19–18:24).
+  The client retried and both report cards still came out right, but the hero moment depends on
+  that call answering inside the window. Reported to Tron; the re-recordings at 18:37 had 0 errors.
+- **No free photograph exists for an envelope, a tear-off calendar, or ASIC's mark.** The letter
+  and the calendar are drawn (the template's own precedent — its television and diamond were
+  drawn); ASIC is named in type on its tile, never an invented logo. NAB's text wordmark is public
+  domain and used referentially. Phone, headset, stopwatch, gavel and key are real Commons plates
+  cut out with BiRefNet — licences in the film project's `ATTRIBUTION.md`.
+
+**What did not work:** the first chain came out at 2:42 against Devpost's 3-minute floor — the
+extra air went where the picture carries itself (the app at real speed, the two report-card
+holds), never into the argument. The sound guard refused the first cue list three times (one click
+file fifteen times, then four events in forty frames on the opening) — every refusal was right.
