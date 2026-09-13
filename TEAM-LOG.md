@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 14:43 | aufanhakim1920-source | other | [type carries affordance, and a sweep for cursor:pointer will never find it](../../commit/84c08003fe8e06b9d09caa4adfe8c8ae347ed56d) | DECISIONS.md | +32 / -0 |
 | 13 Sept, 14:42 | aufanhakim1920-source | live call | [four things looked pressable and nothing in the CSS said so](../../commit/554f957a855b25d2522ff7489885d42396abc50f) | SignStack.tsx, watching.css | +54 / -8 |
 | 13 Sept, 13:59 | aufanhakim1920-source | live call + design | [the first screen told a stranger a call was already running](../../commit/4e93fe8cb4560b8859bed8380e1d004aaaaad812) | DEMO-SCRIPT.md, PREFREEZE.md, CallScreen.tsx +1 | +112 / -21 |
 | 13 Sept, 13:53 | aufanhakim1920-source | report | [the answer times were network latency subtracted from real time](../../commit/2bcdbae4e57418ad5f980d2ed467e6a62777065a) | ResponseTimes.tsx, report-math.ts, report-visuals.css | +64 / -17 |
