@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 13:30 | aufanhakim1920-source | other | [a11y: turning High contrast ON made the LEGAL badge worse](../../commit/dc0f69b7a1da11a3cb3db278fc7cd69e6da53bef) | DEMO-SCRIPT.md, sign-card.css | +41 / -2 |
 | 13 Sept, 13:17 | aufanhakim1920-source | other | [what a model error body can contain, and counting the irreversible clicks](../../commit/2e510e75c266a9f58d6bdfd66415976cfdb9d1ca) | DECISIONS.md | +47 / -0 |
 | 13 Sept, 13:16 | aufanhakim1920-source | practice | [removing an invented customer was one click with no undo](../../commit/3f001b4dcca06b7aa034e18187b2b499a07e7eca) | Practice.tsx | +29 / -3 |
 | 13 Sept, 13:14 | aufanhakim1920-source | practice | [a raw model error was printing whatever the model sent](../../commit/be735ed765108ac09f682e0f74fc94969d85ecc7) | redact.check.ts, ReportCard.tsx, scenario-draft.css +1 | +294 / -17 |
