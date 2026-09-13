@@ -1301,3 +1301,35 @@ the last run affects turns whose speaker is unknown, and `c04` resolved as `cust
 ⭐ **A gate whose input is a model field inherits that field's variance** — one borderline utterance
 is the entire difference between the two runs, and a headline recall quoted to three decimals hides
 that. Worth remembering before reading the next 0.03 as progress.
+
+## Type carries affordance, and no CSS rule has to say so
+
+A cold reader tried to click two things that do nothing: the statute citation
+on the legal sign card, and the example phrases in the waiting column.
+
+The interesting part is **what made them look clickable, because nothing did.**
+Cursor `auto`. No underline, no fill, no border, no hover. The affordance was
+entirely typographic: **10 px mono with letter-spacing, alone on its own line,
+directly beneath a legal claim.** That is the shape of a citation link, and a
+reader recognises the shape before they read the words. The example phrases
+were three short quotes separated by interpuncts — the shape of a tag row.
+
+⭐ **A promise can be made by type alone.** Mono plus tracking plus its own line
+says "reference you can follow". Short strings divided by dots say "pills".
+Neither needed a rule, and neither would be caught by a sweep looking for
+`cursor: pointer`.
+
+**All four were removed rather than wired up**, which is the cheaper and more
+honest fix the day before a freeze: adding a feature to justify an affordance
+is the expensive way round. The citation was deliberately **not** linked to
+legislation — this is read mid-call, sending a worker off-site is the wrong
+instinct, and it would have meant guessing at a stable URL on freeze day. The
+example phrases are deliberately still inert, because filling the transcript
+from a chip would **fake input into a product whose entire claim is that it
+reads real speech.**
+
+One was kept after examination: the `LEGAL` badge is a 999 px pill, which is
+chip-shaped — but every button in this app is 4 px, so it mimics nothing here,
+and that pill is what separates legal from tip in greyscale and for a
+colour-blind reader. ⭐ **A shape is only a false affordance relative to the
+shapes the rest of the product uses.**
