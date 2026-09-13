@@ -68,23 +68,33 @@ to measure what is being missed, then turn coaching on — and the thing that ma
 identical to the character in both, so the engine hears the same thing; the two workers are not. It
 is a dramatisation and we say so — there are two worker scripts in `src/lib/demoScript.ts`, and an
 earlier version with only one proved nothing, because the worker said the same words either way.
-Measured over twelve runs on 13 Sep, seven coached and five silent — **on the local engine, which
-runs a different model from the deployed one**, so the verdicts and the score spread may move:
+
+**Measured, not claimed.** `eval/demo-runs.ts` replays the demo script through the real engine —
+the same detector pass, the same `/flags`, the same `/report` — and archives every run. The numbers
+below are **10 runs on the deployed engine**, 4 coached and 6 silent, on 13 Sep:
 
 | | Coaching **on** | Coaching **off** |
 |---|---|---|
 | Sign cards on screen during the call | 4 | **0** |
-| Signs recorded and judged | 4 | 3 |
-| Signs missed | **0, every run** | **at least 1, every run** |
-| The statutory notice (NCC s72) | **handled, 7 of 7** | **missed, 5 of 5** |
+| Signs recorded and judged | 4 | **5** |
+| Signs answered | **4 of 4, every run** | **0 of 5, every run** |
+| The statutory notice (NCC s72) | **handled, 4 of 4** | **missed, 6 of 6** |
 | 21-day deadline created | yes | **yes — with nothing on screen** |
-| Score | 95 twice, withheld as unverified five times | 30, 30, 40, 40, 45 |
+| Withheld as unverified | 0 | 0 |
+| Score | 88 · 88 · 88 · 85 | 10 · 10 · 10 · 10 · 15 · 10 |
 
-The score is the least trustworthy row and we do not lead with it: a call the model cannot verify
-from the transcript gets **no score at all** rather than an invented one, which happens more often on
-the *good* run. The row that held without exception is the one the product is about — the sentence
-that starts the legal clock was answered every time the worker could see it and missed every time he
-could not.
+The silent run raises **more** signs than the coached one, which reads oddly until you see why: the
+worker who never mentions hardship assistance earns a prompt telling him to, and the worker who does
+mention it never triggers one. The absence is the thing being measured.
+
+**The score is still the least trustworthy row and we do not lead with it.** It moves by up to three
+points between identical runs, because the written review is generated and the counted fields are
+not. The comparison to say out loud is the fraction: **four of four answered against zero of five.**
+
+⚠️ **An earlier version of this table quoted "95 against 20".** Those numbers came from a handful of
+runs and did not survive measurement — across 19 silent and 7 coached judgements, neither figure
+appeared once. They were replaced rather than defended, and the archived run records are in
+`eval/demo-runs.json` so anyone can check these.
 
 ## A hint is not a notice
 
