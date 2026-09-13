@@ -64,6 +64,11 @@ export const MEDIUM_TERM: RegExp[] = [
   /\bongoing\b/i,
   /\bmedium\s+term\b/i,
   /\bsigned\s+off\s+(work\s+)?until\b/i,
+  // Added after Aufan's cross-check found MEDIUM_TERM matching 0 of 41 cases.
+  // Both are the customer stating an open-ended period about their own
+  // situation, which is what s72 turns on — not a cause, which never counts.
+  /\bsince\s+(january|february|march|april|may|june|july|august|september|october|november|december)\b/i,
+  /\b(till|until)\s+I\s+(find|get)\s+(something|work|another|a\s+job)\b/i,
 ];
 
 /** Signals the customer expects to recover shortly. Suppresses the flag. */

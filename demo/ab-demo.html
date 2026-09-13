@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Hard Call — coaching off vs on</title>
+<style>
+  :root{
+    --ink:#0a1628; --ink-2:#12213c; --line:#1e3358; --paper:#f6f8fc;
+    --muted:#8aa0c4; --white:#ffffff;
+    --gold:#e8b53f; --gold-dim:#8a6c25;
+    --bad:#e8654f; --good:#4fc98a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--paper);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding-block:24px;padding-left:20px;padding-right:20px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px}
+  button{font:inherit;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--line);background:var(--ink-2);color:var(--paper)}
+  button.primary{background:var(--gold);border-color:var(--gold);color:#241a04}
+  button:disabled{opacity:.45;cursor:default}
+  select{font:inherit;padding:8px 10px;border-radius:8px;background:var(--ink-2);
+    color:var(--paper);border:1px solid var(--line)}
+  .mode{margin-left:auto;font-size:13px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+  @media (max-width:820px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:16px;min-height:120px}
+  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+    margin:0 0 12px;font-weight:600}
+  .turn{margin:0 0 12px;display:flex;gap:10px}
+  .who{flex:0 0 62px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);padding-top:3px}
+  .who.cust{color:var(--gold)}
+  .said{flex:1}
+  .t{font-variant-numeric:tabular-nums;color:var(--muted);font-size:11px;margin-left:6px}
+  .empty{color:var(--muted);font-size:13px;font-style:italic}
+  .flag{border:1px solid var(--gold-dim);background:#1a1405;border-radius:10px;
+    padding:12px;margin-bottom:10px;animation:in .35s ease}
+  .flag.req{border-color:var(--line);background:#101c33}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+    font-weight:700;padding:2px 7px;border-radius:999px;background:var(--gold);color:#241a04}
+  .tag.req{background:var(--line);color:var(--paper)}
+  .flag h3{font-size:14px;margin:8px 0 4px}
+  .flag p{margin:0;font-size:13px;color:#cfdcf2}
+  .due{margin-top:10px;padding-top:9px;border-top:1px solid var(--gold-dim);
+    font-size:13px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+  .auth{font-size:11px;color:var(--muted);margin-top:6px}
+  .card{margin-top:18px}
+  .row{display:flex;gap:10px;padding:11px 0;border-top:1px solid var(--line);align-items:flex-start}
+  .row:first-of-type{border-top:0}
+  .pill{flex:0 0 auto;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+    padding:3px 8px;border-radius:999px}
+  .pill.missed{background:#3a1410;color:var(--bad);border:1px solid var(--bad)}
+  .pill.satisfied{background:#0d2a1d;color:var(--good);border:1px solid var(--good)}
+  .pill.unverified{background:#2a2410;color:var(--gold);border:1px solid var(--gold-dim)}
+  .row .body{flex:1}
+  .row .body b{display:block;font-size:13px;margin-bottom:2px}
+  .row .body span{font-size:12px;color:var(--muted)}
+  .diverge{display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:var(--gold);
+    font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+  .diverge::before,.diverge::after{content:"";flex:1;height:1px;background:var(--gold-dim)}
+  .note{margin-top:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+  .note b{color:var(--paper)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Hard Call</h1>
+  <p class="sub">The same call, twice. Identical up to 0:45, then the coaching fires. Nothing here touches the network.</p>
+
+  <div class="controls">
+    <button id="off">Run without coaching</button>
+    <button id="on" class="primary">Run with coaching</button>
+    <select id="speed">
+      <option value="4">4&times;</option>
+      <option value="8" selected>8&times;</option>
+      <option value="1">real time</option>
+    </select>
+    <span class="mode" id="mode"></span>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>Call</h2>
+        <div id="transcript"><p class="empty">Press a button to start.</p></div>
+      </div>
+      <div class="panel card" id="cardWrap" hidden>
+        <h2>Report card</h2>
+        <div id="card"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>On the worker's screen</h2>
+      <div id="flags"><p class="empty">Nothing yet.</p></div>
+    </div>
+  </div>
+
+  <p class="note" id="verdict" hidden></p>
+</div>
+
+<script>
+const DATA = {"divergesAt":45000,"off":{"transcript":{"call_id":"call_003","scenario":"oral_notice_missed_by_staff","notes":"The demo call. Customer gives a clear oral hardship notice at ~52s. The staff member never recognises it, pivots straight to an informal payment arrangement, never mentions the hardship process, and closes with 'I'll put a note on the file' — which starts no clock and creates no record. This is the NAB/AFSH failure pattern in miniature. Detector MUST fire at the notice; the report card must mark the misses.","duration_ms":158700,"turns":[{"speaker":"staff","start_ms":0,"end_ms":4800,"text":"Meridian Home Loans, Jordan speaking. Name and property address please?"},{"speaker":"customer","start_ms":5200,"end_ms":11600,"text":"Mei Lam. It's 27 Ardwick Street, Sunshine West."},{"speaker":"staff","start_ms":12000,"end_ms":16100,"text":"Got it. I can see there's an arrears balance on the account. Are you calling about that?"},{"speaker":"customer","start_ms":16500,"end_ms":21300,"text":"Yes. I've missed the last two and I don't think I'm going to make the next one either."},{"speaker":"staff","start_ms":21700,"end_ms":25900,"text":"Okay. What's the plan to bring the account back up to date?"},{"speaker":"customer","start_ms":26300,"end_ms":39800,"text":"That's the thing, I don't really have one. I had surgery in July and I'm signed off work until at least February. I'm on the income protection but it's about sixty per cent of what I was on."},{"speaker":"staff","start_ms":40200,"end_ms":44600,"text":"Right. And is there anyone else contributing to the household?"},{"speaker":"customer","start_ms":45000,"end_ms":64200,"text":"No, it's just me. Look, I've done the numbers a dozen times. On sixty per cent I cannot cover the repayment. Not next month, not the month after. It's going to be like this until I'm cleared to go back, and that's four or five months away at best."},{"speaker":"staff","start_ms":64600,"end_ms":71200,"text":"Okay. What I can do is set up an arrangement where you pay what you can each month and we'll review it."},{"speaker":"customer","start_ms":71600,"end_ms":76400,"text":"What does that mean, though? Am I still behind? Does it still count against me?"},{"speaker":"staff","start_ms":76800,"end_ms":86300,"text":"The arrears stay on the account, yes, but as long as you're paying something each month it shows you're engaging with us."},{"speaker":"customer","start_ms":86700,"end_ms":94100,"text":"And the letters? I got one last week that mentioned legal action. Does that stop?"},{"speaker":"staff","start_ms":94500,"end_ms":102800,"text":"I can't guarantee that. The letters are automated from the system. I'd just call us if you get another one."},{"speaker":"customer","start_ms":103200,"end_ms":110600,"text":"Right. So is there anything else, like — I don't know, is there a process for this? A friend of mine said her bank did something when her husband got sick."},{"speaker":"staff","start_ms":111000,"end_ms":119400,"text":"There are options but they'd depend on your circumstances. For now the arrangement is the quickest thing to get in place."},{"speaker":"customer","start_ms":119800,"end_ms":124300,"text":"Okay. How much do I need to pay for the arrangement?"},{"speaker":"staff","start_ms":124700,"end_ms":132900,"text":"Whatever you can manage. Say four hundred a month? Then we'd look at it again in three months."},{"speaker":"customer","start_ms":133300,"end_ms":139800,"text":"I can probably do four hundred. I don't know what happens after three months though."},{"speaker":"staff","start_ms":140200,"end_ms":150100,"text":"We'll cross that bridge then. I'll put a note on the file that we've spoken and that you're on an informal arrangement."},{"speaker":"customer","start_ms":150500,"end_ms":154200,"text":"Alright. Thanks for your help."},{"speaker":"staff","start_ms":154600,"end_ms":158700,"text":"No problem. Anything else I can help with today?"}]},"flags":[{"flag_id":"f_003_01","call_id":"call_003","kind":"request","persist":true,"rule_id":"HARDSHIP_REQUEST","raised_at":{"speaker":"customer","start_ms":16500},"attribution":"known","obligation":"Customer has asked to change their repayments. Establish whether this is a timing problem or an inability to pay","deadline_days":null,"deadline_from":null,"followup_days":7,"authority":"National Credit Code s 72 (threshold question)","confidence":0.72,"staff_prompt":"Customer has asked to change their repayments. Ask whether they can recover in the near term — if not, this is a hardship notice and the 21-day clock starts.","superseded_by":"f_003_02","resolution":{"status":"missed","evidence":null,"reason":"The threshold question was never asked. Chase within 7 days: the 21-day clock runs from when the customer spoke, so acting by day 7 still leaves 14 days if this turns out to have been a hardship notice."}},{"flag_id":"f_003_02","call_id":"call_003","kind":"obligation","persist":true,"rule_id":"NCC_72_ORAL_NOTICE","raised_at":{"speaker":"customer","start_ms":45000},"attribution":"known","obligation":"Assess the hardship notice and notify the customer of the decision","deadline_days":21,"deadline_from":"notice_received","followup_days":null,"authority":"National Credit Code s 72(4)","confidence":0.95,"staff_prompt":"Hardship notice received. 21-day clock started. Tell the customer the hardship process exists and lodge it.","resolution":{"status":"missed","evidence":null,"reason":"The call ended and no staff turn discharged this obligation."}},{"flag_id":"f_003_03","call_id":"call_003","kind":"obligation","persist":true,"rule_id":"ABA_INFORM_HARDSHIP_PROVISIONS","raised_at":{"speaker":"customer","start_ms":45000},"attribution":"known","obligation":"Inform the customer that hardship provisions exist under the National Credit Code","deadline_days":null,"deadline_from":null,"followup_days":null,"authority":"ABA industry guideline — Banks' financial difficulty programs","confidence":0.95,"staff_prompt":"Tell the customer hardship provisions exist. Most customers do not know.","escalated_at":{"speaker":"customer","start_ms":103200},"resolution":{"status":"missed","evidence":null,"reason":"The call ended and no staff turn discharged this obligation."}}]},"on":{"transcript":{"call_id":"call_003c","scenario":"same_call_coached","notes":"The coached counterfactual to call_003. Every turn up to and including the customer's hardship notice at 45000ms is byte-identical to call_003 — same customer, same words. The coaching prompt fires at 45000, and from the worker's next turn the calls diverge, because she acted on it. That divergence IS the product. Detector must raise the same events at the same timestamps as call_003 and resolve them satisfied instead of missed.","diverges_at_ms":45000,"duration_ms":160800,"turns":[{"speaker":"staff","start_ms":0,"end_ms":4800,"text":"Meridian Home Loans, Jordan speaking. Name and property address please?"},{"speaker":"customer","start_ms":5200,"end_ms":11600,"text":"Mei Lam. It's 27 Ardwick Street, Sunshine West."},{"speaker":"staff","start_ms":12000,"end_ms":16100,"text":"Got it. I can see there's an arrears balance on the account. Are you calling about that?"},{"speaker":"customer","start_ms":16500,"end_ms":21300,"text":"Yes. I've missed the last two and I don't think I'm going to make the next one either."},{"speaker":"staff","start_ms":21700,"end_ms":25900,"text":"Okay. What's the plan to bring the account back up to date?"},{"speaker":"customer","start_ms":26300,"end_ms":39800,"text":"That's the thing, I don't really have one. I had surgery in July and I'm signed off work until at least February. I'm on the income protection but it's about sixty per cent of what I was on."},{"speaker":"staff","start_ms":40200,"end_ms":44600,"text":"Right. And is there anyone else contributing to the household?"},{"speaker":"customer","start_ms":45000,"end_ms":64200,"text":"No, it's just me. Look, I've done the numbers a dozen times. On sixty per cent I cannot cover the repayment. Not next month, not the month after. It's going to be like this until I'm cleared to go back, and that's four or five months away at best."},{"speaker":"staff","start_ms":64600,"end_ms":79200,"text":"Thank you for telling me. Mei, what you've just described counts as a hardship notice — that's a formal thing under the National Credit Code, and it means we have to look at changing your arrangements. I'm lodging it now while we're on the call."},{"speaker":"customer","start_ms":79600,"end_ms":84100,"text":"Oh. I didn't know that was something you could do."},{"speaker":"staff","start_ms":84500,"end_ms":97800,"text":"Most people don't. We've got twenty-one days from today to assess it and come back to you with a decision, and I'd expect it well before that."},{"speaker":"customer","start_ms":98200,"end_ms":104600,"text":"And the letters? I got one last week that mentioned legal action. Does that stop?"},{"speaker":"staff","start_ms":105000,"end_ms":116400,"text":"Yes. While a hardship application is open the collections activity pauses. I'm putting a hold on the account now so nothing automated goes out to you."},{"speaker":"customer","start_ms":116800,"end_ms":121300,"text":"Okay. That's a relief, honestly."},{"speaker":"staff","start_ms":121700,"end_ms":133900,"text":"There are a few things we can look at — pausing repayments for a period, or moving you to interest-only while you're off work. I'll need some information about income and expenses to work out which fits."},{"speaker":"customer","start_ms":134300,"end_ms":138600,"text":"I can get that together. How do I send it?"},{"speaker":"staff","start_ms":139000,"end_ms":151200,"text":"I'll email a form today. And Mei — if you'd rather not do this on your own, free financial counselling is available and they can deal with us on your behalf. No cost to you."},{"speaker":"customer","start_ms":151600,"end_ms":156000,"text":"I might take that. Thank you."},{"speaker":"staff","start_ms":156400,"end_ms":160800,"text":"That's what the call is for. I'll get that email out within the hour."}]},"flags":[{"flag_id":"f_003c_01","call_id":"call_003c","kind":"request","persist":true,"rule_id":"HARDSHIP_REQUEST","raised_at":{"speaker":"customer","start_ms":16500},"attribution":"known","obligation":"Customer has asked to change their repayments. Establish whether this is a timing problem or an inability to pay","deadline_days":null,"deadline_from":null,"followup_days":7,"authority":"National Credit Code s 72 (threshold question)","confidence":0.72,"staff_prompt":"Customer has asked to change their repayments. Ask whether they can recover in the near term — if not, this is a hardship notice and the 21-day clock starts.","superseded_by":"f_003c_02","resolution":{"status":"satisfied","evidence":{"speaker":"staff","start_ms":64600},"reason":"Staff discharged the obligation at 64600ms."}},{"flag_id":"f_003c_02","call_id":"call_003c","kind":"obligation","persist":true,"rule_id":"NCC_72_ORAL_NOTICE","raised_at":{"speaker":"customer","start_ms":45000},"attribution":"known","obligation":"Assess the hardship notice and notify the customer of the decision","deadline_days":21,"deadline_from":"notice_received","followup_days":null,"authority":"National Credit Code s 72(4)","confidence":0.95,"staff_prompt":"Hardship notice received. 21-day clock started. Tell the customer the hardship process exists and lodge it.","resolution":{"status":"satisfied","evidence":{"speaker":"staff","start_ms":64600},"reason":"Staff discharged the obligation at 64600ms."}},{"flag_id":"f_003c_03","call_id":"call_003c","kind":"obligation","persist":true,"rule_id":"ABA_INFORM_HARDSHIP_PROVISIONS","raised_at":{"speaker":"customer","start_ms":45000},"attribution":"known","obligation":"Inform the customer that hardship provisions exist under the National Credit Code","deadline_days":null,"deadline_from":null,"followup_days":null,"authority":"ABA industry guideline — Banks' financial difficulty programs","confidence":0.95,"staff_prompt":"Tell the customer hardship provisions exist. Most customers do not know.","resolution":{"status":"satisfied","evidence":{"speaker":"staff","start_ms":64600},"reason":"Staff discharged the obligation at 64600ms."}},{"flag_id":"f_003c_04","call_id":"call_003c","kind":"obligation","persist":true,"rule_id":"NCC_72_WRITTEN_NOTICE_30D","raised_at":{"speaker":"staff","start_ms":121700},"attribution":"known","obligation":"If a variation deferring or reducing obligations for more than 90 days is agreed, send written notice of the contract changes","deadline_days":30,"deadline_from":"variation_agreed","followup_days":null,"authority":"National Credit Code s 72 / s 73","confidence":0.64,"staff_prompt":"If a variation over 90 days is agreed, written notice is due within 30 days.","resolution":{"status":"unverified","evidence":null,"reason":"Discharged after the call by a system action, not by anything said on it. No in-call evidence can settle this."}}]}};
+const SET = (coaching) => (coaching ? DATA.on : DATA.off);
+const $ = (id) => document.getElementById(id);
+let timer = null, run = 0;
+
+const fmt = (ms) => {
+  const s = Math.floor(ms/1000);
+  return String(Math.floor(s/60)) + ":" + String(s%60).padStart(2,"0");
+};
+const due = (days) => {
+  if (days == null) return null;
+  const d = new Date(); d.setDate(d.getDate()+days);
+  return d.toLocaleDateString("en-AU",{day:"numeric",month:"short",year:"numeric"});
+};
+
+function reset() {
+  run++;
+  if (timer) { clearTimeout(timer); timer = null; }
+  $("transcript").innerHTML = "";
+  $("flags").innerHTML = '<p class="empty">Nothing yet.</p>';
+  $("card").innerHTML = "";
+  $("cardWrap").hidden = true;
+  $("verdict").hidden = true;
+}
+
+function addTurn(turn) {
+  const el = document.createElement("div");
+  el.className = "turn";
+  const cust = turn.speaker === "customer";
+  el.innerHTML =
+    '<div class="who ' + (cust ? "cust" : "") + '">' + (cust ? "Customer" : "Worker") + '</div>' +
+    '<div class="said">' + turn.text.replace(/&/g,"&amp;").replace(/</g,"&lt;") +
+    '<span class="t">' + fmt(turn.start_ms) + '</span></div>';
+  $("transcript").appendChild(el);
+  el.scrollIntoView({block:"nearest"});
+}
+
+function addFlag(f) {
+  if ($("flags").querySelector(".empty")) $("flags").innerHTML = "";
+  const isReq = f.kind === "request";
+  const el = document.createElement("div");
+  el.className = "flag" + (isReq ? " req" : "");
+  const d = due(f.deadline_days);
+  el.innerHTML =
+    '<span class="tag' + (isReq ? " req" : "") + '">' +
+      (isReq ? "Check this" : "Legal · clock started") + '</span>' +
+    '<h3>' + f.obligation + '</h3>' +
+    '<p>' + f.staff_prompt + '</p>' +
+    (d ? '<div class="due">Decision due ' + d + ' · ' + f.deadline_days + ' days</div>' : '') +
+    '<div class="auth">' + f.authority + ' · raised at ' + fmt(f.raised_at.start_ms) + '</div>';
+  $("flags").appendChild(el);
+}
+
+function divider() {
+  const el = document.createElement("div");
+  el.className = "diverge";
+  el.innerHTML = '<span>coaching fired here — everything above is identical in both runs</span>';
+  $("transcript").appendChild(el);
+}
+
+function showCard(coaching) {
+  const scored = SET(coaching).flags.filter(f => !f.superseded_by);
+  $("card").innerHTML = scored.map(f => {
+    const r = f.resolution || {};
+    const ev = r.evidence ? " Evidence at " + fmt(r.evidence.start_ms) + "." : "";
+    return '<div class="row">' +
+      '<span class="pill ' + r.status + '">' + r.status + '</span>' +
+      '<div class="body"><b>' + f.obligation + '</b>' +
+      '<span>' + f.authority + '. Raised at ' + fmt(f.raised_at.start_ms) + '.' + ev + '</span></div></div>';
+  }).join("");
+  $("cardWrap").hidden = false;
+
+  const missed = scored.filter(f => (f.resolution||{}).status === "missed").length;
+  const ok = scored.filter(f => (f.resolution||{}).status === "satisfied").length;
+  $("verdict").hidden = false;
+  $("verdict").innerHTML = coaching
+    ? '<b>With coaching — every duty that can be settled on the call was settled.</b> ' + ok + ' handled, and the written-notice duty is marked unverified because it is discharged after the call by a system action, not by anything said on it. The prompt fired at 0:45, the moment Mei said she could not cover the repayment for four or five months. The worker named the hardship process, started the clock on the record and paused collections. Up to 0:45 this is the same call as the other run, word for word.'
+    : '<b>Without coaching — ' + missed + ' obligations missed.</b> Identical words from the customer, identical analysis underneath. The worker simply never saw it, and offered an informal arrangement instead, which starts no clock and leaves no record that a decision is owed. That is the failure ASIC penalised NAB and AFSH $15.5m for in August 2025, across 345 customers.';
+}
+
+async function play(coaching) {
+  reset();
+  const mine = run;
+  const speed = Number($("speed").value);
+  $("mode").textContent = coaching ? "coaching ON" : "coaching OFF";
+  $("on").disabled = $("off").disabled = true;
+
+  const set = SET(coaching);
+  const turns = set.transcript.turns;
+  let clock = 0, i = 0, marked = false;
+
+  const step = () => {
+    if (mine !== run) return;
+    if (i >= turns.length) {
+      showCard(coaching);
+      $("on").disabled = $("off").disabled = false;
+      return;
+    }
+    const turn = turns[i];
+    if (!marked && turn.start_ms > DATA.divergesAt) { divider(); marked = true; }
+    addTurn(turn);
+    if (coaching) {
+      set.flags
+        .filter(f => f.raised_at.start_ms === turn.start_ms)
+        .forEach(addFlag);
+    }
+    clock = turn.start_ms;
+    const next = i + 1 < turns.length ? turns[i+1].start_ms : clock + 800;
+    i++;
+    timer = setTimeout(step, Math.max(120, (next - clock) / speed));
+  };
+  step();
+}
+
+$("off").onclick = () => play(false);
+$("on").onclick = () => play(true);
+</script>
+</body>
+</html>

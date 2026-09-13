@@ -1,5 +1,5 @@
 /**
- * Builds public/ab-demo.html — a self-contained A/B demo page.
+ * Builds demo/ab-demo.html — a self-contained A/B demo page.
  *
  *   npx tsx eval/build-demo.ts
  *
@@ -11,7 +11,7 @@
  * works, which is the point: it is the demo and the fallback in one artefact.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { detect } from "../src/detector/index.js";
 import { compareCoaching } from "../src/demo/replay.js";
@@ -75,257 +75,123 @@ async function main() {
   ).replace(/</g, "\\u003c");
   const html = PAGE.replace("__DATA__", data);
 
-  const out = join(ROOT, "public", "ab-demo.html");
+  mkdirSync(join(ROOT, "demo"), { recursive: true });
+  const out = join(ROOT, "demo", "ab-demo.html");
   writeFileSync(out, html);
   console.log(`wrote ${out} (${(html.length / 1024).toFixed(0)} kB)`);
 }
 
-const PAGE = String.raw`<!doctype html>
+const PAGE = `<!doctype html>
 <html lang="en-AU">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Hard Call — coaching off vs on</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231C1F24'/%3E%3Cpath d='M14 13h7v38h-7z' fill='%23C79C5A'/%3E%3Cpath d='M14 13h36l-9 12.5 9 12.5H14z' fill='%23C79C5A'/%3E%3C/svg%3E">
 <style>
-  /* Offline by construction: no font link, no CDN, no fetch, no image file.
-     The favicon above is a data URI so even that costs no request — the page
-     is the whole artefact, and it is the fallback if the API is down. */
-
-  /* The app's locked palette. Every value here is measured, not picked:
-     ratios are in the comment beside each use. */
   :root{
-    --page:#1c1f24;        /* the ground */
-    --raised:#2b3038;      /* one step up — this is what does the ranking */
-    --text:#f2eee7;        /* 14.30:1 on page, 11.48:1 on raised */
-    --text-2:#9aa3ad;      /*  6.46:1 on page,  5.19:1 on raised */
-    --gold:#c79c5a;        /*  6.56:1 on page,  5.26:1 on raised */
-    --gold-hi:#dcb373;     /*  8.45:1 on page,  6.78:1 on raised */
-    --on-gold:#1c1f24;     /*  6.56:1 on the gold fill */
-    --ok:#9fc9a8;          /*  8.97:1 on page,  7.20:1 on raised */
-    --bad:#e7a89b;         /*  8.24:1 on page,  6.61:1 on raised */
-    --haz:#dcb373;         /* hazard fill,  6.78:1 on raised as a graphic */
-    --haz-bar:#1c1f24;     /* hazard stripe, 8.45:1 against the fill */
-    --line:rgba(154,163,173,.16);
-    --ease-out:cubic-bezier(.23,1,.32,1);
-    --ease-back:cubic-bezier(.34,1.35,.64,1);
-    /* A scale, not noise: seven steps, each a real jump. */
-    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:40px;
-    --r:4px; --r-card:14px;
+    --ink:#0a1628; --ink-2:#12213c; --line:#1e3358; --paper:#f6f8fc;
+    --muted:#8aa0c4; --white:#ffffff;
+    --gold:#e8b53f; --gold-dim:#8a6c25;
+    --bad:#e8654f; --good:#4fc98a;
   }
-  /* Light ground. Every token re-measured against the new grounds rather than
-     inverted by eye — a ratio that held on ink does not hold on cream. */
-  @media (prefers-color-scheme: light){
-    :root{
-      --page:#f2eee7;
-      --raised:#e9e4da;
-      --text:#1c1f24;          /* 14.30:1 on page, 13.04:1 on raised */
-      --text-2:rgba(28,31,36,.78); /* 7.35:1 on page, 7.00:1 on raised */
-      --gold:#7a5214;          /*  5.97:1 on page,  5.45:1 on raised */
-      --gold-hi:#7a5214;
-      --ok:#2f6b3d;            /*  5.52:1 on page,  5.03:1 on raised */
-      --bad:#a8362f;           /*  5.62:1 on page,  5.13:1 on raised */
-      --haz:#8a5e1c;           /*  4.91:1 against its own stripe */
-      --haz-bar:#f2eee7;
-      --line:rgba(28,31,36,.16);
-    }
-  }
-
   *{box-sizing:border-box}
-  html{color-scheme:dark light}
-  body{
-    margin:0;background:var(--page);color:var(--text);
-    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    padding:var(--s5) var(--s4) var(--s7);
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:1120px;margin:0 auto}
-
-  /* ── masthead ─────────────────────────────────────────────── */
-  .mast{margin-bottom:var(--s5)}
-  h1{font-size:19px;line-height:1.2;margin:0;letter-spacing:-.012em;font-weight:600}
-  .sub{color:var(--text-2);font-size:13px;margin:var(--s1) 0 0;max-width:62ch}
-
-  /* ── controls ─────────────────────────────────────────────── */
-  .controls{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin-bottom:var(--s5)}
-  button{
-    font:inherit;font-size:14px;font-weight:600;padding:10px var(--s4);
-    border-radius:var(--r);cursor:pointer;border:0;
-    background:var(--raised);color:var(--text);
-    transition:transform .18s var(--ease-out),background .18s var(--ease-out);
-  }
-  button:hover:not(:disabled){background:var(--page);box-shadow:inset 0 0 0 1px var(--line)}
-  button:active:not(:disabled){transform:translateY(1px)}
-  button.primary{background:var(--gold-hi);color:var(--on-gold)}
-  button.primary:hover:not(:disabled){background:var(--gold);box-shadow:none}
-  button:disabled{opacity:.4;cursor:default}
-  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:var(--r)}
-
-  /* Segmented speed control — a designed control, not a native select. */
-  .speed{display:flex;gap:2px;margin-left:auto;background:var(--raised);
-    padding:3px;border-radius:var(--r)}
-  .speed button{padding:6px 11px;font-size:12px;font-weight:600;background:transparent;
-    color:var(--text-2);border-radius:2px}
-  .speed button:hover:not(:disabled){background:transparent;box-shadow:none;color:var(--text)}
-  .speed button[aria-pressed="true"]{background:var(--page);color:var(--text)}
-
-  /* ── the verdict plate — the loudest thing, because the outcome is
-        what this page exists to show. Identity lands the moment you press;
-        the count lands once, true, when the run ends. ─────────────── */
-  .plate{
-    background:var(--raised);border-radius:var(--r-card);
-    padding:var(--s5);margin-bottom:var(--s5);
-    display:grid;gap:var(--s4);
-  }
-  .plate[hidden]{display:none}
-  .run{display:flex;align-items:center;gap:var(--s3);
-    font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-  .run .dot{width:var(--s2);height:var(--s2);border-radius:50%;background:var(--text-2);flex:none}
-  .run.on{color:var(--gold-hi)} .run.on .dot{background:var(--gold-hi)}
-  .run.off{color:var(--bad)}    .run.off .dot{background:var(--bad)}
-  .tally{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
-  .tally .n{font-size:52px;line-height:.9;font-weight:700;letter-spacing:-.03em;
-    font-variant-numeric:tabular-nums}
-  .tally.miss .n{color:var(--bad)} .tally.done .n{color:var(--ok)}
-  .tally .lab{font-size:17px;font-weight:600;max-width:30ch}
-  .plate p{margin:0;font-size:14px;color:var(--text-2);max-width:78ch}
-  .plate p b{color:var(--text);font-weight:600}
-  .running{font-size:14px;color:var(--text-2);margin:0}
-
-  /* ── the two columns ──────────────────────────────────────── */
-  /* minmax(0,1fr), never a bare 1fr: a bare 1fr is minmax(auto,1fr) and a long
-     unbroken line pushes the grid wider than the viewport. */
-  .grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:var(--s5);align-items:start}
-  @media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
-
-  h2{font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--text-2);
-    margin:0 0 var(--s3);font-weight:700}
-
-  /* The transcript is context, so it sits flat on the page ground.
-     Ranking between regions is ground and air — not a box around each one. */
-  .call{min-height:120px}
-  .turn{margin:0 0 var(--s3);display:grid;grid-template-columns:64px minmax(0,1fr);gap:var(--s3)}
-  .who{font-size:10px;text-transform:uppercase;letter-spacing:.08em;
-    color:var(--text-2);padding-top:4px;font-weight:700}
+  body{margin:0;background:var(--ink);color:var(--paper);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding-block:24px;padding-left:20px;padding-right:20px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:-0.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px}
+  button{font:inherit;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--line);background:var(--ink-2);color:var(--paper)}
+  button.primary{background:var(--gold);border-color:var(--gold);color:#241a04}
+  button:disabled{opacity:.45;cursor:default}
+  select{font:inherit;padding:8px 10px;border-radius:8px;background:var(--ink-2);
+    color:var(--paper);border:1px solid var(--line)}
+  .mode{margin-left:auto;font-size:13px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+  @media (max-width:820px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:16px;min-height:120px}
+  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+    margin:0 0 12px;font-weight:600}
+  .turn{margin:0 0 12px;display:flex;gap:10px}
+  .who{flex:0 0 62px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);padding-top:3px}
   .who.cust{color:var(--gold)}
-  .said{min-width:0;overflow-wrap:anywhere}
-  .turn.cust .said{color:var(--text)}
-  .turn.staff .said{color:var(--text-2)}
-  .t{font-variant-numeric:tabular-nums;color:var(--text-2);font-size:11px;margin-left:var(--s2)}
-  .empty{color:var(--text-2);font-size:13px;margin:0}
-
-  .diverge{display:flex;align-items:center;gap:var(--s3);margin:var(--s5) 0;
-    color:var(--gold);font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
-  .diverge::before,.diverge::after{content:"";flex:1;height:2px;background:var(--gold);opacity:.45}
-
-  /* The worker's screen is the product's own output, so it is the one column
-     that gets raised. */
-  .screen{background:var(--raised);border-radius:var(--r-card);padding:var(--s4);min-height:140px}
-  .flag{border-radius:var(--r);padding:var(--s3) var(--s3) var(--s3) var(--s4);
-    margin-bottom:var(--s3);background:var(--page);
-    box-shadow:inset 3px 0 0 var(--gold);
-    animation:rise .34s var(--ease-back) both}
-  .flag.req{box-shadow:inset 3px 0 0 var(--text-2)}
-  /* Transform only. An entrance that animates opacity from 0 pins the element
-     invisible when the tab is throttled and the animation never runs. */
-  @keyframes rise{from{transform:translateY(10px)}to{transform:none}}
-  .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;
-    font-weight:700;color:var(--gold-hi)}
-  .tag.req{color:var(--text-2)}
-  .flag h3{font-size:14px;margin:var(--s1) 0 var(--s1);line-height:1.35;font-weight:600}
-  .flag p{margin:0;font-size:13px;color:var(--text-2)}
-  .due{margin-top:var(--s3);font-size:14px;font-weight:700;color:var(--gold-hi);
-    font-variant-numeric:tabular-nums}
-  .auth{font-size:11px;color:var(--text-2);margin-top:var(--s2)}
-
-  /* ── the report card: ONE continuous raised surface, not a stack of
-        hairline-fenced rows. ───────────────────────────────────── */
-  .card{margin-top:var(--s5);background:var(--raised);border-radius:var(--r-card);padding:var(--s4)}
-  .row{display:grid;grid-template-columns:var(--s1) 96px minmax(0,1fr);gap:var(--s3);
-    align-items:start;padding:var(--s3) 0}
-  /* Status is carried three ways — texture, word and colour — so it survives
-     greyscale and every kind of colour blindness. Colour is the last channel,
-     never the only one. The stripe recipe is the app's own. */
-  .mark{width:var(--s1);align-self:stretch;min-height:34px;border-radius:2px}
-  .mark.missed{background-color:var(--haz);
-    background-image:repeating-linear-gradient(45deg,var(--haz-bar) 0 2px,transparent 2px 6px)}
-  .mark.satisfied{background:var(--ok)}
-  .mark.unverified{background-color:var(--raised);
-    background-image:repeating-linear-gradient(135deg,var(--text-2) 0 1px,transparent 1px 5px);
-    box-shadow:inset 0 0 0 1px var(--line)}
-  .word{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding-top:3px}
-  .word.missed{color:var(--bad)} .word.satisfied{color:var(--ok)} .word.unverified{color:var(--text-2)}
-  .row .body{min-width:0}
-  .row .body b{display:block;font-size:14px;margin-bottom:var(--s1);font-weight:600;line-height:1.35}
-  .row .body span{font-size:12px;color:var(--text-2)}
-
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
-      transition-duration:.01ms!important}
-  }
-  @media (max-width:520px){
-    /* At 375 the caption eats the row and both rules shrink to nothing, which
-       reads as a stray indent. Stack it: one rule, then the caption under it. */
-    .diverge{display:grid;gap:var(--s2);text-align:center}
-    .diverge::after{display:none}
-    .diverge::before{width:100%;height:2px}
-    .tally .n{font-size:42px}
-    .plate{padding:var(--s4)}
-    .row{grid-template-columns:var(--s1) minmax(0,1fr);row-gap:var(--s1)}
-    .word{grid-column:2;padding-top:0}
-    .row .body{grid-column:2}
-    .turn{grid-template-columns:minmax(0,1fr);gap:var(--s1)}
-    .who{padding-top:0}
-  }
+  .said{flex:1}
+  .t{font-variant-numeric:tabular-nums;color:var(--muted);font-size:11px;margin-left:6px}
+  .empty{color:var(--muted);font-size:13px;font-style:italic}
+  .flag{border:1px solid var(--gold-dim);background:#1a1405;border-radius:10px;
+    padding:12px;margin-bottom:10px;animation:in .35s ease}
+  .flag.req{border-color:var(--line);background:#101c33}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+    font-weight:700;padding:2px 7px;border-radius:999px;background:var(--gold);color:#241a04}
+  .tag.req{background:var(--line);color:var(--paper)}
+  .flag h3{font-size:14px;margin:8px 0 4px}
+  .flag p{margin:0;font-size:13px;color:#cfdcf2}
+  .due{margin-top:10px;padding-top:9px;border-top:1px solid var(--gold-dim);
+    font-size:13px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+  .auth{font-size:11px;color:var(--muted);margin-top:6px}
+  .card{margin-top:18px}
+  .row{display:flex;gap:10px;padding:11px 0;border-top:1px solid var(--line);align-items:flex-start}
+  .row:first-of-type{border-top:0}
+  .pill{flex:0 0 auto;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+    padding:3px 8px;border-radius:999px}
+  .pill.missed{background:#3a1410;color:var(--bad);border:1px solid var(--bad)}
+  .pill.satisfied{background:#0d2a1d;color:var(--good);border:1px solid var(--good)}
+  .pill.unverified{background:#2a2410;color:var(--gold);border:1px solid var(--gold-dim)}
+  .row .body{flex:1}
+  .row .body b{display:block;font-size:13px;margin-bottom:2px}
+  .row .body span{font-size:12px;color:var(--muted)}
+  .diverge{display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:var(--gold);
+    font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+  .diverge::before,.diverge::after{content:"";flex:1;height:1px;background:var(--gold-dim)}
+  .note{margin-top:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+  .note b{color:var(--paper)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="mast">
-    <h1>The Hard Call</h1>
-    <p class="sub">The same call, twice. Identical up to 0:45, then the coaching fires. Nothing here touches the network.</p>
-  </header>
+  <h1>The Hard Call</h1>
+  <p class="sub">The same call, twice. Identical up to 0:45, then the coaching fires. Nothing here touches the network.</p>
 
   <div class="controls">
     <button id="off">Run without coaching</button>
     <button id="on" class="primary">Run with coaching</button>
-    <div class="speed" role="group" aria-label="Playback speed">
-      <button type="button" data-speed="4" aria-pressed="false">4&times;</button>
-      <button type="button" data-speed="8" aria-pressed="true">8&times;</button>
-      <button type="button" data-speed="1" aria-pressed="false">Real time</button>
-    </div>
+    <select id="speed">
+      <option value="4">4&times;</option>
+      <option value="8" selected>8&times;</option>
+      <option value="1">real time</option>
+    </select>
+    <span class="mode" id="mode"></span>
   </div>
-
-  <section class="plate" id="plate" hidden aria-live="polite">
-    <div class="run" id="run"><span class="dot"></span><span id="runLabel"></span></div>
-    <p class="running" id="running">Playing the call.</p>
-    <div class="tally" id="tally" hidden><span class="n" id="tallyN"></span><span class="lab" id="tallyLab"></span></div>
-    <p id="verdict" hidden></p>
-  </section>
 
   <div class="grid">
     <div>
-      <div class="call">
+      <div class="panel">
         <h2>Call</h2>
         <div id="transcript"><p class="empty">Press a button to start.</p></div>
       </div>
-      <div class="card" id="cardWrap" hidden>
+      <div class="panel card" id="cardWrap" hidden>
         <h2>Report card</h2>
         <div id="card"></div>
       </div>
     </div>
-    <div class="screen">
+    <div class="panel">
       <h2>On the worker's screen</h2>
       <div id="flags"><p class="empty">Nothing yet.</p></div>
     </div>
   </div>
+
+  <p class="note" id="verdict" hidden></p>
 </div>
 
 <script>
 const DATA = __DATA__;
 const SET = (coaching) => (coaching ? DATA.on : DATA.off);
 const $ = (id) => document.getElementById(id);
-let timer = null, run = 0, speed = 8;
+let timer = null, run = 0;
 
 const fmt = (ms) => {
   const s = Math.floor(ms/1000);
@@ -337,14 +203,6 @@ const due = (days) => {
   return d.toLocaleDateString("en-AU",{day:"numeric",month:"short",year:"numeric"});
 };
 
-document.querySelectorAll(".speed button").forEach((b) => {
-  b.onclick = () => {
-    speed = Number(b.dataset.speed);
-    document.querySelectorAll(".speed button")
-      .forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-  };
-});
-
 function reset() {
   run++;
   if (timer) { clearTimeout(timer); timer = null; }
@@ -352,15 +210,13 @@ function reset() {
   $("flags").innerHTML = '<p class="empty">Nothing yet.</p>';
   $("card").innerHTML = "";
   $("cardWrap").hidden = true;
-  $("tally").hidden = true;
   $("verdict").hidden = true;
-  $("running").hidden = false;
 }
 
 function addTurn(turn) {
   const el = document.createElement("div");
+  el.className = "turn";
   const cust = turn.speaker === "customer";
-  el.className = "turn " + (cust ? "cust" : "staff");
   el.innerHTML =
     '<div class="who ' + (cust ? "cust" : "") + '">' + (cust ? "Customer" : "Worker") + '</div>' +
     '<div class="said">' + turn.text.replace(/&/g,"&amp;").replace(/</g,"&lt;") +
@@ -388,7 +244,7 @@ function addFlag(f) {
 function divider() {
   const el = document.createElement("div");
   el.className = "diverge";
-  el.innerHTML = '<span>coaching fired here — everything above is identical in both runs</span>';
+  el.innerHTML = '<span>coaching fired here \u2014 everything above is identical in both runs</span>';
   $("transcript").appendChild(el);
 }
 
@@ -398,8 +254,7 @@ function showCard(coaching) {
     const r = f.resolution || {};
     const ev = r.evidence ? " Evidence at " + fmt(r.evidence.start_ms) + "." : "";
     return '<div class="row">' +
-      '<span class="mark ' + r.status + '" aria-hidden="true"></span>' +
-      '<span class="word ' + r.status + '">' + r.status + '</span>' +
+      '<span class="pill ' + r.status + '">' + r.status + '</span>' +
       '<div class="body"><b>' + f.obligation + '</b>' +
       '<span>' + f.authority + '. Raised at ' + fmt(f.raised_at.start_ms) + '.' + ev + '</span></div></div>';
   }).join("");
@@ -407,32 +262,17 @@ function showCard(coaching) {
 
   const missed = scored.filter(f => (f.resolution||{}).status === "missed").length;
   const ok = scored.filter(f => (f.resolution||{}).status === "satisfied").length;
-
-  // The count is written once, at its true value. Never counted up from zero:
-  // a quantity that is wrong on the first frame is a quantity that lied.
-  $("running").hidden = true;
-  $("tally").hidden = false;
-  $("tally").className = "tally " + (coaching ? "done" : "miss");
-  $("tallyN").textContent = String(coaching ? ok : missed);
-  $("tallyLab").textContent = coaching
-    ? "obligations handled on the call"
-    : "obligations missed";
-
   $("verdict").hidden = false;
   $("verdict").innerHTML = coaching
-    ? '<b>With coaching — every duty that can be settled on the call was settled.</b> ' + ok + ' handled, and the written-notice duty is marked unverified because it is discharged after the call by a system action, not by anything said on it. The prompt fired at 0:45, the moment Mei said she could not cover the repayment for four or five months. The worker named the hardship process, started the clock on the record and paused collections. Up to 0:45 this is the same call as the other run, word for word.'
-    : '<b>Without coaching — ' + missed + ' obligations missed.</b> Identical words from the customer, identical analysis underneath. The worker simply never saw it, and offered an informal arrangement instead, which starts no clock and leaves no record that a decision is owed. That is the failure ASIC penalised NAB and AFSH $15.5m for in August 2025, across 345 customers.';
+    ? '<b>With coaching \u2014 every duty that can be settled on the call was settled.</b> ' + ok + ' handled, and the written-notice duty is marked unverified because it is discharged after the call by a system action, not by anything said on it. The prompt fired at 0:45, the moment Mei said she could not cover the repayment for four or five months. The worker named the hardship process, started the clock on the record and paused collections. Up to 0:45 this is the same call as the other run, word for word.'
+    : '<b>Without coaching \u2014 ' + missed + ' obligations missed.</b> Identical words from the customer, identical analysis underneath. The worker simply never saw it, and offered an informal arrangement instead, which starts no clock and leaves no record that a decision is owed. That is the failure ASIC penalised NAB and AFSH $15.5m for in August 2025, across 345 customers.';
 }
 
 async function play(coaching) {
   reset();
   const mine = run;
-  $("plate").hidden = false;
-  $("run").className = "run " + (coaching ? "on" : "off");
-  $("runLabel").textContent = coaching ? "Coaching on" : "Coaching off";
-  $("running").textContent = coaching
-    ? "Playing the call. Prompts appear on the worker's screen as they fire."
-    : "Playing the call. The same analysis is running; none of it reaches the worker.";
+  const speed = Number($("speed").value);
+  $("mode").textContent = coaching ? "coaching ON" : "coaching OFF";
   $("on").disabled = $("off").disabled = true;
 
   const set = SET(coaching);

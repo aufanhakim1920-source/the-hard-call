@@ -71,12 +71,21 @@ function confidenceFor(c: Candidate): number {
   return Math.min(0.95, 0.7 + 0.06 * signals);
 }
 
-/** Which candidates count as a hardship notice, under the given mode. */
+/**
+ * Which candidates count as a hardship notice, under the given mode.
+ *
+ * `memo` caches verdicts by the triggering turn's start_ms. LiveDetector re-runs
+ * the whole of detect() on every new turn, so without it every still-unclear
+ * candidate was re-adjudicated once per subsequent turn — measured at 10-18x the
+ * model calls on a 21-turn call. Harmless in rules mode, a quota multiplier the
+ * moment hybrid runs live.
+ */
 async function adjudicate(
   turns: Turn[],
   candidates: Candidate[],
   mode: Mode,
-  adjudicator?: Adjudicator
+  adjudicator?: Adjudicator,
+  memo?: Map<number, boolean>
 ): Promise<Candidate[]> {
   const accepted: Candidate[] = [];
   for (const c of candidates) {
@@ -86,9 +95,24 @@ async function adjudicate(
     }
     if (c.verdict === "delay") continue;
     if (mode === "hybrid" && adjudicator) {
+      const cached = memo?.get(c.turn.start_ms);
+      if (cached !== undefined) {
+        if (cached) accepted.push(c);
+        continue;
+      }
       const idx = turns.indexOf(c.turn);
-      const verdict = await adjudicator(contextWindow(turns, idx), c.turn);
-      if (verdict.is_hardship_notice && verdict.basis === "inability") accepted.push(c);
+      let isNotice = false;
+      try {
+        const verdict = await adjudicator(contextWindow(turns, idx), c.turn);
+        isNotice = verdict.is_hardship_notice && verdict.basis === "inability";
+      } catch {
+        // A handed-in adjudicator must never be able to kill detect(). Failing
+        // here has to cost the ambiguous candidate only, not the obligations
+        // the deterministic pass already found.
+        isNotice = false;
+      }
+      memo?.set(c.turn.start_ms, isNotice);
+      if (isNotice) accepted.push(c);
     }
     // mode "rules": "unclear" never fires. A missed notice is recoverable by a
     // human; a false notice on a customer who is fine is not.
@@ -149,13 +173,13 @@ function resolve(flag: Flag, turns: Turn[]): Resolution {
 
 export async function detect(
   transcript: Transcript,
-  opts: { mode?: Mode; adjudicator?: Adjudicator } = {}
+  opts: { mode?: Mode; adjudicator?: Adjudicator; memo?: Map<number, boolean> } = {}
 ): Promise<Flag[]> {
   const mode = opts.mode ?? "rules";
   const { call_id, turns } = transcript;
 
   const candidates = findCandidates(turns);
-  const adjudicated = await adjudicate(turns, candidates, mode, opts.adjudicator);
+  const adjudicated = await adjudicate(turns, candidates, mode, opts.adjudicator, opts.memo);
 
   // Attribution gate. An inability stated on a turn whose speaker was only
   // inferred cannot start a statutory clock; it becomes a request instead, so
@@ -265,6 +289,8 @@ export class LiveDetector {
   private emitted = new Set<string>();
   private call_id: string;
   private opts: { mode?: Mode; adjudicator?: Adjudicator };
+  /** Adjudication verdicts, kept across pushes so no turn is judged twice. */
+  private memo = new Map<number, boolean>();
 
   // Fields assigned explicitly rather than via constructor parameter
   // properties: this repo's tsconfig sets erasableSyntaxOnly, which rejects
@@ -276,7 +302,10 @@ export class LiveDetector {
 
   async push(turn: Turn): Promise<Flag[]> {
     this.turns.push(turn);
-    const flags = await detect({ call_id: this.call_id, turns: this.turns }, this.opts);
+    const flags = await detect(
+      { call_id: this.call_id, turns: this.turns },
+      { ...this.opts, memo: this.memo }
+    );
     const fresh = flags.filter((f) => !this.emitted.has(f.rule_id));
     fresh.forEach((f) => this.emitted.add(f.rule_id));
     // Live flags carry no resolution yet — the call is still running.
@@ -285,6 +314,9 @@ export class LiveDetector {
 
   /** Call once the audio ends to get the report-card payload. */
   async finalise(): Promise<Flag[]> {
-    return detect({ call_id: this.call_id, turns: this.turns }, this.opts);
+    return detect(
+      { call_id: this.call_id, turns: this.turns },
+      { ...this.opts, memo: this.memo }
+    );
   }
 }

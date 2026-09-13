@@ -148,9 +148,12 @@ Runs the detector over `eval/cases.json` and reports where the two systems
 disagree. It is a report, not a gate — the systems are allowed to differ, we
 just need to know where.
 
-Current state on the cases checked: **28/29 agree, zero false positives.** Every
-hard negative stays silent, including `c19` (a *worker* line containing the word
-"hardship") and `c35` (distress with no money ask).
+Current state on the cases checked: **41/44 agree.** Three disagreements, all
+known: `c41` (below), and `c42`/`c44`, where the detector fires and the case
+expects nothing. Both of those cases are about the ABA inform duty rather than
+the notice, so the comparison may be reading the wrong key — not yet confirmed.
+Every hard negative stays silent, including `c19` (a *worker* line containing the
+word "hardship") and `c35` (distress with no money ask).
 
 The one disagreement is `c41` — *"Don't worry about it, I'll be fine in a
 month."* The detector stays silent in rules mode; the implicature needs the model
