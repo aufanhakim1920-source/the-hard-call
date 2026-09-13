@@ -40,3 +40,176 @@
     animation-delay: 0ms !important;
   }
 }
+
+/* ---------- the pair, judged as an object ----------
+   MEASURED on the populated board before this block: across 621px of board,
+   ONE painted surface larger than 8000px² — and that one was a data segment
+   (the answered fill), not a region ground — against 53 hairline borders. The
+   report card next door had already been found with the same fault at 0 and
+   25. A surface with no painted grounds has no reading order however good its
+   type is, because type ranks things only WITHIN a surface; between regions the
+   ranking is ground and air, and with neither there is no ranking at all.
+
+   Worse here than there, because this board's whole job is that two things are
+   held against each other. Two rows of identical structure, stacked, divided by
+   a 1px rule, is the shape of a LIST — and the sign table 300px below is a list
+   drawn in exactly the same rule. A stranger got four stacked regions separated
+   by one hairline each and no reason to read any of them first.
+
+   So the pair gets a ground of its own and the rule between the two rows goes.
+   One plate, two rows inside it, the key that names the fills inside it too:
+   one object that says "this is the same call twice" before a word is read.
+
+   ⚠ The token is different per ground and that is measured, not taste — the
+   same pair the report card's lead settled on this morning, for the same
+   reason. Dark takes --ink-3 (a 1.25:1 step off the page; --ink-2 is 1.09:1
+   and invisible). Light takes --ink-2 (--ink-3 there drops --grey, which is
+   every label in this head, to 4.12:1). On the plate: --cream 11.48:1 dark /
+   13.04 light, --grey 5.19 / 4.57, and --gold-2 — the answered segment's edge
+   and the missed fill — 6.78 / 4.48 against the 3.0 a meaningful graphic
+   needs. */
+.cmp-pair {
+  margin: 12px -20px 30px;
+  padding: 16px 20px 18px;
+  background: var(--ink-3);
+  border-radius: var(--r-card);
+}
+:root[data-theme="light"] .cmp-pair {
+  background: var(--ink-2);
+}
+.cmp-rows {
+  margin: 0;
+}
+/* Ground and air do the separating now. The rule here was the thing making the
+   pair read as two list items that happen to be adjacent. */
+.cmp-row + .cmp-row {
+  border-top: 0;
+}
+.cmp-row {
+  padding: 10px 0;
+}
+/* The legend belongs to the plate — it names fills that are only drawn on it —
+   so it sits tight against the rows and the next region gets the air instead.
+   Before: 4 / 11 / 12 / 14 / 18 / 22 / 30px, a scale with no rank in it.
+   After, measured between the things themselves: 12px binds the legend to the
+   pair, 27px separates the two rows inside the plate, 30px separates the plate
+   from the caveats — and the ground, not the air, is what says the plate is one
+   region and the caveats another. */
+.cmp-keys {
+  margin: 12px 0 0;
+}
+.cmp-notes {
+  border-top: 0;
+  padding-top: 0;
+  margin-bottom: 26px;
+}
+
+/* ⚠ Changing a ground re-opens every contrast question that ground answered —
+   including ones asked by things that merely sit on top of it. The global
+   reduce-transparency rule repaints the answered fill in --ink-3, which is now
+   the plate's own colour on the dark ground: the fill would vanish into it.
+   The edge still carried it, but a fill that is exactly its background is not a
+   fill. One step darker on each ground, both still a visible step off the
+   plate. */
+.reduce-transparency .cmp-bar .rv-seg.answered,
+.reduce-transparency .cmp-keys .rv-key.answered i {
+  background-color: var(--ink-2);
+}
+:root[data-theme="light"] .reduce-transparency .cmp-bar .rv-seg.answered,
+:root[data-theme="light"] .reduce-transparency .cmp-keys .rv-key.answered i {
+  background-color: var(--ink-3);
+}
+
+/* ---------- the head: the thing that differs gets the size ----------
+   The exact fault the report card's lead was rebuilt for, repeated one screen
+   over. In each row the loudest type was the customer name at 15px/600 — and
+   the customer is the SAME on both rows, because the pitch is one script run
+   twice. The one thing that differs, and the only reason this board exists,
+   was "ASSISTANT COACHING" at 10px uppercase grey: the smallest type in the
+   region.
+
+   So they swap. The mode becomes the row's name in the page's own sans at
+   15px/600 --cream, and the customer and the timestamp become one quiet
+   metadata tier beneath it.
+
+   No colour separates them. Gold means MISSED on this board, and tinting
+   "coaching" gold would say the opposite of what the board is arguing; the
+   words already carry it, which is the channel that survives greyscale. */
+.cmp-head .rv-label {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--cream);
+}
+.cmp-who {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--grey);
+  margin-top: 5px;
+}
+.cmp-when {
+  margin-top: 1px;
+}
+:root[data-text="2"] .cmp-head .rv-label,
+:root[data-text="3"] .cmp-head .rv-label {
+  font-size: 17px;
+}
+/* Overrides the shared rule that grows the customer name with the text
+   setting — it is metadata on this board, not the reading. */
+:root[data-text="2"] .cmp-who,
+:root[data-text="3"] .cmp-who {
+  font-size: 13px;
+}
+
+/* ---------- the fraction ----------
+   The board's own key note tells the reader to read the fractions and the
+   verdicts, not the gap between the scores. It was then printing them at 30px
+   at the far right edge — 1089px from the row's label on a 1225px board, and
+   the same size as the score it says not to read. It is the sanctioned
+   reading, so it gets the size.
+
+   Capped where the reading column folds to 7.5rem — 120px — which is both the
+   phone and the two largest text settings. 36px there, not 40, because the
+   number is not always one digit: measured at 375 with hyper-font, the largest
+   text size and high contrast all on, "5 of 5" is 76px and a two-digit
+   "12 of 15" would be 111px, so 36 fits and 40 would not.
+
+   ⚠ The first reading of this said the fraction was 'exactly 120px, a fit with
+   no headroom' — that was .cmp-frac's own box, which is a flex container
+   stretched to the column. A container's width says nothing about whether its
+   contents fit; the children had to be summed. */
+.cmp-frac b {
+  font-size: 40px;
+}
+:root[data-text="2"] .cmp-frac b,
+:root[data-text="3"] .cmp-frac b {
+  font-size: 36px;
+}
+/* .page drops to 14px of side padding at 760px to the pixel, so the bleed
+   follows it there. Bleed and padding cancel, so the plate is never wider than
+   the page column and never contributes a pixel of sideways scroll. */
+@media (max-width: 760px) {
+  .cmp-pair {
+    margin-left: -14px;
+    margin-right: -14px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+@media (max-width: 680px) {
+  .cmp-frac b {
+    font-size: 36px;
+  }
+}
+
+/* The high-contrast setting lifts the rails on the report card's own channels
+   (.rv-rt-track, .rv-dl-track) and had simply never been extended to this one —
+   the compare board's channel was the only track in the product that did not
+   answer the setting. Same rule, same tokens. */
+.high-contrast .cmp-track {
+  border-top-color: var(--line-2);
+  border-bottom-color: var(--line-2);
+}

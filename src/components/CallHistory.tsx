@@ -36,10 +36,13 @@ function runMode(r: Report): RunMode {
   return "unknown";
 }
 
+/** These are the row's NAME on the compare board — the one thing that differs
+    between two runs of the same script — so they are set sentence case and
+    read at the size a name gets, not as a 10px chrome label. */
 const MODE_LONG: Record<RunMode, string> = {
-  coached: "assistant coaching",
-  silent: "assistant silent",
-  unknown: "mode not recorded",
+  coached: "Assistant coaching",
+  silent: "Assistant silent",
+  unknown: "Mode not recorded",
 };
 const MODE_SHORT: Record<RunMode, string> = { coached: "coached", silent: "silent", unknown: "not recorded" };
 
@@ -144,96 +147,103 @@ function CompareBoard({ slots }: { slots: Slot[] }) {
         <span>one axis · signs raised</span>
       </div>
 
-      <div className="cmp-rows" style={{ "--cmp-step": `${100 / axis}%` } as CSSProperties}>
-        {slots.map((s, i) => (
-          <div
-            className={"cmp-row " + s.mode + (s.judged ? "" : " unjudged")}
-            key={s.report.callId}
-            style={{ "--cmp-i": i } as CSSProperties}
-          >
-            <div className="cmp-head">
-              <div className="rv-label">{MODE_LONG[s.mode]}</div>
-              <div className="cmp-who">{s.report.customer}</div>
-              <div className="cmp-when">
-                {fmtWhen(s.report.at)} · {s.report.mode}
+      {/* The two rows and the key that names their fills are one object, on one
+          ground. Stacked on the page and divided by a hairline they read as two
+          list items that happen to be adjacent — the same shape as the sign
+          table below them. A plate says "the same call, twice" before a word of
+          it is read, and it is the only surface on this board. */}
+      <div className="cmp-pair">
+        <div className="cmp-rows" style={{ "--cmp-step": `${100 / axis}%` } as CSSProperties}>
+          {slots.map((s, i) => (
+            <div
+              className={"cmp-row " + s.mode + (s.judged ? "" : " unjudged")}
+              key={s.report.callId}
+              style={{ "--cmp-i": i } as CSSProperties}
+            >
+              <div className="cmp-head">
+                <div className="rv-label">{MODE_LONG[s.mode]}</div>
+                <div className="cmp-who">{s.report.customer}</div>
+                <div className="cmp-when">
+                  {fmtWhen(s.report.at)} · {s.report.mode}
+                </div>
               </div>
-            </div>
 
-            {s.judged ? (
-              <>
-                {/* True on the first frame. A channel that grows out of zero
-                    freezes at zero on any page that is not painting, and "this
-                    call raised no signs" is the opposite of what this row is
-                    for. The row arrives instead, by a transform. */}
-                <div className="cmp-track" aria-hidden="true">
-                  <span className="cmp-bar" style={{ width: `${(s.l.total / axis) * 100}%` }}>
-                    {s.l.answered > 0 && (
-                      <i className="rv-seg answered" style={{ width: `${(s.l.answered / s.l.total) * 100}%` }} />
-                    )}
-                    {s.l.missed > 0 && <i className="rv-seg missed" style={{ width: `${(s.l.missed / s.l.total) * 100}%` }} />}
-                    {s.l.unknown > 0 && (
-                      <i className="rv-seg unknown" style={{ width: `${(s.l.unknown / s.l.total) * 100}%` }} />
-                    )}
-                  </span>
-                </div>
-                <div className="cmp-read">
-                  <span className="sr-only">
-                    {MODE_LONG[s.mode]}. {s.l.answered} of {s.l.total} signs answered, {s.l.missed} missed
-                    {s.l.unknown > 0 ? `, ${s.l.unknown} not verified` : ""}. Score {scoreText(s.report)}.
-                  </span>
-                  <span className="cmp-frac" aria-hidden="true">
-                    <b>{s.l.answered}</b>
-                    <i>of</i>
-                    <b>{s.l.total}</b>
-                  </span>
-                  {/* Two lines, always. On a phone the reading column is 120px
-                      and "answered · score 95" broke after the word "score",
-                      leaving the number stranded on its own line. It also puts
-                      the fraction — the comparison — above the score, which is
-                      the one number here that should not be read as a gap. */}
-                  <span className="cmp-sub" aria-hidden="true">
-                    answered
-                  </span>
-                  <span className="cmp-sub" aria-hidden="true">
-                    score {scoreText(s.report)}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <p className="cmp-why">{s.why}</p>
+              {s.judged ? (
+                <>
+                  {/* True on the first frame. A channel that grows out of zero
+                      freezes at zero on any page that is not painting, and "this
+                      call raised no signs" is the opposite of what this row is
+                      for. The row arrives instead, by a transform. */}
+                  <div className="cmp-track" aria-hidden="true">
+                    <span className="cmp-bar" style={{ width: `${(s.l.total / axis) * 100}%` }}>
+                      {s.l.answered > 0 && (
+                        <i className="rv-seg answered" style={{ width: `${(s.l.answered / s.l.total) * 100}%` }} />
+                      )}
+                      {s.l.missed > 0 && <i className="rv-seg missed" style={{ width: `${(s.l.missed / s.l.total) * 100}%` }} />}
+                      {s.l.unknown > 0 && (
+                        <i className="rv-seg unknown" style={{ width: `${(s.l.unknown / s.l.total) * 100}%` }} />
+                      )}
+                    </span>
+                  </div>
+                  <div className="cmp-read">
+                    <span className="sr-only">
+                      {MODE_LONG[s.mode]}. {s.l.answered} of {s.l.total} signs answered, {s.l.missed} missed
+                      {s.l.unknown > 0 ? `, ${s.l.unknown} not verified` : ""}. Score {scoreText(s.report)}.
+                    </span>
+                    <span className="cmp-frac" aria-hidden="true">
+                      <b>{s.l.answered}</b>
+                      <i>of</i>
+                      <b>{s.l.total}</b>
+                    </span>
+                    {/* Two lines, always. On a phone the reading column is 120px
+                        and "answered · score 95" broke after the word "score",
+                        leaving the number stranded on its own line. It also puts
+                        the fraction — the comparison — above the score, which is
+                        the one number here that should not be read as a gap. */}
+                    <span className="cmp-sub" aria-hidden="true">
+                      answered
+                    </span>
+                    <span className="cmp-sub" aria-hidden="true">
+                      score {scoreText(s.report)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="cmp-why">{s.why}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* The same key the report card prints under its own ledger. Without it
+            the loudest thing on the board — the solid fill — is unlabelled, and
+            gold means "good" everywhere else in this app. It means MISSED here,
+            and that has to be said rather than inferred. */}
+        {judged.length > 0 && (
+          <div className="rv-keys cmp-keys" aria-hidden="true">
+            {/* Only what is actually drawn above. A key for a fill that appears
+                nowhere is a legend for an empty chart. */}
+            {judged.some((s) => s.l.answered > 0) && (
+              <span className="rv-key answered">
+                <i />
+                answered
+              </span>
+            )}
+            {judged.some((s) => s.l.missed > 0) && (
+              <span className="rv-key missed">
+                <i />
+                missed
+              </span>
+            )}
+            {judged.some((s) => s.l.unknown > 0) && (
+              <span className="rv-key unknown">
+                <i />
+                not verified
+              </span>
             )}
           </div>
-        ))}
+        )}
       </div>
-
-      {/* The same key the report card prints under its own ledger. Without it
-          the loudest thing on the board — the solid fill — is unlabelled, and
-          gold means "good" everywhere else in this app. It means MISSED here,
-          and that has to be said rather than inferred. */}
-      {judged.length > 0 && (
-        <div className="rv-keys cmp-keys" aria-hidden="true">
-          {/* Only what is actually drawn above. A key for a fill that appears
-              nowhere is a legend for an empty chart. */}
-          {judged.some((s) => s.l.answered > 0) && (
-            <span className="rv-key answered">
-              <i />
-              answered
-            </span>
-          )}
-          {judged.some((s) => s.l.missed > 0) && (
-            <span className="rv-key missed">
-              <i />
-              missed
-            </span>
-          )}
-          {judged.some((s) => s.l.unknown > 0) && (
-            <span className="rv-key unknown">
-              <i />
-              not verified
-            </span>
-          )}
-        </div>
-      )}
 
       {/* The caveats are part of the comparison, not a disclaimer under it: each
           one is only printed when it is true of these two calls. */}
