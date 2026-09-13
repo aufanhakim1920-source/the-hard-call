@@ -18,6 +18,8 @@ export interface Rule {
   deadline_from: string | null;
   authority: string;
   staff_prompt: string;
+  /** Days to chase an unresolved event. Requests only; never a legal deadline. */
+  followup_days?: number;
   /** Staff-side patterns that discharge this obligation on the call. */
   satisfiedBy?: RegExp[];
   /** True when nothing said on the call can settle it (post-call system action). */
@@ -72,6 +74,24 @@ export const RULES: Record<string, Rule> = {
     unverifiableInCall: true,
   },
 
+  RG271_COMPLAINT_30D: {
+    rule_id: "RG271_COMPLAINT_30D",
+    kind: "obligation",
+    persist: true,
+    obligation: "Log the complaint and give the customer a written response",
+    deadline_days: 30,
+    deadline_from: "complaint_received",
+    authority: "ASIC RG 271",
+    staff_prompt:
+      "That is a complaint under RG 271. 30-day clock started. Log it and tell the customer it has been logged.",
+    satisfiedBy: [
+      /\b(log|logged|logging|rais(e|ed|ing)|record(ed|ing)?)\s+(that|it|this)?\s*(as\s+)?a?\s*complaint/i,
+      /\bcomplaints?\s+(team|process|reference)/i,
+      /\binternal\s+dispute\s+resolution\b/i,
+      /\bAFCA\b/,
+    ],
+  },
+
   /* ---------- request: low bar, no legal claim, prompts a question ---------- */
 
   HARDSHIP_REQUEST: {
@@ -82,6 +102,9 @@ export const RULES: Record<string, Rule> = {
       "Customer has asked to change their repayments. Establish whether this is a timing problem or an inability to pay",
     deadline_days: null,
     deadline_from: null,
+    // Tron's idea: if nobody asked, chase it at day 7 rather than losing the
+    // signal. No clock is asserted, and 14 days of the window survive.
+    followup_days: 7,
     authority: "National Credit Code s 72 (threshold question)",
     staff_prompt:
       "Customer has asked to change their repayments. Ask whether they can recover in the near term — if not, this is a hardship notice and the 21-day clock starts.",

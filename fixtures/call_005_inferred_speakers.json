@@ -1,0 +1,17 @@
+{
+  "call_id": "call_005",
+  "scenario": "inferred_attribution_downgrades_the_notice",
+  "notes": "Live dictation on one mixed microphone: the speaker was guessed from the text, not known structurally. The customer states a clear inability over the medium term — the same words that produce a notice in call_001 — but attribution is only inferred, so no statutory clock may start. The detector must emit HARDSHIP_REQUEST carrying downgraded_from NCC_72_ORAL_NOTICE, and must NOT emit the notice. The staff turn that would normally discharge it resolves unverified rather than satisfied, because we cannot confirm the bank actually said it.",
+  "duration_ms": 84200,
+  "turns": [
+    { "speaker": "staff", "start_ms": 0, "end_ms": 5100, "text": "Meridian Home Loans, this is Alex. What can I help you with?", "speaker_confidence": "inferred" },
+    { "speaker": "customer", "start_ms": 5500, "end_ms": 12800, "text": "I got the letter about the missed repayment. I was going to ring anyway.", "speaker_confidence": "inferred" },
+    { "speaker": "staff", "start_ms": 13200, "end_ms": 16400, "text": "Okay. What's been happening?", "speaker_confidence": "inferred" },
+    { "speaker": "customer", "start_ms": 16800, "end_ms": 31500, "text": "Work dried up in March. I can't make the repayment, and honestly not for a while — I'm looking at four or five months before anything changes.", "speaker_confidence": "inferred" },
+    { "speaker": "staff", "start_ms": 31900, "end_ms": 40600, "text": "Right. There is a hardship process for this and I can start a hardship application for you now.", "speaker_confidence": "inferred" },
+    { "speaker": "customer", "start_ms": 41000, "end_ms": 45300, "text": "That'd help. What does it involve?", "speaker_confidence": "inferred" },
+    { "speaker": "staff", "start_ms": 45700, "end_ms": 54100, "text": "I'll send a form for income and expenses, and we come back to you with a decision.", "speaker_confidence": "inferred" },
+    { "speaker": "customer", "start_ms": 54500, "end_ms": 58200, "text": "Okay. Thanks.", "speaker_confidence": "inferred" },
+    { "speaker": "staff", "start_ms": 58600, "end_ms": 63400, "text": "No problem. Anything else today?", "speaker_confidence": "inferred" }
+  ]
+}

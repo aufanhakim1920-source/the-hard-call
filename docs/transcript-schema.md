@@ -52,7 +52,9 @@ What the detector emits. One per obligation triggered.
 
 **Flag the obligation, never the person.**
 
-No classification of the customer is produced or stored — no "gambling", no "illness", no vulnerability label. The flag names the duty and the deadline. The cause stays in the audio and is never logged.
+**Nothing that classifies the customer is ever stored.** Obligation and request events name the duty or the ask — never the cause. A small set of circumstance cues route the call in the moment and are discarded when it ends; they never reach the record, the report card, or any summary.
+
+This is a more precise claim than an absolute one, and a stronger one, because it survives someone reading the code. The cues exist because some are protective and the ABA guideline asks for them: `safety` routes a family-violence case to a specialist team, `scam` stops a transfer mid-call. Two tests enforce the storage rule — every fixture asserts `must_not_emit_kinds: ["cue"]`, and any event with `kind: "cue"` and `persist: true` fails. Full detail in `docs/event-schema.md`.
 
 This matters for the report card too: score the *handling*, not the customer's situation. There should be no "reason for hardship" field anywhere. The obligation is identical regardless of why they can't pay, so nothing is lost, and there is no sensitive category sitting in a database waiting to leak.
 

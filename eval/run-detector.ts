@@ -25,6 +25,9 @@ type Want = {
   trigger_turn_start_ms?: number;
   escalated_at_ms?: number;
   expect_superseded?: boolean;
+  expect_downgraded_from?: string;
+  expect_attribution?: string;
+  expect_followup_days?: number;
   deadline_days?: number | null;
 };
 
@@ -65,6 +68,8 @@ async function main() {
         f.superseded_by ? `superseded by ${f.superseded_by}` : null,
         `-> ${f.resolution?.status}`,
         f.resolution?.evidence ? `(evidence @${f.resolution.evidence.start_ms}ms)` : null,
+        f.attribution !== "known" ? `attribution:${f.attribution}` : null,
+        f.downgraded_from ? `downgraded from ${f.downgraded_from}` : null,
         f.persist ? null : "NOT PERSISTED",
       ].filter(Boolean);
       log(`    ${bits.join(" ")}`);
@@ -96,6 +101,17 @@ async function main() {
       }
       if (want.expect_superseded && !got.superseded_by) {
         fail(`${want.rule_id} should carry superseded_by`);
+      }
+      if (want.expect_downgraded_from && got.downgraded_from !== want.expect_downgraded_from) {
+        fail(
+          `${want.rule_id} downgraded_from is ${got.downgraded_from ?? "unset"}, expected ${want.expect_downgraded_from}`
+        );
+      }
+      if (want.expect_attribution && got.attribution !== want.expect_attribution) {
+        fail(`${want.rule_id} attribution is "${got.attribution}", expected "${want.expect_attribution}"`);
+      }
+      if (want.expect_followup_days != null && got.followup_days !== want.expect_followup_days) {
+        fail(`${want.rule_id} followup_days is ${got.followup_days ?? "unset"}, expected ${want.expect_followup_days}`);
       }
       if (want.deadline_days !== undefined && got.deadline_days !== want.deadline_days) {
         fail(`${want.rule_id} deadline_days is ${got.deadline_days}, expected ${want.deadline_days}`);
@@ -130,6 +146,17 @@ async function main() {
       const missed = scored.filter((f) => f.resolution?.status === "missed");
       if (missed.length > 0) {
         fail(`well-handled call has missed events: ${missed.map((f) => f.rule_id).join(", ")}`);
+      }
+    }
+    if (exp.staff_handling === "unverifiable") {
+      // Nothing may be marked handled when attribution is only inferred.
+      const claimed = scored.filter((f) => f.resolution?.status === "satisfied");
+      if (claimed.length > 0) {
+        fail(
+          `call with inferred attribution marked ${claimed.length} event(s) satisfied: ${claimed
+            .map((f) => f.rule_id)
+            .join(", ")}`
+        );
       }
     }
     if (exp.staff_handling === "failed") {

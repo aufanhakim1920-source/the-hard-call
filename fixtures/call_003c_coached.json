@@ -1,0 +1,123 @@
+{
+  "call_id": "call_003c",
+  "scenario": "same_call_coached",
+  "notes": "The coached counterfactual to call_003. Every turn up to and including the customer's hardship notice at 45000ms is byte-identical to call_003 \u2014 same customer, same words. The coaching prompt fires at 45000, and from the worker's next turn the calls diverge, because she acted on it. That divergence IS the product. Detector must raise the same events at the same timestamps as call_003 and resolve them satisfied instead of missed.",
+  "diverges_at_ms": 45000,
+  "duration_ms": 160800,
+  "turns": [
+    {
+      "speaker": "staff",
+      "start_ms": 0,
+      "end_ms": 4800,
+      "text": "Meridian Home Loans, Jordan speaking. Name and property address please?"
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 5200,
+      "end_ms": 11600,
+      "text": "Mei Lam. It's 27 Ardwick Street, Sunshine West."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 12000,
+      "end_ms": 16100,
+      "text": "Got it. I can see there's an arrears balance on the account. Are you calling about that?"
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 16500,
+      "end_ms": 21300,
+      "text": "Yes. I've missed the last two and I don't think I'm going to make the next one either."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 21700,
+      "end_ms": 25900,
+      "text": "Okay. What's the plan to bring the account back up to date?"
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 26300,
+      "end_ms": 39800,
+      "text": "That's the thing, I don't really have one. I had surgery in July and I'm signed off work until at least February. I'm on the income protection but it's about sixty per cent of what I was on."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 40200,
+      "end_ms": 44600,
+      "text": "Right. And is there anyone else contributing to the household?"
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 45000,
+      "end_ms": 64200,
+      "text": "No, it's just me. Look, I've done the numbers a dozen times. On sixty per cent I cannot cover the repayment. Not next month, not the month after. It's going to be like this until I'm cleared to go back, and that's four or five months away at best."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 64600,
+      "end_ms": 79200,
+      "text": "Thank you for telling me. Mei, what you've just described counts as a hardship notice \u2014 that's a formal thing under the National Credit Code, and it means we have to look at changing your arrangements. I'm lodging it now while we're on the call."
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 79600,
+      "end_ms": 84100,
+      "text": "Oh. I didn't know that was something you could do."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 84500,
+      "end_ms": 97800,
+      "text": "Most people don't. We've got twenty-one days from today to assess it and come back to you with a decision, and I'd expect it well before that."
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 98200,
+      "end_ms": 104600,
+      "text": "And the letters? I got one last week that mentioned legal action. Does that stop?"
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 105000,
+      "end_ms": 116400,
+      "text": "Yes. While a hardship application is open the collections activity pauses. I'm putting a hold on the account now so nothing automated goes out to you."
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 116800,
+      "end_ms": 121300,
+      "text": "Okay. That's a relief, honestly."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 121700,
+      "end_ms": 133900,
+      "text": "There are a few things we can look at \u2014 pausing repayments for a period, or moving you to interest-only while you're off work. I'll need some information about income and expenses to work out which fits."
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 134300,
+      "end_ms": 138600,
+      "text": "I can get that together. How do I send it?"
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 139000,
+      "end_ms": 151200,
+      "text": "I'll email a form today. And Mei \u2014 if you'd rather not do this on your own, free financial counselling is available and they can deal with us on your behalf. No cost to you."
+    },
+    {
+      "speaker": "customer",
+      "start_ms": 151600,
+      "end_ms": 156000,
+      "text": "I might take that. Thank you."
+    },
+    {
+      "speaker": "staff",
+      "start_ms": 156400,
+      "end_ms": 160800,
+      "text": "That's what the call is for. I'll get that email out within the hour."
+    }
+  ]
+}

@@ -103,6 +103,28 @@ export const REQUEST_ASK: RegExp[] = [
   /\btill\s+the\s+next\s+one\b/i,
 ];
 
+/**
+ * Expressions of dissatisfaction. Under ASIC RG 271 these are complaints and
+ * carry their own 30-day clock — a second statutory obligation, independent of
+ * hardship. The bar is an explicit dissatisfaction marker; a fee question on
+ * its own is not a complaint.
+ */
+export const COMPLAINT: RegExp[] = [
+  /\b(I'?m\s+)?not\s+happy\b/i,
+  /\bit'?s\s+a\s+joke\b/i,
+  /\b(rung|called|phoned)\s+(you\s+)?(three|four|five|\d+|several)\s+times\b/i,
+  /\bnobody'?s?\s+(called|got|come)\s+(me\s+)?back\b/i,
+  /\bno\s?one'?s?\s+(called|got|come)\s+(me\s+)?back\b/i,
+  /\bunacceptable\b/i,
+  /\bridiculous\b/i,
+  /\bfed\s+up\b/i,
+  /\bwant\s+to\s+(make\s+)?a?\s*complain/i,
+  /\bthis\s+is\s+(a\s+)?disgrace/i,
+  /\bsick\s+of\b/i,
+];
+
+export const hasComplaint = (text: string) => COMPLAINT.some((p) => p.test(text));
+
 function matches(text: string, patterns: RegExp[]): string[] {
   const hits: string[] = [];
   for (const p of patterns) {

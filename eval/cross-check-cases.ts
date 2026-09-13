@@ -30,6 +30,9 @@ type Case = {
   note?: string;
 };
 
+/** Labels the detector now covers as obligations of their own. */
+const OBLIGATION_LABELS: Record<string, string> = { complaint: "RG271_COMPLAINT_30D" };
+
 const CUE_LABELS = new Set([
   "health",
   "gambling",
@@ -40,7 +43,6 @@ const CUE_LABELS = new Set([
   "bereavement",
   "disaster",
   "job-loss",
-  "complaint",
 ]);
 
 async function main() {
@@ -50,6 +52,8 @@ async function main() {
   const agree: string[] = [];
   const missed: Case[] = [];
   const overfired: Case[] = [];
+  const complaintMissed: Case[] = [];
+  const complaintOverfired: Case[] = [];
 
   for (const c of cases) {
     // The sign engine judges one line; only the customer's own words can
@@ -57,7 +61,13 @@ async function main() {
     const transcript = caseToTranscript(c);
     const flags = await detect(transcript, { mode: "rules" });
 
-    const emitted = flags.filter((f) => f.kind === "request" || f.kind === "obligation");
+    // Hardship comparison only. The complaint obligation is its own clock and
+    // is compared separately below, so it must not count as a hardship fire.
+    const emitted = flags.filter(
+      (f) =>
+        (f.kind === "request" || f.kind === "obligation") &&
+        f.rule_id !== OBLIGATION_LABELS.complaint
+    );
     const wantsHardship = c.expect.includes("hardship-request");
     const cues = c.expect.filter((e) => CUE_LABELS.has(e));
 
@@ -73,9 +83,12 @@ async function main() {
       agree.push(`${c.id}  silent (correctly)`);
     }
 
-    if (cues.length > 0 && emitted.length === 0 && wantsHardship === false) {
-      // cue-only case, detector silent — exactly right
-    }
+    // complaint is its own statutory clock (RG 271, 30 days), so it is
+    // compared rather than ignored.
+    const wantsComplaint = c.expect.includes("complaint");
+    const firedComplaint = flags.some((f) => f.rule_id === OBLIGATION_LABELS.complaint);
+    if (wantsComplaint && !firedComplaint) complaintMissed.push(c);
+    if (!wantsComplaint && firedComplaint) complaintOverfired.push(c);
   }
 
   const total = cases.length;
@@ -99,6 +112,13 @@ async function main() {
       console.log(`\n  ${c.id}  "${c.line.text}"`);
       if (c.note) console.log(`        note: ${c.note}`);
     }
+  }
+
+  console.log(`\ncomplaint (RG 271, 30 days)`);
+  console.log(`  expected but silent   ${complaintMissed.length}`);
+  console.log(`  fired unexpectedly    ${complaintOverfired.length}`);
+  for (const c of [...complaintMissed, ...complaintOverfired]) {
+    console.log(`    ${c.id}  "${c.line.text}"`);
   }
 
   console.log(

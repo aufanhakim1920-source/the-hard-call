@@ -157,3 +157,104 @@ month."* The detector stays silent in rules mode; the implicature needs the mode
 tier. Tron's own note on that case says the live engine doesn't fire on it
 either, so both engines agree and the `expect: ["hardship-request"]` array is
 the outlier. Either drop the label or move it to a hybrid-mode-only expectation.
+
+---
+
+## Attribution — added after the live-dictation finding
+
+`speaker` is load-bearing: only a customer turn can raise an obligation and only
+a staff turn can discharge one. So a wrong speaker corrupts the record in both
+directions, and in live dictation on one mixed microphone the speaker is *guessed
+from the text by a model*. When that model is rate-limited, attribution fails too
+— the same 429 that degrades the AI also corrupts the transcript.
+
+Each turn may therefore carry:
+
+```ts
+speaker_confidence?: "known" | "inferred" | "unknown"   // defaults to "known"
+```
+
+- **`known`** — attribution is structural, not guessed. Practice mode knows
+  whether audio came from the user or the ElevenLabs agent.
+- **`inferred`** — a model guessed it. Good enough to prompt, never to assert.
+- **`unknown`** — no attribution at all.
+
+**The gate**, which reuses the tiering rather than adding new machinery:
+
+| Situation | Result |
+|---|---|
+| Inability stated on a `known` turn | `obligation` — clock starts |
+| Inability stated on an `inferred` turn | **`request`** carrying `downgraded_from: "NCC_72_ORAL_NOTICE"` — staff prompted, nothing asserted |
+| Satisfying staff turn is `known` | `satisfied` |
+| Satisfying staff turn is `inferred` | **`unverified`**, with `evidence` still pointing at the turn |
+
+Every event carries `attribution`, copied from the turn it was raised on.
+
+The two failure modes this prevents:
+
+1. A **staff** line misread as the customer — *"if you're in hardship there are
+   options"* — would assert a 21-day clock on the bank's own words. That is
+   `c19` in `eval/cases.json`, a deliberate hard negative, and misattribution
+   makes it reachable in production.
+2. A **customer** line misread as staff would mark an obligation `satisfied`
+   that nobody discharged. A false compliance record, which is worse than a miss.
+
+`call_005_inferred_speakers.json` is the worked example: the same words that
+produce a notice in `call_001`, on inferred turns, produce a downgraded request
+and an `unverified` resolution instead.
+
+**Consequence for the demo:** practice mode is the only configuration where
+attribution is sound, because it has two separate audio streams. Live dictation
+on a single mic cannot be fixed by a better model — proper separation needs
+dual-channel telephony. Worth saying plainly in the pitch rather than hiding.
+
+## `RG271_COMPLAINT_30D` — the second clock
+
+Added from `supabase/functions/_shared/signs.ts`, which already had it. Under
+**ASIC RG 271** an expression of dissatisfaction is a complaint and needs a
+written response within **30 calendar days** — a statutory clock independent of
+hardship.
+
+The bar is an explicit dissatisfaction marker ("I'm not happy", "it's a joke",
+"rung three times and nobody's called me back"). A question about a fee is not a
+complaint.
+
+## Mapping to `signs.ts`
+
+The sign engine and this layer describe the same world. One vocabulary:
+
+| `signs.ts` | event-schema |
+|---|---|
+| `legal` · `hardship-request` | `obligation` · `NCC_72_ORAL_NOTICE` |
+| `legal` · `complaint` | `obligation` · `RG271_COMPLAINT_30D` |
+| `tip` · `inform-hardship-provisions` | `obligation` · `ABA_INFORM_HARDSHIP_PROVISIONS` — it is a *duty*, not a hint |
+| `tip` · `job-loss`, `health`, `gambling`, `safety`, `scam`, … | `cue` — never persisted |
+| — | `request` · `HARDSHIP_REQUEST` (new tier) |
+
+Two notes on that mapping. `signs.ts`'s `hardship-request` cue is the **narrow**
+inability test, not a broad one — it explicitly refuses to fire on a named payday
+recovery and on a single missed payment. It is `NCC_72_ORAL_NOTICE`, not the
+request tier. And `tip` currently does two jobs: a duty the worker forgot, and a
+circumstance that routes the call. Those need different handling, which is what
+`obligation` vs `cue` gives them.
+
+## `followup_days` — chasing what nobody asked
+
+Tron's point, with one correction that makes it work: you cannot raise a notice
+conditionally. The 21-day clock runs from **when the customer spoke**, not from
+when the bank decides, so a notice recorded just in case manufactures a duty
+that may never have existed — and that is precisely what must not enter the
+compliance record.
+
+The follow-up itself is right, and it belongs on the request. `HARDSHIP_REQUEST`
+carries `followup_days: 7`. When it resolves `missed` — the worker never asked
+whether this was timing or inability — the resolution says to chase within seven
+days, because acting by day 7 still leaves **14 days** of the statutory window
+if it does turn out to have been a notice.
+
+So nothing is asserted, nothing is thrown away, and a miss becomes recoverable
+instead of final. `followup_days` is set on requests only and is never a legal
+deadline; `deadline_days` is the field that carries those.
+
+The report card line: *"Threshold question not asked. Call back by <date> — 14
+days of the window remain if this was a notice."*
