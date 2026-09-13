@@ -4,6 +4,11 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 16:33 | laj07 | other | [state the privacy claim precisely, the absolute version over-claimed](../../commit/7b550ab64853006b0bcadec0e7f6e323405dbcc1) | hardship-flag-rules.md, transcript-schema.md | +6 / -2 |
+| 13 Sept, 16:23 | laj07 | engine | [fix parameter properties in replay driver, build was red](../../commit/ecb98db48396b57f200c63102d7e1ee32faf6888) | replay.ts | +9 / -4 |
+| 13 Sept, 16:20 | laj07 | engine | [chase unresolved requests at day 7, A/B demo page](../../commit/9276f1e7c99a5cc298041a88b4fc60b9c341b44a) | ab-demo.html, event-schema.md, run-detector.ts +4 | +61 / -6 |
+| 13 Sept, 16:09 | laj07 | pitch | [A/B demo page, self-contained and offline](../../commit/7c7b7759297ea370c86faddc5b9b3446e2608ca7) | ab-demo.html, build-demo.ts, call_003c_coached.json +2 | +810 / -0 |
+| 13 Sept, 14:49 | laj07 | engine | [gate assertions on speaker attribution, add RG 271 complaint clock](../../commit/1cbc117aad28c6e612065c20bbb8bac8691ea4d1) | event-schema.md, cross-check-cases.ts, run-detector.ts +6 | +332 / -41 |
 | 13 Sept, 16:37 | aufanhakim1920-source | live call | [the alarm colour was also on the button that throws the call away](../../commit/87c86918e875e8ebf7da9ffb562624d2d587b43b) | CallScreen.tsx, call-screen.css | +105 / -3 |
 | 13 Sept, 16:16 | aufanhakim1920-source | other | [rehearsed against the live app, and the script pointed at the wrong row](../../commit/c1fd22f1cda51e93d5ac6cdc9739b4181f806d40) | DEMO-SCRIPT.md, PITCH.md, REHEARSAL.md | +308 / -5 |
 | 13 Sept, 16:14 | aufanhakim1920-source | accounts | [the engine's own numbers were below the fold, under other lenders' figures](../../commit/105e4f96a8c6aefb4972e724a31b0f4deec54c19) | About.tsx, Account.tsx, about.css +1 | +261 / -58 |
