@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 13:16 | aufanhakim1920-source | practice | [removing an invented customer was one click with no undo](../../commit/3f001b4dcca06b7aa034e18187b2b499a07e7eca) | Practice.tsx | +29 / -3 |
 | 13 Sept, 13:14 | aufanhakim1920-source | practice | [a raw model error was printing whatever the model sent](../../commit/be735ed765108ac09f682e0f74fc94969d85ecc7) | redact.check.ts, ReportCard.tsx, scenario-draft.css +1 | +294 / -17 |
 | 13 Sept, 12:54 | aufanhakim1920-source | live call | [the column a judge stares at for the first half-minute](../../commit/eaa66d69ca739404e20ceb4a484c04a4d0b0b7cc) | SignStack.tsx, watching.css | +290 / -6 |
 | 13 Sept, 12:02 | aufanhakim1920-source | other | [check the error path of the failure you most expect, and test a privacy claim against something worth testing](../../commit/a8333e4de8b02ec41eea957c3750b08a555e6e25) | DECISIONS.md | +45 / -0 |
