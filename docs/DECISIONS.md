@@ -65,10 +65,11 @@ decide.
 
 ## The deterministic detector owns the law; the model owns the judgement
 
-> ⚠️ **Not on `main` yet.** The detector is on an open pull request. Until it merges, the flags come
-> from the model pass and **can** be rate-limited. This section describes the agreed direction, not
-> today's build — a distinction worth keeping honest, since the rest of this file is used to answer
-> "does it really work".
+> ⚠️ **Superseded in part — read this with the two later entries.** When this was written the
+> detector was on an open pull request; it has since **merged** and runs first on every line. What did
+> *not* follow is the conclusion at the bottom of this section. See *The deterministic detector is
+> wired, and it is not yet load-bearing* and *Our own documents stopped agreeing with the product*
+> below: it raises **0 signs on the demo call**, so the rate-limit claim stays out of the pitch.
 
 The detector in `src/detector/` runs in **rules mode by default and makes zero API calls**. The legal
 test is two signals in the same turn — payment inability plus not-near-term — with recovery language
@@ -80,10 +81,12 @@ and returns **no flag** on an API failure rather than guessing.
 | legal obligations | deterministic rules | a rule should not be a judgement call |
 | cause cues, and the question to ask next | Gemini | these genuinely are judgements |
 
-**The consequence that will matter for a demo, once it merges:** the flagging half **will not be
-rate-limitable at all**. ⚠️ It is not on `main` yet, so **do not say it in the present tense on
-stage** — today the flags still come from the model pass and can be throttled. We discovered the
-problem it solves the hard way; see the quota section below.
+**The consequence we expected from a demo, once it merged:** that the flagging half would not be
+rate-limitable at all. ⛔ **That did not survive measurement and the sentence was never earned.** The
+detector merged, and on a transcript whose wording its rules reach it does exactly this — but on the
+call we actually demonstrate it raises nothing, so the flags there still come from the model and can
+still be throttled. The correction is written up two entries below. We discovered the problem it
+solves the hard way; see the quota section next.
 
 ---
 
@@ -210,8 +213,16 @@ Two reasons, and the second is the real one:
 2. **It is a rollout path.** A bank can run it silent for a month to measure what is being missed, then
    turn coaching on. That is a far easier thing to buy than "install our AI into live calls".
 
-Measured: same call, coaching off gives **0 sign cards on screen and 4 signs recorded and judged**;
-coaching on gives 4 and 4. Identical verdicts, identical deadline, identical score.
+Measured at the time, with a single worker script: coaching off gave **0 sign cards on screen and 4
+signs recorded and judged**; coaching on gave 4 and 4, with identical verdicts, deadline and score.
+
+⚠️ **That last sentence is now the opposite of the product's argument, and it is kept only to show
+where the demo started.** Identical verdicts were exactly the problem — the worker's words were the
+same either way, so the switch changed the display and nothing else (see *The before-and-after demo
+had nothing to compare*). With two worker scripts the current deployed measurement is: coaching off
+**0 cards, 5 signs recorded, 0 of 5 answered, the statutory notice missed**; coaching on **4 cards,
+4 signs, 4 of 4 answered, the notice handled.** The deadline is still identical, and that is still
+the point — the clock starts whether or not anyone on the call noticed.
 
 ---
 
@@ -362,10 +373,16 @@ what the worker does about them.
 
 | | coached | silent |
 |---|---|---|
-| score | **95** | **20** |
-| signs caught | 4 | 3 |
-| handled | 3 | 0 |
-| missed | 0 | **3** |
+| score | ~~95~~ | ~~20~~ |
+| signs caught | ~~4~~ | ~~3~~ |
+| handled | ~~3~~ | ~~0~~ |
+| missed | ~~0~~ | ~~**3**~~ |
+
+⛔ **Every figure in that table is withdrawn — it is here as the mistake, not as a result.** It came
+from a couple of early runs nobody had archived. Measured later across 26 recorded judgements, the
+coached 95 appeared **0 times in 7** and that exact silent row appeared **0 times in 19**. The
+replacement, and how it was caught, are in *The numbers in our own pitch had never been measured* at
+the end of this file. **Do not quote this table for any purpose.**
 
 The silent worker is not a caricature — he is doing what people do under pressure, chasing the payment
 he rang about. He asks for part of it this week, pushes for a date straight after she says she was laid
@@ -419,25 +436,34 @@ had:
 
 | | coached (7) | silent (5) |
 |---|---|---|
-| score | 95 twice, **"not verified" five times** | 30, 30, 40, 40, 45 |
-| fraction | 4 of 4 twice, 3 of 4 five times | 2 of 3, 2 of 3, 2 of 3, 1 of 3, 1 of 3 |
+| score | ~~95 twice~~, **"not verified" five times** | ~~30, 30, 40, 40, 45~~ |
+| fraction | ~~4 of 4 twice, 3 of 4 five times~~ | ~~2 of 3 ×3, 1 of 3 ×2~~ |
 | signs missed | **0, every run** | at least 1, every run |
 | **the statutory notice** | **handled 7 of 7** | **missed 5 of 5** |
 
+⚠️ **The two score rows are withdrawn** — the 95 never reproduced, and these twelve runs were on a
+local engine that had been serving a stale build. The bottom row is the one that survived every later
+measurement, which is the point this entry was making anyway. Current figures: the last entry in this
+file.
+
 **The coached run usually returns no score at all.** The card withholds rather than invents whenever a
 sign cannot be verified from the transcript, and the hardship-process prompt often cannot be. So the
-*better* run is frequently the one with no number on it, and a "95 against 20" comparison was a lucky
-pair rather than a result.
+*better* run is frequently the one with no number on it, and a "95 against 20" comparison was never a
+result. (Written here as "a lucky pair"; the later archive shows it was not even that — 95 does not
+appear in any recorded run.)
 
 **The row that never wavered is the argument**: the statutory obligation was caught every single time
 the worker could see it and missed every single time he could not. That is also the claim the product
 actually makes. The demo points at that row now, and the script puts the score ring explicitly
 off-limits.
 
-**One asymmetry a judge will notice, so we say it first:** the coached run raises four signs and the
-silent one three. The extra is the hardship-process prompt, which can only fire because the coached
-worker said the words. It is a consequence of coaching rather than a rigged comparison — but an
-unexplained difference in the denominator looks like one.
+**One asymmetry a judge will notice, so we say it first:** the two runs do not raise the same number
+of signs. ⚠️ **The direction stated here is now backwards.** At the time the coached run raised four
+and the silent three; on the deployed engine, across all ten archived runs, **silent raises five and
+coached four**. The extra sign is the hardship-process prompt, and it fires on the *silent* run
+precisely because that worker never mentions hardship assistance — the coached worker does, so the
+engine stops asking. Either way the point holds: it is a consequence of coaching rather than a rigged
+comparison, and an unexplained difference in the denominator looks like one.
 
 ---
 
@@ -452,7 +478,10 @@ be one complete card next to one with holes in it. What survives storage is exac
 is made of.
 
 **No difference is ever computed.** The same script does not score the same twice — an identical
-coached run gave 95 and then 90. The board prints both fractions and both columns, and states only
+coached run gave two different numbers. (The pair quoted here originally was 95 and 90; the 95 was
+one of the figures later measured out of existence, and the archived spread is 85–90 locally and
+85–88 deployed. The instability the argument rests on is real; that particular pair was not.)
+The board prints both fractions and both columns, and states only
 what is true: that the scores are not repeatable, that the two calls raised different numbers of
 signs, that a degraded call was never judged at all. **Subtracting two numbers that are not repeatable
 produces a number that means nothing.**
@@ -765,7 +794,9 @@ nothing. A stylesheet rule with no way to reach it is not a safety net.
 The demo's whole argument is holding the coached card and the silent card side
 by side. Judged as a stranger: both led with the customer's name, which is the
 same on both; the only difference was one leading digit, "0 of 3" against
-"4 of 4", in the same colour at the same size; and **the word carrying the
+"4 of 4" (the silent fraction was 0 of 3 on the engine of the day; it is 0 of 5
+now — the design point is the single digit, not the denominator), in the same
+colour at the same size; and **the word carrying the
 legal consequence, MISSED, was 10 px uppercase grey — the smallest type in the
 region.** The one unmistakable difference was the score ring, the reading the
 research deliberately demoted and which reads "not verified" on most real calls.
@@ -863,7 +894,7 @@ because that property is what makes the comparison honest.
 | answered | **4 of 4** | **0 of 5** |
 | the statutory notice | **handled 4/4** | **missed 6/6** |
 | withheld as unverified | 0 | 0 |
-| score | 88 · 88 · 88 · 85 | 10 · 10 · 10 · 10 · 15 · 10 |
+| score | 88 · 85 · 88 · 88 | 10 · 10 · 10 · 15 · 10 · 10 |
 
 Only the score still moves, by three points at most, which is why the docs
 already say never to quote it. **The line to say out loud is the fraction:
@@ -881,3 +912,64 @@ an hour and would have caught it on day one. Second: **a dev server that never
 reloads its handlers will lie to you for as long as it is up.** The local API
 had been running eleven hours and was still serving the pre-request-tier
 engine — every "unreproducible" run measured against it was measuring old code.
+
+## Our own documents stopped agreeing with the product
+
+The harness fixed the pitch's numbers. It did not fix the sentences around them, and by the morning
+of the 13th the four documents a judge reads disagreed with the code and with each other.
+
+Every factual assertion in `README.md` and `docs/SUBMISSION.md` was resolved to still-true, now-false
+or unverifiable — **124 of them** — plus every number in the demo script and the load-bearing figures
+in this file. **21 distinct facts were wrong, restated across 37 places. 8 could not be settled from
+this repository at all** and are now marked unverified where they stand, rather than removed: the ASIC
+and iTnews citations, the prior-art table, and the two claims about services we cannot query from here.
+Not one of the 21 was a lie. Every one had been true when it was written, and the product moved
+underneath it.
+
+The four that would have cost us something in front of a judge:
+
+**1 · The apology contained the same class of error it was apologising for.** The README's note
+retiring "95 against 20" said neither figure appeared in 26 recorded judgements. **95 did not; 20
+did, in 7 of 19 silent runs.** What never appeared was the published *row* — 20 with 3 caught — because
+`caught` was 1 on every one of the 19. A claim compressed from "this row never occurred" to "this
+number never occurred" is a different claim, and the second one is false. ⭐ **When you retire a
+number, restate the exact thing that was measured, not a shorter version of it.** The shorter version
+is the one that gets checked.
+
+**2 · A fallback we had never seen fire had been written up as a feature — twice, in opposite
+directions.** `docs/DEMO-SCRIPT.md` told the presenter the flagging "does not stop when the key is
+rate-limited, and you may now say so on stage." `docs/DECISIONS.md`, two sections apart, said the
+opposite and had the measurement. Re-run independently, line by line over both demo scripts through
+`src/detector/detect.ts`: **0 signs on 12 of 12 lines**, and **all 188 signs in `eval/demo-runs.json`,
+every phase, came from the model.** Control in the same run — the fixture wording *"I can't make the
+repayment. Not this month and honestly not for a while"* — fires `NCC_72_ORAL_NOTICE` immediately, so
+the detector works; the demo's own phrasing is outside its lexicon. The evidence for the true claim
+existed in this file the whole time and lost to the more flattering sentence in the other one.
+⭐ **When two of your own documents disagree, the optimistic one is the one that gets performed.**
+
+**3 · An asymmetry had reversed and the checklist still described the old direction.** Three
+documents said the coached run raises more signs than the silent one. On the deployed engine it is
+the other way round, in all ten archived runs: **silent 5, coached 4**, because the worker who never
+mentions hardship assistance earns the prompt telling him to. A presenter working from the stale
+version would have contradicted his own screen.
+
+**4 · Three "open decisions" had been fixed in the source and nobody moved the row.** The speaker box
+no longer alternates, the transcript hint is conditioned on coaching, and End call is no longer
+disabled on an empty practice call. A checklist that lists solved problems is read as a checklist
+nobody keeps, and the unsolved rows on it stop being believed.
+
+**And one defect found by reading rather than running.** `.env.example` sets `VITE_API_BASE` to
+`…/functions/v1`, one path segment short of the deployed function, and ships a blank
+`VITE_SUPABASE_ANON_KEY`. Checked: that URL returns `404 NOT_FOUND: Requested function was not found`,
+where the live site's `…/functions/v1/api` returns 200. CI reads both from repository variables, so
+the deployed site is fine and **only a fresh clone following the README is broken** — which is
+precisely the reader we cannot watch.
+
+⭐⭐ **The rule, and it is the same shape as the harness lesson one entry above.** A number got a
+harness because a number is a claim. **A sentence is a claim too, and it has no harness at all** —
+nothing fails when a document goes stale, so it goes stale silently and stays that way until someone
+reads it out loud in front of a judge. The cheapest available substitute is the one used here: for
+every factual sentence, name the file, the run record or the command that would settle it, and if
+nothing can settle it, delete the sentence. Twenty-one of ours could be settled and were wrong. The
+ones that could not be settled are now marked unverified in place, which is the only honest state for
+a claim with no way to check it.

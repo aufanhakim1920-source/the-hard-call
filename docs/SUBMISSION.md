@@ -3,9 +3,13 @@
 **Submissions close Monday 14 Sep, 12:00pm. Late is not considered.**
 **`main` freezes Monday 11:00am** — one hour of slack for a bad deploy, and nothing merges after it.
 
-Every line below is a yes/no somebody can check. Status is what was true when this file was written
-(13 Sep, around 01:40, after re-performing the whole demo twelve times). Tick it yourself before you
-trust it.
+Every line below is a yes/no somebody can check. Tick it yourself before you trust it.
+
+**Statuses re-checked against the tree and the deployed function on 13 Sep.** What that pass changed,
+because a stale checklist is worse than none: PR #3 had merged (B8, C2, D2), the silent run records
+**5** signs rather than 3 and now raises **more** than the coached run (C8, E), and D6, D9 and D10
+were all already fixed in the source. The verdict rows and the timings from the 01:40 twelve-run pass
+are kept below, split into E-1 and E-2 because they were measured on two different engines.
 
 ---
 
@@ -30,7 +34,7 @@ trust it.
 | B5 | The live engine answers | `/functions/v1/api/health` returns `"gemini":true` | Tron | **yes — `gemini:true`, 2 keys armed, model `gemini-flash-latest`** |
 | B6 | No secret is committed | `.env` git-ignored, only `.env.example` tracked, no key-shaped strings in tracked files | anyone | **yes, scanned** |
 | B7 | **Nothing uncommitted in `src/`** at freeze | `git status` is clean | everyone | **yes** — `git status` clean and `main` in sync with `origin/main`. Re-check at freeze |
-| B8 | Every open pull request is merged or closed with a reason | PR list is empty | Aufan | **no** — PR #3 (detector) and PR #5 (report) both open. Neither is a draft |
+| B8 | Every open pull request is merged or closed with a reason | PR list is empty | Aufan | **one left** — PR #3 (detector) **merged**; #1, #2 and #4 merged. **PR #5 (report) is still open** and is not a draft |
 | B9 | **The engine on Supabase matches `main`** | The Pages workflow deploys the *site* only. The edge function ships by hand: `npm run functions:deploy`. Merging the request-tier and quote-check commits to `main` does **not** update the engine a judge talks to | whoever merges last | **run it after the last engine merge, before freeze** |
 | B10 | **The Calls screen is on `main` and deployed** | Load the live URL and look for a **Calls** tab next to Live call | UI owner | **yes** — on `main`, and the published bundle contains the screen's own caveat string. Confirmed on the live URL |
 | B11 | The live site points at Supabase, not localhost | Search the published JS for `localhost:8787` | anyone | **yes** — the bundle contains only `https://clqcpqxivqylnjqmfeuz.supabase.co/functions/v1/api`. CI builds from repo variables, not from anyone's `.env` |
@@ -42,11 +46,11 @@ Each of these is a sentence we make somewhere. If the code stops backing it, the
 | # | Claim | Where it lives | Owner | Status |
 |---|---|---|---|---|
 | C1 | The published eval numbers match the code on `main` | `public/eval-results.json`, About page, README | Shawn | **live function confirmed on `gemini-flash-latest`** (`/api/health`, 13 Sep 01:33). ⚠ A local `.env` runs `gemini-2.5-flash`, and **the report card prints the model that judged it** — so a video recorded off `npm run dev` shows a model name the README does not. Record off the live URL, or fix `.env` first |
-| C2 | "The flagging cannot be rate-limited" | true only once the deterministic detector is on `main` | laural | **not true yet** — PR #3 is open. Do not say it on stage until it merges |
-| C3 | "Nothing that classifies a customer is ever stored" | README, About | laural | true on `main`: cause cues are live-only; verify once more after PR #3 merges |
+| C2 | "The flagging cannot be rate-limited" | Replay both demo scripts through `src/detector/detect.ts` line by line and count what it raises | laural | ⛔ **Still do not say it, and the reason has changed.** PR #3 merged and the detector runs first in the browser with no network — but replayed over both demo scripts it raises **0 signs on 12 of 12 lines**, and all **188 signs** in `eval/demo-runs.json` came from the model. Control check same run: the fixture wording *"I can't make the repayment. Not this month and honestly not for a while"* fires `NCC_72_ORAL_NOTICE` immediately, so the detector works — the demo's own phrasing is simply outside its lexicon. The sayable version: *"the legal test also runs as deterministic rules in the browser; on this particular script the model gets there first"* |
+| C3 | "Nothing that classifies a customer is ever stored" | README, About | laural | **true on `main`**: cause cues are live-only. Re-verified after the detector merged — it emits no cue-tier events at all |
 | C4 | The report card "says the call ran silent" | Settings panel says this | Shawn or UI | **fixed, verified 13 Sep.** Silent card leads *"The assistant ran silent on this call…"*; coached card leads *"The assistant coached this call — every sign appeared the moment it was raised."* Seen on all twelve runs |
 | C7 | **"The same call, handled two ways"** — the demo is described as a dramatisation wherever it is claimed | `docs/DEMO-SCRIPT.md`, the video narration, the Devpost description | Aufan | **script says it; the video and Devpost do not exist yet.** Two worker scripts, one customer script. If a judge asks whether the worker's lines are scripted, the answer is yes — say it before they ask |
-| C8 | The two report cards are described as comparing the **same** signs | Anywhere the before/after is claimed | Aufan | ⚠ **they do not.** Coached raises 4 signs, silent raises 3; the extra is the hardship-process prompt, which fires only because the coached worker says the word. The three shared signs, the customer and the deadline are identical. The Calls screen prints the discrepancy itself — do not claim otherwise anywhere else |
+| C8 | The two report cards are described as comparing the **same** signs | Anywhere the before/after is claimed | Aufan | ⚠ **they do not, and the direction has reversed.** On the deployed engine **silent raises 5 and coached raises 4**, identically across all ten archived runs. The extra sign is the hardship-process prompt, and it fires on the **silent** run because that worker never mentions hardship assistance — the coached worker says it, so the engine stops asking. The four shared signs, the customer's words and the 21-day deadline are identical. Say the asymmetry before a judge finds it; the Calls screen prints it too |
 | C5 | Every legal figure is sourced | README and About: NCC s72 / 21 days · RG 271 / 30 days · NAB $15.5m / 345 notices / ASIC 25-165MR · REP 782 · REP 815 | Aufan | numbers match the sources on file; re-read once aloud before submitting |
 | C6 | Nothing claims to be first without a search | Bendigo and Adelaide Bank is named in the README as prior art | Aufan | **yes** |
 
@@ -55,24 +59,30 @@ Each of these is a sentence we make somewhere. If the code stops backing it, the
 | # | Open item | The decision | Owner | Cost of leaving it |
 |---|---|---|---|---|
 | D1 | **Anonymous sign-ins are OFF** on the Supabase project, so the app runs "Saved here only" | Either switch them on (Authentication → Sign In / Providers → Anonymous ON, Confirm email OFF) and demo an account, or leave off and never show an account flow | Aufan (owner-only setting) | Low if left off — the README and the chip already say so. Do not demo accounts |
-| D2 | **The detector (PR #3)** | Merge before freeze, or close and say the legal test is a model call with a code gate | laural + Aufan | Merging is worth real rubric points (agentic, deterministic, cross-checked). Merging late is the bigger risk |
+| D2 | ~~**The detector (PR #3)**~~ | **Closed — merged.** It runs first on every line, in the browser, with no network call, and its keys are deduped against the model pass. What it did *not* buy is the rate-limit claim: see C2 | — | closed |
 | D3 | **PR #5, open** | Merge or close with a reason | Shawn | Not a draft — an open PR at freeze still reads as unfinished work |
 | D4 | **ElevenLabs practice quota** | Redeem the Forward credit (it is in the Discord menu) and run one full practice call end to end | Aufan | Practice mode is half the pitch and **no connected voice call has been verified**. If it cannot be shown, say so instead of implying it works |
 | D5 | ~~The 2× replay speed does nothing~~ | **Done.** Verified 13 Sep: 49.8 s at 1×, 25.2 s at 2×. The control only exists once the replay is running, and the line already scheduled when you press it still lands at 1× — both are in the demo script as beats, not bugs | live-call owner | closed |
-| D6 | **Practice screen trap**: opening a scenario and not speaking leaves you stuck — End call is disabled and the Live call tab shows the same session; only a reload escapes | Let the Live call tab abandon an unstarted practice call | live-call owner | A judge who clicks Practice during Q&A gets stuck |
-| D7 | **The report card varies a lot more than we thought.** Twelve runs: coached scored **95 twice and "not verified" five times**; silent scored **30, 30, 40, 40, 45**. The coached run usually returns *no score at all*, because the hardship-process sign comes back unverified and the card withholds rather than invents | Nothing to fix — it is `scoreUnverified` working. But **the "95 against 20" beat fails five times in seven**, so the script now points at the fraction and the per-sign table instead | everyone | A promised number that does not appear is worse than no number — and here the *good* run is the one with no number |
+| D6 | ~~**Practice screen trap**~~ | **CLOSED — fixed in `CallScreen.tsx`.** End call is no longer disabled on an empty call; leaving is always allowed and an empty call simply produces an empty report. Verified by reading the handler, **not by clicking it** — one pass through Practice on the live URL before the video would close that gap | live-call owner | closed |
+| D7 | ~~**The report card varies a lot more than we thought**~~ | **CLOSED — diagnosed and fixed, not tolerated.** The variance was never in the engine: signs raised were byte-identical every run, and calling `/report` six times on one identical session still returned missed = 1,1,1,1,2,2. **All of it lived in the written review**, and the model said why — the silent script's *"a couple of weeks before the next reminder"* and *"someone will be in touch"* read as partial discharge of the obligation. **The script was sitting exactly on the line it was meant to be clearly one side of.** Both offers were removed and both scripts gained a neutral sign-off, so a sign raised on the last line still has a worker line to be judged against. After: 10 deployed runs, **every counted field identical** — coached 4 signs / 4 of 4 answered / legal HANDLED 4 of 4; silent 5 signs / 0 of 5 answered / legal MISSED 6 of 6. Only the score still moves, by 3 points | everyone | ⭐ **A number in a pitch is a claim and needs a harness, not the memory of a good run.** `eval/demo-runs.ts` is that harness; re-run it after any edit to `demoScript.ts`. Still never quote the score — say the fraction |
 | D8 | ~~The Calls screen is not committed or deployed~~ **CLOSED** — it is on `main` and live. Two cards on one axis, with the honest caveats written into the page | Nothing. Perform the comparison on the Calls tab | — | Was the biggest visible win left; it landed |
-| D9 | **The "who said it" box flips after every typed line.** One sentence as Customer switches it to Worker, so a second typed line raises nothing — correctly, since the engine only flags the customer | Either stop flipping it, or leave it and keep the warning in the demo script | live-call owner | Measured: the hardship sentence as Worker raised 0 signs in 16 s; the same sentence as Customer raised the legal sign in 2.7 s. A judge typing during Q&A hits this |
-| D10 | **The hint under the transcript reads "Watch line 7: the worker asks for money instead of answering the sign."** True of the silent script only; on the coached run line 7 is *"Take your time — what would make things easier right now?"* | One-line copy fix, or condition it on coaching | live-call owner | It is on screen during the run a judge is watching most closely |
+| D9 | ~~**The "who said it" box flips after every typed line**~~ | **CLOSED — it no longer alternates.** The box stays where it was put, with the reasoning left in the code: the cost is asymmetric, since typing the customer's sentence into a box that has silently flipped to Worker raises nothing (0 signs in 16 s as Worker against the legal sign in 2.7 s as Customer) | live-call owner | closed |
+| D10 | ~~**The hint under the transcript names line 7**~~ | **CLOSED — conditioned on coaching.** Coaching off reads *"Watch line 7: the worker asks for money instead of answering the sign."*; coaching on reads *"Watch what the worker does the moment each sign lands."* | live-call owner | closed |
 
 ## E · Already done and verified — do not redo
 
-Re-measured 13 Sep, 01:20–01:40, twelve full calls (seven coached, five silent) at 1280 px.
+Two separate measurement sets, and they must not be quoted as one.
 
-⚠ **The twelve runs were on `npm run dev` against the local engine on `gemini-2.5-flash`**, because
-that is what this machine's `.env` points at. The timings are the app's and do not depend on the
-model; **the verdicts and the score spread might**. One confirming pair on the live URL before the
-video is a ten-minute job and it is on the Monday list.
+**E-1 · The deployed engine, `eval/demo-runs.ts --remote`, 13 Sep — ten runs, four coached and six
+silent.** These are the numbers the README and the demo script quote. Archived in
+`eval/demo-runs.json`; the report's own `model` field reads `gemini-flash-latest` on all ten.
+
+**E-2 · The browser, twelve full calls (seven coached, five silent) at 1280 px, 13 Sep 01:20–01:40.**
+⚠ These went through `npm run dev` against the **local** engine on `gemini-2.5-flash`, because that is
+what this machine's `.env` points at. **The timings are the app's and barely depend on the model; the
+verdicts and the score spread do** — E-2's sign counts have since been superseded by E-1. Keep E-2 for
+the wall-clock figures only. One confirming pair on the live URL before the video is a ten-minute job
+and it is on the Monday list.
 
 - Live URL serves the app; the deployed engine answers `gemini:true`, **2 keys armed**, model
   `gemini-flash-latest`. The two worker scripts are live on the published bundle.
@@ -81,11 +91,13 @@ video is a ten-minute job and it is on the Monday list.
 - **Both runs, back to back, fit in 75 s** including ten seconds of standing still reading the two
   cards. Measured end to end.
 - **Report card lands 3.0–3.8 s after End call** (twelve runs). Say "a few seconds", never a number.
-- **Coaching off: 0 sign cards on screen, 3 signs still recorded and judged, and the 21-day deadline
-  still created.** Coaching on: 4 cards, at 9.0 s (stress), 14.4–14.6 s (job loss), 22.5–22.7 s
-  (hardship prompt) and 20.0–25.3 s (the legal sign).
-- **The statutory notice was HANDLED in all seven coached runs and MISSED in all five silent ones.**
-  That is the only verdict that held without exception, and it is the argument.
+- **Coaching off: 0 sign cards on screen, and the 21-day deadline still created.** Coaching on: 4
+  cards, at 9.0 s (stress), 14.4–14.6 s (job loss), 22.5–22.7 s (hardship prompt) and 20.0–25.3 s
+  (the legal sign). ⚠ The old "3 signs still recorded" here is **superseded by E-1: the silent run
+  records 5**, every run, and raises one *more* than the coached run — see C8.
+- **The statutory notice was HANDLED in every coached run and MISSED in every silent one**, in both
+  measurement sets: 7/7 and 5/5 in E-2, and 4/4 and 6/6 in E-1. That is the only verdict that has
+  never once wavered, and it is the argument.
 - A typed sentence raises the legal sign in **2.7 s**, reply-due computed as today + 21 (Sun 4 Oct).
 - The negative control — "push the payment back a couple of weeks, I get paid on the twentieth" —
   **raises nothing after 13 s of waiting**.
@@ -93,15 +105,16 @@ video is a ten-minute job and it is on the Monday list.
 - Secret scan clean; repo public with no licence file (viewable, not reusable).
 - Team log writes itself on every push to `main`.
 
-**Not re-verified, still open:** the practice-screen trap (D6), the microphone path, and any
-ElevenLabs connected call.
+**Not re-verified, still open:** the microphone path, and any ElevenLabs connected call (D4). D6, D9
+and D10 are fixed in the source and were confirmed by reading it — nobody has clicked through them on
+the live URL since.
 
 ## F · Monday, in order
 
 | Time | Do | Owner |
 |---|---|---|
 | by 08:30 | ~~D8 decided~~ **done** — the Calls screen is live, so the demo ends by pointing at the comparison rather than narrating it | — |
-| by 09:00 | D2, D3, D9, D10 decided; last merges land; **`npm run functions:deploy` run after the final engine merge** (B9) | laural, Shawn, Aufan |
+| by 09:00 | **D3 is the only decision left** (D2, D6, D9, D10 all closed); last merges land; **`npm run functions:deploy` run after the final engine merge** (B9) | Shawn, Aufan |
 | 09:00–10:00 | **Video recorded off the live URL, not localhost** (C1) — follow `docs/DEMO-SCRIPT.md`, use 2×, both runs fit in 75 s. Say "the same call, handled two ways" in the first ten seconds (C7) | Aufan |
 | 10:15 | **Run one coached and one silent call on the live URL** and check the verdicts match section E. The twelve measured runs were local, on a different model | Aufan |
 | 10:30 | B1–B11 checked against the final commit; hard-reload the live URL and run the demo once | whoever merges last |
