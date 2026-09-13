@@ -41,10 +41,15 @@ const realSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 export class DemoReplay {
   private cancelled = false;
 
-  constructor(
-    private transcript: Transcript,
-    private handlers: ReplayHandlers = {}
-  ) {}
+  private transcript: Transcript;
+  private handlers: ReplayHandlers;
+
+  // Fields assigned explicitly: this repo's tsconfig sets erasableSyntaxOnly,
+  // which rejects parameter properties (TS1294).
+  constructor(transcript: Transcript, handlers: ReplayHandlers = {}) {
+    this.transcript = transcript;
+    this.handlers = handlers;
+  }
 
   cancel() {
     this.cancelled = true;
