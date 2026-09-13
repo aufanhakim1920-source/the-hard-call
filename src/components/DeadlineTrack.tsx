@@ -14,9 +14,10 @@ import "./report-deadline.css";
 // Every number is counted from the call and the calendar. Nothing is modelled.
 
 export function DeadlineTrack({ report }: { report: Report }) {
-  if (report.deadlines.length === 0) return null;
+  const statutory = report.deadlines.filter((d) => d.type !== "followup");
+  if (statutory.length === 0) return null;
 
-  const rows = report.deadlines.map((d) => {
+  const rows = statutory.map((d) => {
     const total = Math.max(1, daysBetween(report.at, parseISO(d.date).getTime()));
     const left = daysUntil(d.date);
     const elapsed = Math.min(total, Math.max(0, total - left));

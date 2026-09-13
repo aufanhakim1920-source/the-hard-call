@@ -17,6 +17,9 @@ export function localReport(s: Session, err: unknown): ReportPayload {
     verdict: "unverified" as const,
     note: g.handled ? "Marked handled during the call." : "Not marked handled during the call.",
     evidence: [],
+    tier: g.key === "ask-about-hardship" ? "request" as const : "obligation" as const,
+    followUpDays: g.followUpDays,
+    followUpDate: g.followUpDate,
   }));
   return {
     callId: s.id,
@@ -34,15 +37,19 @@ export function localReport(s: Session, err: unknown): ReportPayload {
     caught: s.signs.filter((g) => g.kind === "legal").length,
     handled: 0,
     partly: 0,
-    unverified: items.length,
+    unverified: items.filter((item) => item.tier !== "request").length,
     missed: 0,
-    deadlines: s.signs
-      .filter((g) => g.kind === "legal" && g.dueDate)
-      .map((g) => ({ key: g.key, label: g.dueLabel ?? "Due", date: g.dueDate as string, title: g.title, customer: s.customer.name, callId: s.id })),
+    deadlines: [
+      ...s.signs
+        .filter((g) => g.kind === "legal" && g.dueDate)
+        .map((g) => ({ key: g.key, label: g.dueLabel ?? "Due", date: g.dueDate as string, title: g.title, customer: s.customer.name, callId: s.id, type: "statutory" as const })),
+      ...s.signs
+        .filter((g) => g.key === "ask-about-hardship" && g.followUpDate)
+        .map((g) => ({ key: g.key, label: "Follow up by", date: g.followUpDate as string, title: "Threshold question not verified", customer: s.customer.name, callId: s.id, type: "followup" as const })),
+    ],
     durationSec: Math.round(((s.endedAt ?? Date.now()) - s.startedAt) / 1000),
     model: "",
     degraded: true,
     degradedReason: quota ? "quota" : "unreachable",
   };
 }
-

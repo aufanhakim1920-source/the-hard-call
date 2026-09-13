@@ -126,7 +126,10 @@ function ClearCallHistory() {
 
 export function Deadlines() {
   const store = useStore();
-  const rows = [...store.deadlines].sort((a, b) => Number(a.done) - Number(b.done) || a.date.localeCompare(b.date));
+  const ordered = (rows: typeof store.deadlines) => [...rows].sort((a, b) => Number(a.done) - Number(b.done) || a.date.localeCompare(b.date));
+  const statutory = ordered(store.deadlines.filter((d) => d.type !== "followup"));
+  const followups = ordered(store.deadlines.filter((d) => d.type === "followup"));
+  const rows = [...statutory, ...followups];
   // Ticking a deadline drops it to the bottom of this sort. A CSS transition
   // cannot animate a reorder — the row is re-laid-out, not moved — so it used
   // to teleport. The key is the order itself, so the measurement happens on
@@ -135,14 +138,15 @@ export function Deadlines() {
   return (
     <div className="page narrow" ref={list}>
       <h1>Deadlines</h1>
-      <p className="lede">Every legal sign starts a clock the bank is on. They land here with the date, so nothing goes unanswered.</p>
+      <p className="lede">Statutory clocks and operational callbacks stay distinct, so a follow-up never looks like a legal deadline.</p>
       {rows.length === 0 && (
         <div className="empty" data-flip="empty">
           <b>No clocks running.</b>
           Catch a hardship request or a complaint on a call and its reply date appears here.
         </div>
       )}
-      {rows.map((d) => {
+      {statutory.length > 0 && <div className="label">Statutory deadlines</div>}
+      {statutory.map((d) => {
         const n = daysUntil(d.date);
         return (
           <div
@@ -169,6 +173,20 @@ export function Deadlines() {
               }}
             >
               {d.done ? "Reopen" : "Mark replied"}
+            </button>
+          </div>
+        );
+      })}
+      {followups.length > 0 && <div className="label">Follow-ups · no legal clock asserted</div>}
+      {followups.map((d) => {
+        const n = daysUntil(d.date);
+        return (
+          <div className={"deadline-row followup" + (d.done ? " done" : n < 0 ? " urgent" : " soon")} key={d.id} data-flip={d.id}>
+            <span className="d">{fmtDate(d.date)}</span>
+            <span className={"left" + (n < 0 ? " over" : " soon")}>{d.done ? "done" : fmtDaysLeft(d.date)}</span>
+            <span className="what"><b>{d.label}: {d.title}</b><span>{d.customer}</span></span>
+            <button className="btn sm" onClick={() => { actions.toggleDeadline(d.id); play(d.done ? "undo" : "deadline"); }}>
+              {d.done ? "Reopen" : "Mark followed up"}
             </button>
           </div>
         );

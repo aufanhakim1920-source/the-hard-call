@@ -41,7 +41,12 @@ try {
     }
     const session = adaptReportInput({ transcript: call, flags });
     const obligations = flags.filter(f => f.kind === "obligation" && f.persist);
-    assert.equal(session.signs.length, obligations.length);
+    const persisted = flags.filter(f => f.persist && f.kind !== "cue");
+    assert.equal(session.signs.length, persisted.length);
+    assert.equal(
+      session.signs.filter(sign => sign.tier === "request").length,
+      persisted.filter(flag => flag.kind === "request").length,
+    );
     // Stub the report model only. Deliberately omit all judgements: detector
     // resolution must not silently become the report's own evidence-based mark.
     let modelCalls = 0;
@@ -54,14 +59,14 @@ try {
     const response = await handle(request(call, flags));
     assert.equal(response.status, 200);
     const report = await response.json();
-    assert.equal(report.items.length, obligations.length);
+    assert.equal(report.items.length, persisted.length);
     assert.equal(report.unverified, obligations.length);
     assert.equal(report.handled, 0);
-    assert.equal(modelCalls, obligations.length ? 1 : 0);
+    assert.equal(modelCalls, persisted.length ? 1 : 0);
     assert.equal(report.scoreUnverified, true);
     assert.deepEqual(report.missedByAI, []);
     assert.equal(session.lines.length, call.turns.length);
-    console.log(`${call.call_id}: ${flags.length} detector events / ${obligations.length} report obligations, batch/stream agreement, adapter and report API PASS`);
+    console.log(`${call.call_id}: ${flags.length} detector events / ${persisted.length} persisted report items (${obligations.length} scored obligations), batch/stream agreement, adapter and report API PASS`);
   }
   // Same customer utterances, changed worker response: no coaching toggle is
   // supplied to either engine. This exercises a demo candidate, not an AI grade.

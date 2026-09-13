@@ -106,6 +106,7 @@ function toSign(flag: Flag, lineId: string, now: number, evidence: string): Sign
   const map = KEY_FOR[flag.rule_id];
   if (!map) return null;
   const due = flag.deadline_days ? addDays(todayISO(), flag.deadline_days) : undefined;
+  const followUp = flag.followup_days ? addDays(todayISO(), flag.followup_days) : undefined;
   return {
     id: uid("sg"),
     key: map.key,
@@ -120,6 +121,7 @@ function toSign(flag: Flag, lineId: string, now: number, evidence: string): Sign
     handled: false,
     ...(due ? { dueDate: due, dueLabel: map.dueLabel ?? "Reply due", dueDays: flag.deadline_days! } : {}),
     ...(flag.deadline_days ? { source: flag.authority } : {}),
+    ...(flag.followup_days ? { followUpDays: flag.followup_days, followUpDate: followUp } : {}),
   };
 }
 
