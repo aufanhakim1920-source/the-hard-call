@@ -3,6 +3,7 @@ import { fmtClock, fmtDate } from "../lib/dates";
 import { useFlip } from "../lib/motion";
 import type { Sign } from "../lib/types";
 import "./sign-card.css";
+import "./watching.css";
 
 /**
  * The mark at the head of a card, and the only place the two kinds are told
@@ -62,6 +63,79 @@ function SilentNote() {
   );
 }
 
+/**
+ * What the column holds while it is waiting, and the reason the wait stops
+ * reading as a dead panel.
+ *
+ * MEASURED on the demo call at 1280 wide: the signs column is 420 x 703, the
+ * empty-state paragraph that used to be the whole of it filled 124px, and the
+ * legal sign — the thing the demo exists to show — lands at 26.8s. So the
+ * first half-minute was 537px of nothing under one sentence whose entire
+ * content was that there was nothing.
+ *
+ * ⚠️ Everything in here has to be TRUE. A placeholder card, a count ticking
+ * up, or a spinner pretending to think would buy that half-minute back and
+ * spend the product's whole claim doing it: the flag is believable precisely
+ * because it arrives when the customer actually says the thing. So this is the
+ * engine's real legal test, in the customer's own kind of words — the two
+ * halves that must both appear in one customer turn (src/detector/lexicon.ts
+ * DIFFICULTY and MEDIUM_TERM), the recovery signal that suppresses it, and the
+ * 21 days from src/detector/rules.ts NCC_72_ORAL_NOTICE. Nothing is claimed
+ * that the engine has not done.
+ *
+ * It is also what makes the gold card an ARRIVAL rather than a change of
+ * subject: a reader who has just read what raises the sign meets it as the
+ * answer to a question already on the screen. Which is why there is no gold
+ * anywhere in here — the card is the first colour of the call, and spending
+ * the signal before the signal lands is how it stops being one.
+ *
+ * The op column is a hanging conjunction — "and", "then" — set as WORDS, not
+ * as a brace or a numeral, so the rule reads as the sentence it is and nothing
+ * is carried by a shape alone.
+ */
+function Watching({ met }: { met: boolean }) {
+  return (
+    // data-flip so the FLIP carries it down with the cards when one arrives
+    // above it, instead of teleporting while everything else slides.
+    <div className="watching" data-flip="watching">
+      <div className={"watch-body" + (met ? " met" : "")}>
+        <div>
+          <p className="watch-lede">
+            Every line is checked the moment it lands. A hardship notice needs <b>both halves, in one thing the customer says</b>.
+          </p>
+          <p className="watch-row">
+            <span className="watch-op" />
+            <span className="watch-txt">
+              <span className="watch-cond">they can’t meet the repayment</span>
+              <span className="watch-ex">“I’m behind” · “I can’t cover it” · “struggling”</span>
+            </span>
+          </p>
+          <p className="watch-row">
+            <span className="watch-op">and</span>
+            <span className="watch-txt">
+              <span className="watch-cond">it won’t be fixed soon</span>
+              <span className="watch-ex">“a few months” · “not before the new year”</span>
+            </span>
+          </p>
+          <p className="watch-row">
+            <span className="watch-op">then</span>
+            <span className="watch-txt">
+              <span className="watch-out">21 days to answer, from that sentence</span>
+              <span className="watch-src">National Credit Code s 72(4)</span>
+            </span>
+          </p>
+          <p className="watch-note">A date they’ll be square by cancels it. That is a timing problem, not hardship.</p>
+        </div>
+      </div>
+      {met && (
+        <p className="watch-after">
+          The notice is in. Marking it handled does not settle it — the report card judges what you actually said back.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function SignStack({
   signs,
   startedAt,
@@ -110,6 +184,10 @@ export function SignStack({
   const box = useFlip<HTMLDivElement>(order);
 
   const openCount = signs.filter((s) => !s.handled).length;
+  // The standing panel below the stack is about the LEGAL test, so it folds
+  // when that test is actually met — handled or not, it has been met — and not
+  // when a tip lands. A tip does not answer the question the panel is asking.
+  const hasLegal = signs.some((s) => s.kind === "legal");
   return (
     <aside className="signs" aria-label={coaching ? "Danger signs" : "Danger signs, not shown during this call"}>
       {!compact && (
@@ -122,12 +200,6 @@ export function SignStack({
       )}
       <div className="signs-list" ref={box}>
         {!coaching && <SilentNote />}
-        {coaching && list.length === 0 && (
-          <div className="empty">
-            <b>Nothing to act on yet.</b>
-            A sign appears the moment the customer says something that counts. Each one comes once, with the question to ask next.
-          </div>
-        )}
         {list.map((s) => (
           <article
             key={s.id}
@@ -198,6 +270,7 @@ export function SignStack({
             </div>
           </article>
         ))}
+        {coaching && <Watching met={hasLegal} />}
       </div>
     </aside>
   );
