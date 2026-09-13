@@ -53,7 +53,9 @@ Arrears-side indicators staff are trained to notice: in arrears, persistent debt
 
 ## Design rule: flag the obligation, never the person
 
-We do not classify the customer. No "depressed", no "gambling problem", no vulnerability label written anywhere.
+**Nothing that classifies the customer is ever stored.** Obligation and request events name the duty or the ask — never the cause. A small set of circumstance cues route the call in the moment and are discarded when it ends; they never reach the record, the report card, or any summary.
+
+This is a more precise claim than an absolute one, and a stronger one, because it survives someone reading the code. The cues exist because some are protective and the ABA guideline asks for them: `safety` routes a family-violence case to a specialist team, `scam` stops a transfer mid-call. Two tests enforce the storage rule — every fixture asserts `must_not_emit_kinds: ["cue"]`, and any event with `kind: "cue"` and `persist: true` fails. Full detail in `docs/event-schema.md`.
 
 The detector's output names the **duty and the deadline**, not the cause:
 
