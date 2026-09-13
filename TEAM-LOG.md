@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 12:02 | aufanhakim1920-source | other | [check the error path of the failure you most expect, and test a privacy claim against something worth testing](../../commit/a8333e4de8b02ec41eea957c3750b08a555e6e25) | DECISIONS.md | +45 / -0 |
 | 13 Sept, 12:01 | aufanhakim1920-source | practice | [the quota message printed the agent id, and named the wrong failure](../../commit/14b66ef11e560884fdf45647c0cd3e953d1589ec) | PRACTICE.md, practice.ts | +208 / -2 |
 | 13 Sept, 11:43 | aufanhakim1920-source | other | [depth is a ranking, and changing a ground re-opens every contrast question](../../commit/a6d4ca8bdc4560e1ec0bf2d8e77451d99dc3bca0) | DECISIONS.md | +36 / -0 |
 | 13 Sept, 11:41 | aufanhakim1920-source | design | [the app had 65 borders and zero elevation](../../commit/c89e1e9549a750596a4562a53047f8079d427d19) | styles.css | +113 / -25 |
