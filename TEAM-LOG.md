@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 15:37 | aufanhakim1920-source | pitch | [the spoken script, and four documents that disagreed with each other](../../commit/a4f70f01f3caaf074a675afc66a427f250a01412) | README.md, EVIDENCE.md, FREEZE-EVE.md +3 | +590 / -3 |
 | 13 Sept, 15:17 | aufanhakim1920-source | other | [a card with zero surfaces has no reading order, and demoting in doctrine is not demoting in paint](../../commit/15fd019326c727f09f1418a7595502fed3a71789) | DECISIONS.md | +64 / -0 |
 | 13 Sept, 15:17 | aufanhakim1920-source | report | [a screenshot caught "1 OF 5" on a call whose answer is five of five](../../commit/2a64137c0f1f103e5ac76664a075dd8834603e8a) | ReportLedger.tsx, useCountUp.ts | +18 / -46 |
 | 13 Sept, 15:15 | aufanhakim1920-source | report | [the biggest gold glyph on the failing card was the score](../../commit/4cd11dd5e13e6b6276801e8654cc7ab87cb668d0) | ReportCard.tsx, ScoreRing.tsx, report-lead.css +2 | +123 / -5 |
