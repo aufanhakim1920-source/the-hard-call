@@ -146,5 +146,45 @@
     ],
     "staff_handling": "unverifiable",
     "expected_report_card": "The staff member did name the hardship process at 31900, but attribution is inferred, so the request resolves unverified rather than satisfied. The report must not mark this call handled on guessed speaker attribution. Prompt the user to confirm speakers, then rescore."
+  },
+  "call_003c": {
+    "must_flag": [
+      {
+        "rule_id": "HARDSHIP_REQUEST",
+        "kind": "request",
+        "trigger_turn_start_ms": 16500,
+        "expect_superseded": true,
+        "why": "Identical turn to call_003. Same event, same moment.",
+        "deadline_days": null
+      },
+      {
+        "rule_id": "NCC_72_ORAL_NOTICE",
+        "kind": "obligation",
+        "trigger_turn_start_ms": 45000,
+        "why": "Byte-identical customer turn to call_003, so the same notice at the same millisecond. The only difference in this fixture is what the worker does next.",
+        "deadline_days": 21,
+        "authority": "National Credit Code s 72(4)"
+      },
+      {
+        "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
+        "kind": "obligation",
+        "trigger_turn_start_ms": 45000,
+        "why": "Arises with the notice, and here it is discharged at 64600 rather than missed.",
+        "deadline_days": null
+      },
+      {
+        "rule_id": "NCC_72_WRITTEN_NOTICE_30D",
+        "kind": "obligation",
+        "trigger_turn_start_ms": 121700,
+        "why": "Worker puts a variation on the table ('pausing repayments', 'interest-only'), arming the written-notice obligation.",
+        "deadline_days": 30
+      }
+    ],
+    "must_not_flag": [],
+    "must_not_emit_kinds": [
+      "cue"
+    ],
+    "staff_handling": "correct",
+    "expected_report_card": "The coached counterfactual to call_003. Every turn through 45000ms is byte-identical, so the detector raises the same events at the same timestamps; the only difference is that the worker acted, so they resolve satisfied instead of missed. This pair is the A/B demo: the analysis is constant and the outcome is not."
   }
 }
