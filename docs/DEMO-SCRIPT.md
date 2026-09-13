@@ -355,3 +355,18 @@ Add two beats, in this order:
 
 And say the honest sentence once more, because it is the one a judge who reads the repo will be
 checking you against: **the worker's lines are scripted on both sides. The engine is not.**
+
+## The report card is taller than a projector screen
+
+Measured: the card is **2005–2226px** tall and a 1280x720 laptop shows **720px** of it. That is not a
+bug — it is a long document — but it means the presenter is scrolling in front of a judge, and
+scrolling that was not planned looks like hunting for something.
+
+**Everything the pitch says out loud is already in the first 720px**, screenshot-verified: the score
+ring, the miss count, the sentence naming the reply date, and the answered fraction. So:
+
+- **Say the claim before you scroll.** The top of the card is the argument; the rest is the evidence.
+- **Then scroll once, deliberately, to the per-sign table** and stop there. That table is what proves
+  the number above it, and it is the thing worth showing rather than skimming.
+- Do not scroll while talking. Land, speak, scroll, speak.
+

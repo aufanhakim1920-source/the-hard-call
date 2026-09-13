@@ -1,3 +1,13 @@
+/* Tokens owned by this file. Declared here rather than in the global sheet
+   because they describe one component's surfaces, and the global sheet is
+   where a colour goes to be quietly repurposed by something else. */
+:root,
+:root[data-theme="light"] {
+  /* A filled pill is its own ground: constant across themes on purpose. */
+  --pill-done: #4a5260;
+  --pill-done-ink: #f2eee7;
+}
+
 /* The sign card — the one object this product exists to show.
  *
  * A worker reads this mid-call, with someone upset on the line, in about two
@@ -78,9 +88,23 @@
 .signs-list .sign.done .kind {
   color: var(--text-2);
 }
+/* The LEGAL pill on a HANDLED card used `--line-2` as its fill. That token is
+   a HAIRLINE — a colour chosen to be barely visible — and `.high-contrast`
+   deliberately raises it so borders show up more. So turning High contrast ON
+   made this element worse: measured 3.67:1 on the dark ground and 3.22:1 on
+   the light one, at 10px, where 4.5 is required.
+
+   ⭐ A token carries an intention, not just a value. `--line-2` means "the
+   faintest thing that still reads as an edge"; using it as a SURFACE inherits
+   an intention that is the opposite of the one a filled pill needs, and every
+   later adjustment to it lands somewhere nobody was looking.
+
+   A filled pill is its own surface, so it does not have to invert with the
+   page — one dark slate with near-white on it is correct on both grounds and
+   cannot be pulled about by a hairline setting. */
 .signs-list .sign.legal.done .kind {
-  background: var(--line-2);
-  color: var(--cream);
+  background: var(--pill-done);
+  color: var(--pill-done-ink);
 }
 
 /* ---------- 2 · when the reply is due ---------- */
