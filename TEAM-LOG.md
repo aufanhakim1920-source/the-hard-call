@@ -4,6 +4,8 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 11:12 | aufanhakim1920-source | live call | [every sign fired its sound twice, and the badge on the hero card was invisible](../../commit/b126a53958adb8499f1a68ba96f376e5e5726e5f) | SOUND.md, ATTRIBUTION.md, sign-card.css +2 | +391 / -36 |
+| 13 Sept, 11:06 | aufanhakim1920-source | other | [the evidence pack — 39 plates, and the fraction is not stable](../../commit/70e82298e8ce3fc4c9d2f7321b43fa12fbee3b01) | EVIDENCE.md, clock-01-deadlines.png, clock-02-21day-live.png +37 | +545 / -0 |
 | 13 Sept, 10:46 | aufanhakim1920-source | project | [the correction to our own numbers was itself wrong](../../commit/b9c47c4cf312f5789e12a78cd7cc072900c72f3f) | .env.example, README.md, DECISIONS.md +2 | +263 / -98 |
 | 13 Sept, 10:21 | aufanhakim1920-source | design | [a11y: the thicker focus ring never applied to a text input](../../commit/d075d736f79aef94c036acd140653b1b6f805c4e) | TopBar.tsx, styles.css | +26 / -3 |
 | 13 Sept, 10:17 | aufanhakim1920-source | accounts + report | [the compare bar drew nothing, and the privacy wipe used an OS dialog](../../commit/1b406e58710f8b8e7487434d11cfe05ed8a1a543) | About.tsx, Account.tsx, CallHistory.tsx +5 | +208 / -52 |
