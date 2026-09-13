@@ -5,6 +5,7 @@ import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import type { LessonKind } from "../lib/types";
 import { Select } from "./Select";
+import "./lessons.css";
 
 const KIND_LABEL: Record<LessonKind, string> = {
   "not-a-sign": "Not a sign",
@@ -65,10 +66,16 @@ export function Lessons() {
         <div className={"lesson" + (exit.leaving === l.id ? " is-leaving-row" : "")} key={l.id} data-flip={l.id}>
           <span className="k">{KIND_LABEL[l.kind]}</span>
           <div>
-            <div>{l.text}</div>
+            <div className="lt">{l.text}</div>
             {l.evidence && <div className="ev">“{l.evidence}”</div>}
+            {/* The count leads. It is the only proof on this screen that a
+                correction actually reaches the engine; it used to be the tail
+                of a sentence that opened with the date it was typed. */}
             <div className="used">
-              added {fmtWhen(l.t)} · used on {l.usedOn} call{l.usedOn === 1 ? "" : "s"} since
+              <b>
+                used on {l.usedOn} call{l.usedOn === 1 ? "" : "s"}
+              </b>{" "}
+              · added {fmtWhen(l.t)}
             </div>
           </div>
           <button

@@ -5,6 +5,7 @@ import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import "./report-visuals.css";
 import "./clear-history.css";
+import "./deadlines.css";
 
 const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 
@@ -144,7 +145,14 @@ export function Deadlines() {
       {rows.map((d) => {
         const n = daysUntil(d.date);
         return (
-          <div className={"deadline-row" + (d.done ? " done" : "")} key={d.id} data-flip={d.id}>
+          <div
+            // The urgency tier is on the ROW, not only on the days-left word:
+            // three open clocks at identical weight told the eye they were
+            // equally answerable, and one of them was already overdue.
+            className={"deadline-row" + (d.done ? " done" : n < 0 ? " urgent" : n <= 7 ? " soon" : "")}
+            key={d.id}
+            data-flip={d.id}
+          >
             <span className="d">{fmtDate(d.date)}</span>
             <span className={"left" + (n < 0 ? " over" : n <= 7 ? " soon" : "")}>{d.done ? "done" : fmtDaysLeft(d.date)}</span>
             <span className="what">
