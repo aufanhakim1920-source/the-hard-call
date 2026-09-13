@@ -1430,3 +1430,49 @@ ground had already answered. A Practice badge at 4.48:1, a deadline's "3 days le
 plate needing two different tokens per ground, and `reduce-transparency` repainting a data fill to
 the exact colour of the plate newly behind it. **After moving a ground, re-measure everything sitting
 on it, including what the accessibility settings repaint.**
+
+## A generator that writes to the path the site no longer serves
+
+The offline A/B page moved from `demo/` into `public/` so Vite copies it into `dist/` and it deploys
+with the site — laural's idea, agreed in the group, and it gives the submission a link that needs no
+signup, no key and no network: press two buttons and watch the same call run twice.
+
+The move left a trap behind. `eval/build-demo.ts`, the generator that writes that page, still wrote
+to `demo/ab-demo.html` and still held the pre-move template. Nobody would have noticed until someone
+regenerated the demo, at which point the old file would have come back as a second copy and the
+deployed page would have quietly stopped matching its own source.
+
+**A file that moves is not moved until everything that writes to it moves too.** Grep for the old
+path, not just for the old file. The generator now writes to `public/`, its template is the shipped
+page, and regenerating is a no-op: verified identical up to 45000 ms, the same events raised, 3
+missed silent against 3 satisfied coached, the display gate holding at 3 shown with coaching and 0
+without, 31 kB written, no `demo/` directory recreated, 0 external hosts, `tsc` clean.
+
+## Masking the worker's own screen is not privacy, it is damage
+
+PR #6 closes a real gap: `docs/hardship-flag-rules.md` claims names and addresses are stripped, and
+`maskSensitive` only ever masked digit runs and emails. But the fix lands at the wrong boundary.
+
+`maskSensitive` is called in `engine.ts:130` inside `addLine`, and the masked string becomes
+`Line.text` — which is what the transcript **renders**. Measured over both demo scripts and the A/B
+page's transcript, four lines change, two of them lines a judge watches:
+
+| line | becomes |
+|---|---|
+| `Hi Sarah, it's Tom from the bank.` | `Hi ••••, it's •••• from the bank.` |
+| `Honestly, I'm a bit behind on everything.` | `••••, I'm a bit behind on everything.` |
+| `Meridian Home Loans, Jordan speaking.` | `Meridian Home ••••, Jordan speaking.` |
+| `It's 27 Ardwick Street, Sunshine West.` | `It's •••• West.` |
+
+The third is the diagnostic one: it masks the bank's own name and keeps the only actual name in the
+sentence. The second comes from a comma-vocative rule whose stopword list cannot be completed —
+every capitalised word before a comma is a candidate and English has hundreds of sentence-opening
+adverbs.
+
+**The doc's claim is about persistence, and display is not persistence.** The worker is on the call;
+they can hear the customer say her name. The right split is `Line.text` keeping what was said and the
+mask running where text leaves the browser — the flags request and the report payload. Then a regex
+that occasionally eats "Honestly" costs nothing, because nobody reads that copy. Reported on the PR
+with the measurements rather than fixed, because `mask.ts` is Tron's file.
+
+⚠️ **Do not merge PR #6 before the demo video is recorded.**
