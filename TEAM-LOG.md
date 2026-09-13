@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 11:14 | aufanhakim1920-source | other | [a side effect in a state updater, and a sweep that only sees the states you render](../../commit/98ef26e47aa663295904a12ed8cd16b4b4f5da70) | DECISIONS.md | +63 / -0 |
 | 13 Sept, 11:13 | aufanhakim1920-source | live call | [the report failing was the one event with no sound](../../commit/6a5bd746423ac3753b960dac155cac8844b27c00) | CallScreen.tsx | +4 / -0 |
 | 13 Sept, 11:12 | aufanhakim1920-source | live call | [every sign fired its sound twice, and the badge on the hero card was invisible](../../commit/b126a53958adb8499f1a68ba96f376e5e5726e5f) | SOUND.md, ATTRIBUTION.md, sign-card.css +2 | +391 / -36 |
 | 13 Sept, 11:06 | aufanhakim1920-source | other | [the evidence pack — 39 plates, and the fraction is not stable](../../commit/70e82298e8ce3fc4c9d2f7321b43fa12fbee3b01) | EVIDENCE.md, clock-01-deadlines.png, clock-02-21day-live.png +37 | +545 / -0 |
