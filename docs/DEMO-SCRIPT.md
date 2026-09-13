@@ -54,6 +54,9 @@ promises a score**.
 
 > **"The same call, handled two ways."**
 
+It is the opening clause of beat 1 in the run table below, so you say it whether you mean to or not.
+This section is why it is there.
+
 The demo plays one customer's call twice. **Sarah's words are identical to the character in both
 runs**, so the engine hears the same sentences both times. What changes is the person on the phone:
 one worker had the signs in front of him, the other did not.
@@ -94,10 +97,11 @@ sixth silent run fired on the later line, like the coached ones. Same key, same 
 
 | # | Do | Why |
 |---|---|---|
+| 0 | **Hard-reload the live URL** (Ctrl+Shift+R) | ⚠️ **Mandatory.** The 13 Sep rehearsal opened a tab serving a cached build whose JS asset no longer exists on the origin — the script 404'd and the page was dead until a hard reload. Two seconds, and the cheapest insurance in this document |
 | 1 | Open the live URL in **Chrome or Edge**, full screen, and let it settle | First load fetches the fonts and the sounds. Other browsers have no speech engine — the replay still works, the microphone does not |
 | 2 | **About → Delete everything** → then **Delete everything on this device** | ⚠️ **There is no browser dialog any more** — `window.confirm` was deliberately removed. It is two in-page buttons: the first arms, the second wipes. Anyone waiting for a Chrome prompt will think the first click failed. Result: an empty Calls list and an empty Deadlines tab, so the clock the demo creates is obviously new |
 | 3 | Check the top bar says **Assistant ready** | Grey or paused means the engine is not answering — see Fallbacks |
-| 4 | **Settings → The assistant → Coaching during the call → OFF**, then close Settings | Run one is the bank as it is today. **Do this now, not on stage** — it is the only piece of slack in the ninety seconds |
+| 4 | **Settings → The assistant → Coaching during the call → OFF**, then close Settings | Run one is the bank as it is today. **Do this now, not on stage** — it is the only piece of slack in the ninety seconds. ✅ **Check it without opening Settings:** the **Settings** tab grows a **`1`** badge while coaching is off and loses it when coaching is back on |
 | 5 | Land on the **Live call** tab with the setup row showing Sarah M. / home loan / Bank rang them | Where beat 1 starts |
 | 6 | Keep the tab in front for the whole demo | A backgrounded tab gets no animation frames; the counters jump to their final value about a second late instead of counting up |
 
@@ -121,28 +125,50 @@ finished at **54 s** — the extra second and a half is request latency. At 2x t
 remaining gap, so budget **about 27 s** per call. ⚠️ The 2x path was **not** re-measured after the
 script gained its closing line; if you are timing the rehearsal to the second, time it yourself.
 
+**The beat times below are derived, not chosen** — every machine interval is measured (`REHEARSAL.md`
+§1–§2) and every spoken line is its word count ÷ 3.1 words per second. The full arithmetic is in
+`docs/PITCH.md`, *Where 1:27.9 comes from*. **The words in the "You say" column are identical to
+PITCH's, character for character.** If you change one, change both.
+
 | At | You do | You say | What appears |
 |---|---|---|---|
-| 0:00 | Click **▶ Play the demo call**, then **2x** | "A bank has twenty-one days to answer a hardship notice. The customer almost never says the word. Same call, handled two ways — this is the worker who was not told." | Transcript starts. Right column: **"Coaching is off for this call."** |
-| 0:07 | — | "Sarah is behind on a home loan." | "Honestly, I'm a bit behind on everything" |
-| 0:13 | — | "She has lost her job." | "Maybe. I got laid off last month" |
-| 0:15 | Point at the worker's line | "And there is the miss — he asks for a date instead. In 2025 NAB was fined $15.5 million over 345 hardship notices answered late. This is what that looks like in one sentence." | "So when do you think you could pay the full amount?" |
-| 0:23 | Point at the right column | "The assistant heard all of it and said nothing. That is coaching off — a bank can run it silent for a month to measure what it is missing." | Right column still the silent note. **0 sign cards, every run** |
-| 0:27 | Press **E** (or click **End call**) | "Call over." | Script finished |
-| 0:31 | — | "Same call, graded. Not one sign handled." | Report card. Lead line: **"The assistant ran silent on this call"**. Every sign unhandled; the count of missed rows is whatever the card says — 5 of 5 in the ten deployed runs archived on 13 Sep |
-| 0:34 | Point at the missed rows | "Every sign missed — and one of them is the legal one, the sentence that starts the clock. It started the clock anyway: the deadline is on the bank's list whether or not anyone on the call noticed." ⚠️ **Do NOT say "the one at the bottom".** Rehearsed 13 Sep: the legal row is **fourth of five** and reads *Needs months without full payment*; the bottom row is *Let them know hardship help exists*. Point at the row that says ON THE CLOCK, or do not point at all | Every row reads **MISSED · NOT ADDRESSED**, and **Reply due · 21 days** sits under ON THE CLOCK |
-| 0:38 | **Settings → Coaching during the call → ON**, close, **Live call** | "Now the same customer, with the assistant coaching." | Fresh call screen. This switch is the slowest thing you do — about six seconds |
-| 0:44 | Click **▶ Play the demo call**, then **2x** | "Her words do not change. Watch the right column." | Transcript restarts |
-| 0:49 | — | "About two seconds after she says it." | First sign card: **Customer says things are tight**. ⚠ Card arrival times were measured at 1x on the silent run only (7.6 s / 26.8 s / 36.6 s from the click); the coached run's on-screen times were not re-measured after the script changed |
-| 1:05 | Read the legal card aloud when it lands | "There it is. It names the duty, the date the bank has to reply by, and the exact question to ask next — and he asks it while she is still on the phone." | Gold **LEGAL** card: **Reply due · [today + 21 days] · 21 days · National Credit Code s72**, and **Ask next: …** |
-| 1:12 | Press **E**, but only once the legal card is on screen | — | Script finished |
-| 1:16 | — | "Nothing missed." | Report card. Lead line: **"The assistant coached this call"**. **0 missed — in all 14 coached runs ever archived.** A row may read PARTLY; that is not a miss |
-| 1:20 | Click the **Calls** tab | "Both calls, one axis. The engine did identical work in both runs. The only difference is whether the person on the phone was told in time to do anything about it." | **Two calls compared** — the two fractions on one scale, then the per-sign table: the legal row reads **coached HANDLED · silent MISSED** |
+| 0:00 | Click **▶ Play the demo call**, then **2x** | "Same call, handled two ways. CallFlag listens, and puts the reply-due date and the next question on the worker's screen while the customer is still on the phone." | Transcript starts. Right column: **"Coaching is off for this call."** — present from **+0.11 s**, before the first line |
+| 0:09 | — | "Under the National Credit Code a hardship notice can be **spoken**. She never says the word, and the twenty-one days start when she speaks." | "Honestly, I'm a bit behind on everything" at **0:07.2**, then "Maybe. I got laid off last month" at **0:12.7** |
+| 0:17 | Point at the worker's line | "He asks for a date instead. In August 2025 NAB and a related lender were penalised $15.5 million for failing to answer 345 customers’ hardship notices in time." ⚠️ Corrected 13 Sep by laural, who owns the law: it was NAB **and AFSH Nominees**, **345 customers** not 345 notices, and they **failed to respond within the required period** — some received nothing at all, so "late" understates it | "So when do you think you could pay the full amount?" — measured **0:15.2**, and it really is line 7 |
+| 0:25 | Point at the right column | "The assistant heard all of it and said nothing — coaching is off." | Right column still the silent note. **0 sign cards, all 26.8 s** |
+| 0:29 | Press **E** (or click **End call**). **Say nothing** | — | Script finished at **0:26.8**; the status line reads *"script finished — end the call for the report card"* |
+| 0:34 | — | "Graded. Nothing handled — the legal one included. The clock started anyway." | Report card, **5.0 s after E**. The sentence **"The assistant ran silent on this call"** is on it but it is the **second** paragraph — what leads is the count. Every sign unhandled; 5 of 5 missed in the ten deployed runs archived on 13 Sep |
+| — | ⚠️ **Do NOT say "the one at the bottom".** Rehearsed 13 Sep: the legal row is **fourth of five** and reads *Needs months without full payment*; the bottom row is *Let them know hardship help exists*. Point at the row that says ON THE CLOCK, or do not point at all | — | Under **ON THE CLOCK**: `REPLY DUE` · `Needs months without full payment` · `Sun 13 Sep` → `Sun 4 Oct` · `21` `DAYS LEFT`. ⚠️ **"Reply due · 21 days" is not a string on the card.** If you quote it, quote *"REPLY DUE, Sun 4 Oct, 21 days left"* |
+| 0:37 | **Settings → Coaching during the call → ON**, close, **Live call** | "Now the same customer, with the assistant coaching." — **say it over the switch, not after it** | Fresh call screen. This switch is the slowest thing you do — about six seconds, and **the only unmeasured interval in the run** |
+| 0:43 | Click **▶ Play the demo call**, then **2x** | "Her words do not change. Watch the right column." | Transcript restarts from an empty screen |
+| 0:50 | — | "About two seconds after she says it." | First sign card, measured **+6.3 s** into run two, titled **"Customer mentions things are tight"** — **"mentions", not "says"**, on the card, the compare board and the report card |
+| 0:52–1:09 | **Nothing. Watch it with the room** | — | Two more cards arrive on their own: **"Customer was laid off"** (+15.7 s) and **"Customer sounds stressed"** (+20.1 s) |
+| 1:09 | Read the legal card aloud when it lands. **If it is not there, see the box below** | "There it is — the duty, the reply date, and the question he asks while she is still on the phone." | Gold **LEGAL** card, measured **+25.7 s** into run two, titled **"Needs reduced payments for months"** and reading `REPLY DUE` / `Sun 4 Oct` / `21 days left` / `under National Credit Code s72` / `ASK NEXT "Would pausing or reducing payments for three months give you some breathing room?"`. ⚠️ It says **"21 days left"**, not "21 days" |
+| 1:15 | Press **E**, but only once the legal card is on screen | — | Script finished at **+26.8 s** into run two |
+| 1:18 | — | "Nothing missed." | Report card, **3.1 s after E**. **"The assistant coached this call"** is again the **second** paragraph. **0 missed — in all 14 coached runs ever archived.** A row may read PARTLY; that is not a miss |
+| 1:19 | Click the **Calls** tab **and start the sentence on the click** | "The engine did identical work in both runs. The only difference is whether the person on the phone was told in time to do anything about it." | Heading **TWO CALLS COMPARED**, rendered **1.2 s** after the click. The legal row is the **first** row and reads **coached HANDLED · silent MISSED** |
 | 1:28 | Stop | — | — |
 
-**⚠ Wait for the legal card before you press E on the coached run.** On the deployed engine it fires
-on Sarah's last line, so it can land at or just after the end of the script. If it is not on screen
-yet, hold for two seconds. It has arrived on every run.
+### ⚠ The legal card at 1:09 — what to say if it is not there yet
+
+**Wait for the legal card before you press E on the coached run.** On the deployed engine it fires on
+Sarah's last line. Measured 13 Sep: the card landed at **1:09.7** and the script finished at
+**1:10.8** — a margin of **1.1 seconds**, the most fragile number in the demo. The slowest `flags`
+call measured that day was **3.67 s** against a median of **2.38**. One slow call and the card lands
+after the script ends.
+
+**Say this while you wait:**
+
+> **"Every card on that screen is a live call to the model — nothing here is a recording."**
+
+**It is true either way**, because three cards are already up by then (+6.3 s, +15.7 s, +20.1 s). It
+costs 5.5 seconds and it answers the question a judge was going to ask anyway.
+
+⛔ **If the card is still not there when that sentence ends: stop and wait in silence. Do not
+describe it.** A two-second pause reads as confidence. Describing a card that is not on screen tells
+the judge you are reciting, and it is the one failure in this demo that cannot be recovered.
+
+`docs/PITCH.md` carries the same instruction and the same sentence.
 
 **The argument in one sentence, if you only get one:** *the engine did identical work in both runs;
 the only difference is whether the person on the phone was told in time to do anything about it.*
@@ -358,9 +384,11 @@ checking you against: **the worker's lines are scripted on both sides. The engin
 
 ## The report card is taller than a projector screen
 
-Measured: the card is **2005–2226px** tall and a 1280x720 laptop shows **720px** of it. That is not a
-bug — it is a long document — but it means the presenter is scrolling in front of a judge, and
-scrolling that was not planned looks like hunting for something.
+Measured 13 Sep on the silent card at 1280×720: **2271px** tall, against a laptop showing **720px** of
+it. (The earlier recorded range was 2005–2226px; the card has grown past it and will drift again, so
+treat the number as "about ten screens", not a constant.) That is not a bug — it is a long document —
+but it means the presenter is scrolling in front of a judge, and scrolling that was not planned looks
+like hunting for something.
 
 **Everything the pitch says out loud is already in the first 720px**, screenshot-verified: the score
 ring, the miss count, the sentence naming the reply date, and the answered fraction. So:
@@ -383,39 +411,75 @@ fix. It costs one run and it removes the worst thirteen seconds in the pitch.
 ## Rehearsed on the deployed site, 13 Sep - what the clock actually did
 
 Both calls performed end to end against the live URL, timed with the real clock. Full table in
-`docs/REHEARSAL.md`. Machine time is only **62.9 s**, so the budget is sound - but the run came out
-at about **1:33, not 1:28**, and the whole overrun is **one line**.
+`docs/REHEARSAL.md`. Machine time is only **62.9 s**, so the budget is sound. **Every correction the
+rehearsal asked for has been applied to the run table above and to `docs/PITCH.md`.** This section is
+the record of what changed and why.
 
-**The 1:05 line is 28 words.** The card it describes lands at **1:09.7**, so speaking it runs to
-1:18.7 and drags the End call press, the card, the Calls click and the closing line with it.
-**Cut that line to roughly 19 words, or press E before speaking it.** Everything else landed on
-time or early.
+### The overrun was not one line — it was the whole script, and it had never been timed
+
+The rehearsal reported the run at **≈1:33** and put the whole overrun on the 1:05 line. Re-timing
+every beat on paper says the problem was larger:
+
+- **The old 1:05 line is 33 words, not 28.** Recount it: *"There it is. It names the duty, the date
+  the bank has to reply by, and the exact question to ask next — and he asks it while she is still on
+  the phone."*
+- **The old PITCH table carried 291 spoken words.** At the rehearsal's own rate (28 words ≈ 9 s, so
+  3.1 words per second) that is **94 seconds of continuous talking** — more than the whole slot,
+  before a single machine gap.
+- **The first four beats alone came to 164 words = 52.9 s**, over a replay that is finished in
+  **26.8 s**. The narration for run one was twice as long as run one.
+
+So the fix was not a trim. **The spoken script was rewritten to 173 words and re-derived beat by
+beat**, and it now lands at **1:27.9**. The arithmetic is printed in `docs/PITCH.md`, *Where 1:27.9
+comes from* — word counts, the rate, and every measured machine gap, so the total can be checked
+rather than believed.
+
+**On the 1:05 line specifically: cut, not moved.** It is now **20 words** — *"There it is — the duty,
+the reply date, and the question he asks while she is still on the phone."* — and it keeps all four
+things the old line named: the duty, the date, the question, and that he asks it live. **The
+rehearsal's third option, pressing E before the line, was rejected**: it only works if the card is
+already up, and the whole reason this beat needs attention is the runs where it is not. Pressing E
+into an empty column is the failure it was meant to avoid.
 
 ### The most fragile number in the demo
 
-**The legal card beats the end of the script by 1.1 seconds.** The slowest `flags` call measured
-today was 3.67 s. If one runs long, the script finishes before the card arrives and the presenter is
-talking about something not yet on screen.
+**The legal card beats the end of the script by 1.1 seconds.** The slowest `flags` call measured on
+13 Sep was 3.67 s against a median of 2.38. If one runs long, the script finishes before the card
+arrives and the presenter is talking about something not yet on screen.
 
-**Mitigation, in order:** warm the engine first (a full demo run a few minutes before), do not rush
-the lines before 1:05, and if the card is not there, stop and wait for it rather than describing it.
-A two-second silence reads as confidence; describing an absent card does not.
+**The script now handles it explicitly** — see *The legal card at 1:09* above. There is a sentence to
+say that is true whether or not the card has landed, and an instruction to stop and wait in silence
+after it. Warming the engine first still matters and is still the cheapest half of the fix.
 
 ### Two things that will make a presenter look lost
 
 - **The legal row is fourth of five, not the bottom one.** Corrected above, in both documents.
 - **The wipe has no browser dialog.** Two in-page buttons now.
 
-### Smaller corrections made from the rehearsal
+### Every quoted string the documents got wrong, now fixed in both
 
-- The "lead line" quoted for the report card is the **second** paragraph on both cards.
-- The first coached card is titled *"Customer **mentions** things are tight"*, not "says".
-- *"Reply due - 21 days"* is not a string on the card; it reads `REPLY DUE / Sun 4 Oct / 21 DAYS LEFT`.
-- The card measures **2271 px**, past the 2005-2226 previously recorded.
+| Was quoted as | What the screen actually says |
+|---|---|
+| "Lead line: *The assistant ran silent on this call*" | Both sentences exist but neither **leads** — each is the **second** paragraph. What leads is the count |
+| "Lead line: *The assistant coached this call*" | Same — second paragraph |
+| First coached card: *Customer **says** things are tight* | *Customer **mentions** things are tight* — on the card, the compare board and the report card |
+| *Reply due · 21 days* under ON THE CLOCK | `REPLY DUE` · `Sun 13 Sep` → `Sun 4 Oct` · `21` `DAYS LEFT`. Quote it as *"REPLY DUE, Sun 4 Oct, 21 days left"* |
+| Legal card: *… · 21 days · National Credit Code s72* | `21 days left` / `under National Credit Code s72` |
+| *Two calls compared* | **TWO CALLS COMPARED**, and the legal row is the **first** row |
+| The card is 2005–2226px | **2271px**, measured at 1280×720 |
+
+Also corrected: the steady-state latency band (**1.9–3.7 s, median 2.38**, not 1.6–3.0), and the
+30-second version, which had never been rehearsed and carried the same three faults.
+
+### Two things confirmed rather than corrected
+
 - **2x works**: both replays finished at 26.8 s against 52 s of scripted gaps, exactly half.
+- **The network claim a judge can check**: 12 transcript lines produced exactly 12 `flags` calls plus
+  1 `report` call, both runs, no more and no fewer.
 
 ### One pre-flight step that is now mandatory
 
 **Hard-reload the live URL before you present.** The rehearsal opened a tab serving a cached build
 whose JS asset no longer exists on the origin - the script 404'd and the page was dead until a hard
-reload. It costs two seconds and it is the cheapest insurance in this document.
+reload. It costs two seconds and it is the cheapest insurance in this document. It is now **row 0**
+of the pre-flight table.
