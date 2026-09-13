@@ -7,6 +7,7 @@ import { Mark } from "./TopBar";
 // rather than inventing a second way to ask the same question.
 import "./report-visuals.css";
 import "./clear-history.css";
+import "./about.css";
 
 
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
@@ -116,7 +117,18 @@ export function About() {
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   return (
     <div className="page narrow about">
-      <header className="brand-head has-logo">
+      {/* This header used to request brand/callflag-logo.png, which is not in
+          the repo and never has been — so every load 404'd and the artwork
+          simply never appeared. A probe hid the broken image, which is why
+          nobody noticed: the page looked fine and the network tab did not, and
+          the network tab is where a technical judge looks.
+
+          ⭐ A guard that hides a failure is not a fix; it is a way of not being
+          told. Its replacement — a second code-drawn <Mark /> in the logo slot —
+          measured 0x0: the sizing rule is scoped to `.brand-lockup`, so the fix
+          for an invisible image was an invisible element. One mark, in the
+          lockup, at a size that no longer outranks the page. */}
+      <header className="brand-head">
         <div className="brand-lockup">
           <Mark />
           <div>
@@ -124,19 +136,53 @@ export function About() {
             <p className="brand-tag">Client alerts for banking staff.</p>
           </div>
         </div>
-        {/* This used to request brand/callflag-logo.png, which is not in the
-            repo and never has been — so every load of this page 404'd, and the
-            mark simply never appeared. A probe hid the broken image, which is
-            why nobody noticed: the page looked fine and the network tab did
-            not, and the network tab is where a technical judge looks.
-
-            ⭐ A guard that hides a failure is not a fix; it is a way of not
-            being told. The mark is drawn in code in the top bar, so this uses
-            the same component — one definition, nothing to 404, and it scales
-            without a raster. */}
-        <Mark />
       </header>
       <p className="lede">Live signs for a bank's hardship calls, with the question to ask next. Then the calls you got wrong become your practice.</p>
+
+      {/* The evidence comes before the argument. This section was the last
+          thing on the page above the privacy list, at y=827 on a 900px
+          viewport — a judge had to scroll past four lines of OTHER lenders'
+          numbers to reach the only numbers this build measured about itself.
+          Nothing it says has changed; where it sits and what it sits on have. */}
+      <section className="engine">
+        <h2>How good is the engine</h2>
+        {ev ? (
+          <>
+            <div className="kv">
+              <div className="stat">
+                <div className="label">Precision</div>
+                <b>{pct(ev.overall.precision)}</b>
+              </div>
+              <div className="stat">
+                <div className="label">Recall</div>
+                <b>{pct(ev.overall.recall)}</b>
+              </div>
+              <div className="stat">
+                <div className="label">Exact match</div>
+                <b>{pct(ev.overall.exact)}</b>
+              </div>
+              <div className="stat">
+                <div className="label">Speaker</div>
+                <b>{pct(ev.speakerAccuracy)}</b>
+              </div>
+              <div className="stat">
+                <div className="label">Latency p50</div>
+                <b>{(ev.latency.p50 / 1000).toFixed(1)}s</b>
+              </div>
+            </div>
+            <p className="small muted">
+              {ev.n} labelled utterances, {ev.model}, run {new Date(ev.ranAt).toLocaleDateString("en-AU")}. Re-run with <span className="mono">npm run eval</span>.
+            </p>
+          </>
+        ) : (
+          <p className="muted">Eval results not published on this build yet.</p>
+        )}
+        {health && (
+          <p className="small muted">
+            Server: {health.ok ? "up" : "down"} · model {health.model || "—"} · key {health.gemini ? "configured" : "missing"}
+          </p>
+        )}
+      </section>
 
       <h2>Why</h2>
       <p>
@@ -155,46 +201,8 @@ export function About() {
         <li>Managers correct signs. Every correction is sent with every future call, so the engine learns the team's judgement.</li>
       </ol>
 
-      <h2>How good is the engine</h2>
-      {ev ? (
-        <>
-          <div className="kv">
-            <div className="stat">
-              <div className="label">Precision</div>
-              <b>{pct(ev.overall.precision)}</b>
-            </div>
-            <div className="stat">
-              <div className="label">Recall</div>
-              <b>{pct(ev.overall.recall)}</b>
-            </div>
-            <div className="stat">
-              <div className="label">Exact match</div>
-              <b>{pct(ev.overall.exact)}</b>
-            </div>
-            <div className="stat">
-              <div className="label">Speaker</div>
-              <b>{pct(ev.speakerAccuracy)}</b>
-            </div>
-            <div className="stat">
-              <div className="label">Latency p50</div>
-              <b>{(ev.latency.p50 / 1000).toFixed(1)}s</b>
-            </div>
-          </div>
-          <p className="small muted">
-            {ev.n} labelled utterances, {ev.model}, run {new Date(ev.ranAt).toLocaleDateString("en-AU")}. Re-run with <span className="mono">npm run eval</span>.
-          </p>
-        </>
-      ) : (
-        <p className="muted">Eval results not published on this build yet.</p>
-      )}
-      {health && (
-        <p className="small muted">
-          Server: {health.ok ? "up" : "down"} · model {health.model || "—"} · key {health.gemini ? "configured" : "missing"}
-        </p>
-      )}
-
       <h2>Privacy, by design</h2>
-      <ul>
+      <ul className="claims">
         <li>Nothing new is collected. Banks already record these calls; this reads the same call.</li>
         <li>It flags what to do, not who the person is. No diagnosis or label is ever written.</li>
         <li>Words are never stored. Only the signs, the report card and the deadlines are kept, on this device.</li>

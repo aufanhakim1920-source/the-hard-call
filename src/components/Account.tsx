@@ -8,6 +8,7 @@ import { useExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { useStore } from "../lib/store";
 import { counts, onSync, type SyncState } from "../lib/sync";
+import "./account.css";
 
 export function AccountChip() {
   const auth = useAuth();
@@ -17,7 +18,10 @@ export function AccountChip() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  // Tone travels with the text. The panel says two opposite things through the
+  // same region — "you typed too short a password" and "check your email" —
+  // and painting both the same colour is why the first one was invisible.
+  const [msg, setMsg] = useState<{ text: string; bad: boolean } | null>(null);
   const [sync, setSync] = useState<SyncState>("off");
   useEffect(() => onSync(setSync), []);
   // The panel opened with motion and closed by disappearing. `open` still
@@ -36,7 +40,7 @@ export function AccountChip() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || pw.length < 6) {
-      setMsg("Email, and a password of at least 6 characters.");
+      setMsg({ text: "Email, and a password of at least 6 characters.", bad: true });
       return;
     }
     setBusy(true);
@@ -44,15 +48,16 @@ export function AccountChip() {
     const err = mode === "create" ? await auth.createAccount(email.trim(), pw) : await auth.signIn(email.trim(), pw);
     setBusy(false);
     if (err) {
-      setMsg(err);
+      setMsg({ text: err, bad: true });
       return;
     }
     play("handled");
     setPw("");
-    setMsg(mode === "create" ? "Check your email to confirm the address. Until then you are still a guest here." : null);
+    setMsg(mode === "create" ? { text: "Check your email to confirm the address. Until then you are still a guest here.", bad: false } : null);
   };
 
   const have = counts(store);
+  const note = msg ?? (auth.error ? { text: auth.error, bad: true } : null);
   const dot = sync === "saving" ? "saving…" : sync === "saved" ? "saved" : sync === "error" ? "not saved" : "";
 
   return (
@@ -92,8 +97,13 @@ export function AccountChip() {
                   : auth.enabled
                     ? "Your work is saved in this browser and nowhere else. Create an account and it follows you to any device — and your teammates' reports stay separate from yours."
                     : "No database on this build; everything stays in this browser."}
-                {have ? ` So far: ${have}.` : ""}
               </p>
+              {/* This used to be the tail of the paragraph above. It is the one
+                  line in the panel that is about THIS person rather than about
+                  the feature — what they would lose — and it was the quietest
+                  12px grey in a panel whose loudest thing is a gold button.
+                  Same words, given the weight they were always carrying. */}
+              {have && <p className="acct-stake">So far: {have}.</p>}
               {auth.pendingEmail && <p className="small" style={{ color: "var(--gold-2)" }}>Confirmation sent to {auth.pendingEmail}. Open the link to finish.</p>}
               <div className="acct-tabs">
                 <button className={"tab" + (mode === "create" ? " on" : "")} onClick={() => setMode("create")}>
@@ -138,8 +148,8 @@ export function AccountChip() {
                   text — a status region that appears full is the one a screen
                   reader misses. Empty, a <p> makes no line box and costs no
                   height. */}
-              <p className="small" role="status" style={{ marginTop: (msg ?? auth.error) ? 8 : 0 }}>
-                {msg ?? auth.error}
+              <p className={"small acct-msg" + (note?.bad ? " warn" : "")} role="status" style={{ marginTop: note ? 8 : 0 }}>
+                {note?.text}
               </p>
             </>
           )}
