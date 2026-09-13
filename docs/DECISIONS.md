@@ -973,3 +973,66 @@ every factual sentence, name the file, the run record or the command that would 
 nothing can settle it, delete the sentence. Twenty-one of ours could be settled and were wrong. The
 ones that could not be settled are now marked unverified in place, which is the only honest state for
 a claim with no way to check it.
+
+## A side effect inside a state updater runs as many times as the updater does
+
+When both flag passes were merged into one `commitSigns`, the sound and the
+screen-reader announcement went inside the `setSession` updater. React is
+allowed to run an updater more than once for a single update, and it does.
+
+**Measured: a demo call produced 8 play calls for 4 sign events, in pairs
+0–1 ms apart.** The sound hid it — both calls land on one cached audio element,
+so you hear a restart rather than two sounds — but **the announcement beside it
+doubled with nothing to hide it**, and every count ever taken from that path
+was twice the truth.
+
+⭐ **Rule: a state updater is a pure function of the previous state. Anything
+that reaches the outside world — audio, a screen-reader announcement, a
+network call, analytics — is computed before it and run once against the
+answer.** The tell is that the symptom hides inside whichever effect happens to
+be idempotent; the one that is not is where you find it.
+
+Re-measured after moving them out: 5 sign cards, **4 plays, 0 double fires**,
+no file over three.
+
+## A contrast sweep only covers the states you put on screen
+
+The keyboard badge on "Mark handled" measured **1.01:1** on a legal card and
+**4.08:1** on a tip card — the only contrast failures left in the app, and they
+were on its hero object. Same root cause as the 23-colour sweep: a token chosen
+against the page, landing on a card.
+
+It survived that sweep because **the sweep ran on screens with no live sign
+card on them.** A sign card exists only during a call, and the call has to be
+run to produce one.
+
+⭐ **An automated sweep measures the DOM that happens to exist when it runs.
+Enumerate the states — mid-call, handled, overdue, empty, failed — and put each
+one on screen before believing a clean result.** The badge inherits the
+button's own colour now: re-measured on a real card, **11.64:1**.
+
+## Sound: what was measured, since nobody can hear it yet
+
+An inventory of every sound the app plays, by instrumenting `play()` and
+re-measuring each file with ffmpeg:
+
+- **`sign-tip` hit four plays in 5 of the 42 archived runs**, over the
+  three-repeat rule. Tips are capped at three per call now; **a legal sign is
+  never capped and never dropped**, because a statutory alert is the one sound
+  that must always arrive.
+- **A deadline tick measured 0.26 gain during a live call — 6.7 dB louder in a
+  customer's ear than the statutory alert itself at 0.121.** Unreachable today
+  because the Deadlines view unmounts the call, so nobody had heard it; the
+  flag was simply wrong. Silent on a live call now.
+- Legal and tip are **1.1 dB apart and 4.8× apart in spectral centroid**
+  (3620 Hz against 752). They are told apart by texture, not loudness — the
+  right way round for a sound a distressed customer may hear down the line.
+- The report failing was the only event with **no sound at all**, and its
+  silence is ambiguous with success: the tap is muted on a live call, the
+  report sound never comes, and the error banner is on a screen the worker has
+  just looked away from.
+
+Whole demo call: **10 sounds down to 6.**
+
+⚠️ **Nobody has listened to any of this.** Every figure above is a count, a
+level or a spectrum. It needs a person with a headset before the demo.
