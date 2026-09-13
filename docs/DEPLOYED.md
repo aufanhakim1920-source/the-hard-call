@@ -223,7 +223,7 @@ deployed site.
 
 Cleared `localStorage` and `sessionStorage`, reloaded, waited for entrances.
 
-- Page loads, title "The Hard Call — client alerts for banking staff".
+- Page loads, title "CallFlag — client alerts for banking staff".
 - The waiting column renders its real content — the legal test in the customer's own
   words, the two halves, the recovery signal, the 21 days with the section. Not an
   empty state.

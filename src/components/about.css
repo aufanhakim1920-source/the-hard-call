@@ -3,7 +3,7 @@
    five screens of this build: WHAT IS THE LOUDEST THING HERE, AND IS IT THE
    THING THAT MATTERS MOST?
 
-   Measured before: the loudest thing was the word "The Hard Call" — 40px/600 cream
+   Measured before: the loudest thing was the word "CallFlag" — 40px/600 cream
    beside a 56px gold mark, 95px of header — restating the name already in the
    top bar. The thing that mattered most, the engine's own measurement, was
    26px at y=827 on a 900px viewport: BELOW THE FOLD, under four lines quoting
@@ -17,7 +17,7 @@
 
 /* ---------- the header stops shouting the name ---------- */
 
-/* 40 → 28px and 56 → 40px. The top bar already says The Hard Call; this is the
+/* 40 → 28px and 56 → 40px. The top bar already says CallFlag; this is the
    second time the reader is told, and it was the loudest thing on the page.
    Scoped through `.page.about` (0,3,0) because brand.css is bundled first and
    `.brand-head .brand-name` would otherwise win on order. */

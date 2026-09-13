@@ -1,4 +1,4 @@
-# Pre-freeze verification — The Hard Call
+# Pre-freeze verification — CallFlag
 
 **Run by:** verifier agent, read-only. Nothing in this repo was changed except this file.
 **Date:** Sat 13 Sep 2026, 12:55–13:24 AEST.
