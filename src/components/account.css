@@ -1,0 +1,33 @@
+/* The account panel, judged by the same question as every other screen here:
+   WHAT IS THE LOUDEST THING, AND IS IT THE THING THAT MATTERS MOST?
+
+   The panel itself was already ranked — measured: 4 painted surfaces over
+   8000px² against 5 hairlines and only 3 margin values, which is the healthy
+   shape of the three counts. The loudest thing is the gold "Create account"
+   button, and for a panel whose purpose is creating an account that is the
+   right answer.
+
+   Two things under it were not.  */
+
+/* 1 · The message you must act on was the quietest text in the panel.
+   MEASURED: "Email, and a password of at least 6 characters." rendered at
+   rgb(242,238,231) — plain cream, 12px, weight 400, flush under the button. It
+   read as a caption. `--bad` is the token this build already uses for exactly
+   this, four lines further up the same component, and it measures 7.50:1 on
+   the panel's --ink-2 dark and 5.17:1 light. Weight carries it as well as
+   colour, because colour alone is never the only channel. */
+.acct-msg.warn {
+  font-weight: 500;
+}
+
+/* 2 · The stake. "So far: 3 reports, 4 lessons" is the only sentence in the
+   panel about the person reading it, and it was the last clause of a 72px
+   paragraph at 12px --grey. Cream on --ink-2 reads 13.14:1 dark and 13.04:1
+   light — the numbers already written into the stylesheet for this ground, so
+   this re-opens no contrast question. */
+.acct-stake {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cream);
+}

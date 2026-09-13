@@ -95,7 +95,7 @@ sixth silent run fired on the later line, like the coached ones. Same key, same 
 | # | Do | Why |
 |---|---|---|
 | 1 | Open the live URL in **Chrome or Edge**, full screen, and let it settle | First load fetches the fonts and the sounds. Other browsers have no speech engine — the replay still works, the microphone does not |
-| 2 | **About → Delete everything on this device** → OK in the browser's own confirm dialog | An empty Calls list and an empty Deadlines tab, so the clock the demo creates is obviously new |
+| 2 | **About → Delete everything** → then **Delete everything on this device** | ⚠️ **There is no browser dialog any more** — `window.confirm` was deliberately removed. It is two in-page buttons: the first arms, the second wipes. Anyone waiting for a Chrome prompt will think the first click failed. Result: an empty Calls list and an empty Deadlines tab, so the clock the demo creates is obviously new |
 | 3 | Check the top bar says **Assistant ready** | Grey or paused means the engine is not answering — see Fallbacks |
 | 4 | **Settings → The assistant → Coaching during the call → OFF**, then close Settings | Run one is the bank as it is today. **Do this now, not on stage** — it is the only piece of slack in the ninety seconds |
 | 5 | Land on the **Live call** tab with the setup row showing Sarah M. / home loan / Bank rang them | Where beat 1 starts |
@@ -130,7 +130,7 @@ script gained its closing line; if you are timing the rehearsal to the second, t
 | 0:23 | Point at the right column | "The assistant heard all of it and said nothing. That is coaching off — a bank can run it silent for a month to measure what it is missing." | Right column still the silent note. **0 sign cards, every run** |
 | 0:27 | Press **E** (or click **End call**) | "Call over." | Script finished |
 | 0:31 | — | "Same call, graded. Not one sign handled." | Report card. Lead line: **"The assistant ran silent on this call"**. Every sign unhandled; the count of missed rows is whatever the card says — 5 of 5 in the ten deployed runs archived on 13 Sep |
-| 0:34 | Point at the missed rows | "Every sign missed — and the one at the bottom is the legal one, the sentence that starts the clock. It started the clock anyway: the deadline is on the bank's list whether or not anyone on the call noticed." | Every row reads **MISSED · NOT ADDRESSED**, and **Reply due · 21 days** sits under ON THE CLOCK |
+| 0:34 | Point at the missed rows | "Every sign missed — and one of them is the legal one, the sentence that starts the clock. It started the clock anyway: the deadline is on the bank's list whether or not anyone on the call noticed." ⚠️ **Do NOT say "the one at the bottom".** Rehearsed 13 Sep: the legal row is **fourth of five** and reads *Needs months without full payment*; the bottom row is *Let them know hardship help exists*. Point at the row that says ON THE CLOCK, or do not point at all | Every row reads **MISSED · NOT ADDRESSED**, and **Reply due · 21 days** sits under ON THE CLOCK |
 | 0:38 | **Settings → Coaching during the call → ON**, close, **Live call** | "Now the same customer, with the assistant coaching." | Fresh call screen. This switch is the slowest thing you do — about six seconds |
 | 0:44 | Click **▶ Play the demo call**, then **2x** | "Her words do not change. Watch the right column." | Transcript restarts |
 | 0:49 | — | "About two seconds after she says it." | First sign card: **Customer says things are tight**. ⚠ Card arrival times were measured at 1x on the silent run only (7.6 s / 26.8 s / 36.6 s from the click); the coached run's on-screen times were not re-measured after the script changed |
@@ -299,7 +299,7 @@ Putting an offer back into either line will make the demo unrepeatable again.
    is never disabled now; an empty call just produces an empty report. ⚠️ Confirmed by reading the
    source, not by clicking it, so if you open Practice during Q&A know that the escape has not been
    rehearsed on the live URL.
-7. **Delete everything on this device** opens the browser's own confirm dialog. Click OK; it does
+7. **Delete everything** arms an in-page confirm; **Delete everything on this device** is the second click that does it. There is no browser dialog. It does
    nothing without it.
 8. **A backgrounded tab gets no animation frames.** The counters have a safety timeout and land on
    the right value about a second late, so nothing is wrong — but it looks like a stall. Keep the
@@ -373,10 +373,49 @@ ring, the miss count, the sentence naming the reply date, and the answered fract
 ## Warm the engine before you present
 
 **Measured on the deployed function: the first flags call after it has been idle took 13.4 seconds.**
-Steady state is 1.6–3.0 s. The edge function cold-starts, and the first line of your demo is exactly
+Steady state measured **1.9–3.7 s, median 2.38** on 13 Sep (the earlier 1.6–3.0 was optimistic). The edge function cold-starts, and the first line of your demo is exactly
 where that cost lands — in silence, in front of a judge, on the beat where the product is supposed to
 look instant.
 
 **Play the demo call once a few minutes before you present, and let it finish.** That is the whole
 fix. It costs one run and it removes the worst thirteen seconds in the pitch.
 
+## Rehearsed on the deployed site, 13 Sep - what the clock actually did
+
+Both calls performed end to end against the live URL, timed with the real clock. Full table in
+`docs/REHEARSAL.md`. Machine time is only **62.9 s**, so the budget is sound - but the run came out
+at about **1:33, not 1:28**, and the whole overrun is **one line**.
+
+**The 1:05 line is 28 words.** The card it describes lands at **1:09.7**, so speaking it runs to
+1:18.7 and drags the End call press, the card, the Calls click and the closing line with it.
+**Cut that line to roughly 19 words, or press E before speaking it.** Everything else landed on
+time or early.
+
+### The most fragile number in the demo
+
+**The legal card beats the end of the script by 1.1 seconds.** The slowest `flags` call measured
+today was 3.67 s. If one runs long, the script finishes before the card arrives and the presenter is
+talking about something not yet on screen.
+
+**Mitigation, in order:** warm the engine first (a full demo run a few minutes before), do not rush
+the lines before 1:05, and if the card is not there, stop and wait for it rather than describing it.
+A two-second silence reads as confidence; describing an absent card does not.
+
+### Two things that will make a presenter look lost
+
+- **The legal row is fourth of five, not the bottom one.** Corrected above, in both documents.
+- **The wipe has no browser dialog.** Two in-page buttons now.
+
+### Smaller corrections made from the rehearsal
+
+- The "lead line" quoted for the report card is the **second** paragraph on both cards.
+- The first coached card is titled *"Customer **mentions** things are tight"*, not "says".
+- *"Reply due - 21 days"* is not a string on the card; it reads `REPLY DUE / Sun 4 Oct / 21 DAYS LEFT`.
+- The card measures **2271 px**, past the 2005-2226 previously recorded.
+- **2x works**: both replays finished at 26.8 s against 52 s of scripted gaps, exactly half.
+
+### One pre-flight step that is now mandatory
+
+**Hard-reload the live URL before you present.** The rehearsal opened a tab serving a cached build
+whose JS asset no longer exists on the origin - the script 404'd and the page was dead until a hard
+reload. It costs two seconds and it is the cheapest insurance in this document.

@@ -50,7 +50,7 @@ standing still. It works either way.
 | **0:23** | Point at the right column | "The assistant heard all of it and said nothing. That is coaching switched off — a bank can run it silent for a month to measure what it is missing, before it lets it speak to anyone." |
 | **0:27** | Press **E** | "Call over." |
 | **0:31** | Let the card land | "Same call, graded. Nothing handled." |
-| **0:34** | Point at the missed rows | "Every sign missed — and the one at the bottom is the legal one. It started the clock anyway: the deadline is on the bank's list whether or not anybody on that call noticed." |
+| **0:34** | Point at the missed rows | "Every sign missed — and one of them is the legal one. It started the clock anyway: the deadline is on the bank's list whether or not anybody on that call noticed." ⚠️ **Never say "the one at the bottom": the legal row is fourth of five.** Point at the row reading ON THE CLOCK, or keep your hands still |
 | **0:38** | **Settings → Coaching during the call → ON**, close, **Live call** | "Now the same customer, with the assistant coaching." |
 | **0:44** | Click **▶ Play the demo call**, then **2x** | "Her words do not change. Watch the right column." |
 | **0:49** | First card lands | "About two seconds after she says it." |

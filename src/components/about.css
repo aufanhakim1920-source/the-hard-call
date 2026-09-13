@@ -1,0 +1,152 @@
+/* About — the page a judge opens to decide whether the engine is real.
+   Written after asking the one question that has now found the same fault on
+   five screens of this build: WHAT IS THE LOUDEST THING HERE, AND IS IT THE
+   THING THAT MATTERS MOST?
+
+   Measured before: the loudest thing was the word "CallFlag" — 40px/600 cream
+   beside a 56px gold mark, 95px of header — restating the name already in the
+   top bar. The thing that mattered most, the engine's own measurement, was
+   26px at y=827 on a 900px viewport: BELOW THE FOLD, under four lines quoting
+   OTHER people's numbers ($15.5m, 35%, 58%). The page read as a team that
+   researched hard and never tested.
+
+   Also measured: 0 painted surfaces over 8000px² in 1546px of page, against 4
+   hairlines and 10 distinct margin values inside 24px of each other. Type
+   ranks WITHIN a surface; between regions the ranking is ground and air, and
+   with neither there is no ranking at all however good the type is. */
+
+/* ---------- the header stops shouting the name ---------- */
+
+/* 40 → 28px and 56 → 40px. The top bar already says CallFlag; this is the
+   second time the reader is told, and it was the loudest thing on the page.
+   Scoped through `.page.about` (0,3,0) because brand.css is bundled first and
+   `.brand-head .brand-name` would otherwise win on order. */
+.page.about .brand-head {
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+.page.about .brand-head .brand-name {
+  font-size: clamp(24px, 4.4vw, 28px);
+}
+.page.about .brand-lockup .mark {
+  width: 40px;
+  height: 40px;
+}
+
+/* ---------- the engine's own numbers, on a ground ---------- */
+
+/* The page's first painted surface, and the only one: 0 → 1 over 8000px².
+   --ink-3 and not --ink-2 because the step has to survive BOTH grounds and
+   `reduce-transparency`, which takes the grain to opacity 0 — and grain
+   occlusion is all the old eval tiles ever had. Measured against the page:
+   --ink-2 is 1.087:1 dark and 1.096:1 light (invisible, the step this project
+   has already been caught by once); --ink-3 is 1.245:1 dark and 1.228:1 light.
+   One token, both grounds, no per-ground patch. */
+.page.about .engine {
+  background: var(--ink-3);
+  border-radius: var(--r-card);
+  padding: 22px 24px 20px;
+  margin: 0 0 32px;
+}
+.page.about .engine h2 {
+  margin: 0 0 12px;
+}
+
+/* Raising a ground re-opens every contrast question that ground had answered.
+   Re-measured, and one of them had changed: --grey on --ink-3 reads 5.19:1
+   dark but only 4.081:1 LIGHT — under the 4.5 bar for an 11px label, on a
+   ground where it had passed at 5.01:1 the moment before. --text-2 is the
+   text tier that belongs here and reads 8.27:1 dark, 6.46:1 light. */
+.page.about .engine .label,
+.page.about .engine .muted {
+  color: var(--text-2);
+}
+/* high-contrast exists to raise contrast, so let its --grey win where it is
+   the stronger of the two: 8.03:1 dark, 6.95:1 light on this same plate. */
+.high-contrast .page.about .engine .label,
+.high-contrast .page.about .engine .muted {
+  color: var(--grey);
+}
+
+/* 26 → 32px. The number is the subject of its own section; at 26px it was
+   smaller than the name of the product two screens above it. */
+.page.about .engine .kv {
+  gap: 16px 36px;
+  margin: 0 0 12px;
+}
+.page.about .engine .kv .stat b {
+  font-size: 32px;
+}
+
+/* ---------- privacy, ranked by weight and air rather than a second box ---- */
+
+/* Four equal cards is not the cure for four flat rows, and two equal plates is
+   not the cure for two flat sections. The claims keep the page's own ground
+   and take the rank in type: 14 → 15px, 1.5 → 1.7 leading, and real space
+   between them, so they stop matching "Sources" line for line. */
+.page.about .claims {
+  max-width: 640px;
+  line-height: 1.7;
+}
+.page.about .claims li {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+/* ---------- one margin scale instead of ten ---------- */
+
+/* Measured before: 4, 5, 6, 10, 12, 14, 15, 20, 22, 28 — ten values inside
+   24px of each other is not a scale, it is noise, and it means air was ranking
+   nothing. 6 / 12 / 20 / 32, and four of the ten turned out to be the
+   browser's own 1em top margin on <p>/<ol>/<ul>, which nothing had ever set:
+   a default is a value in the scale whether you chose it or not. */
+.page.about h2 {
+  margin: 32px 0 12px;
+}
+.page.about .engine + h2 {
+  margin-top: 0;
+}
+.page.about p,
+.page.about ol,
+.page.about ul {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+.page.about .brand-head .brand-tag {
+  margin: 6px 0 0;
+}
+.page.about .lede {
+  margin-bottom: 20px;
+}
+.page.about li {
+  margin-bottom: 6px;
+}
+.page.about .claims li {
+  margin-bottom: 12px;
+}
+.page.about .clear-data {
+  margin-top: 32px;
+}
+
+/* 760px, not 640px, and -14px, not -20px. MEASURED: the first attempt bled by
+   the DESKTOP side padding at the WRONG breakpoint and put 6px of sideways
+   scroll on a 375px phone — `scrollWidth - clientWidth` read 6 with
+   clientWidth a real 375, so it was a true reading and not the hidden-pane 0.
+   `.page` drops to `18px 14px 40px` at 760px, so the bleed is exactly 14px and
+   the plate is never one pixel wider than the page. Same number, and the same
+   reason, as the report card's own plate. */
+@media (max-width: 760px) {
+  .page.about .engine {
+    padding: 18px 14px 16px;
+    margin-left: -14px;
+    margin-right: -14px;
+    border-radius: 0;
+  }
+  .page.about .engine .kv {
+    gap: 14px 24px;
+  }
+  .page.about .engine .kv .stat b {
+    font-size: 28px;
+  }
+}
