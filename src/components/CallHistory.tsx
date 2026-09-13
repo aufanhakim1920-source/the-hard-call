@@ -5,9 +5,9 @@ import { play } from "../lib/sfx";
 import { useStore } from "../lib/store";
 import type { Report, SignKind, Verdict } from "../lib/types";
 import { ledger, type Ledger } from "./report-math";
-import { useGrown } from "./use-grown";
 import { ReportCard } from "./ReportCard";
 import "./report-visuals.css";
+import "./call-history.css";
 
 /**
  * Every call the worker has finished, and two of them held against each other.
@@ -122,7 +122,6 @@ function signRows(slots: Slot[]): SignRow[] {
 }
 
 function CompareBoard({ slots }: { slots: Slot[] }) {
-  const grown = useGrown(1000);
   const labels = slotLabels(slots);
   const rows = signRows(slots);
 
@@ -146,8 +145,12 @@ function CompareBoard({ slots }: { slots: Slot[] }) {
       </div>
 
       <div className="cmp-rows" style={{ "--cmp-step": `${100 / axis}%` } as CSSProperties}>
-        {slots.map((s) => (
-          <div className={"cmp-row " + s.mode + (s.judged ? "" : " unjudged")} key={s.report.callId}>
+        {slots.map((s, i) => (
+          <div
+            className={"cmp-row " + s.mode + (s.judged ? "" : " unjudged")}
+            key={s.report.callId}
+            style={{ "--cmp-i": i } as CSSProperties}
+          >
             <div className="cmp-head">
               <div className="rv-label">{MODE_LONG[s.mode]}</div>
               <div className="cmp-who">{s.report.customer}</div>
@@ -158,8 +161,12 @@ function CompareBoard({ slots }: { slots: Slot[] }) {
 
             {s.judged ? (
               <>
+                {/* True on the first frame. A channel that grows out of zero
+                    freezes at zero on any page that is not painting, and "this
+                    call raised no signs" is the opposite of what this row is
+                    for. The row arrives instead, by a transform. */}
                 <div className="cmp-track" aria-hidden="true">
-                  <span className="cmp-bar" style={{ width: grown ? `${(s.l.total / axis) * 100}%` : "0%" }}>
+                  <span className="cmp-bar" style={{ width: `${(s.l.total / axis) * 100}%` }}>
                     {s.l.answered > 0 && (
                       <i className="rv-seg answered" style={{ width: `${(s.l.answered / s.l.total) * 100}%` }} />
                     )}

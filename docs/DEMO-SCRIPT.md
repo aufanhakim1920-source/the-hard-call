@@ -40,10 +40,11 @@ put a note on the file."* Every line is one a real worker says. He simply never 
 change and never mentions that hardship assistance exists.
 
 ⚠️ **The same words are not the same context.** The engine reads the last fourteen lines, so the
-worker's question is part of what it hears when Sarah answers. Measured: the statutory notice fires
-on *"I don't know. I'm really stressed about all of it."* in the silent run and on *"just a few
-months without the full payment"* in the coached one. Same key, same 21-day date, **different
-moment** — do not say "at the same second in both runs".
+worker's question is part of what it hears when Sarah answers. Measured across the ten deployed runs:
+the statutory notice fires on *"I don't know. I'm really stressed about all of it."* in **5 of 6**
+silent runs and on *"Just a few months without the full payment."* in **4 of 4** coached ones — the
+sixth silent run fired on the later line, like the coached ones. Same key, same 21-day date,
+**different moment** — do not say "at the same second in both runs".
 
 ---
 
@@ -76,7 +77,8 @@ Times are cumulative wall clock from the first click. **Press 2x the moment you 
 not wait for the first line.** The control appears as soon as the replay mode starts, and every line
 already scheduled when you press it still runs at 1x.
 
-**Script length: twelve lines, 52.6 s of scripted gaps.** One browser run at 1x, measured 13 Sep,
+**Script length: twelve lines, 52 s of scripted gaps** (summed from `demoScript.ts`; identical on
+both sides). One browser run at 1x, measured 13 Sep,
 finished at **54 s** — the extra second and a half is request latency. At 2x the app halves every
 remaining gap, so budget **about 27 s** per call. ⚠️ The 2x path was **not** re-measured after the
 script gained its closing line; if you are timing the rehearsal to the second, time it yourself.
@@ -133,14 +135,17 @@ ago and it is not free — see *Why the script reads the way it does* below.
 
 | | Coached (4 runs) | Silent (6 runs) |
 |---|---|---|
-| Score | **88 · 88 · 88 · 85** | **10 · 10 · 10 · 10 · 15 · 10** |
+| Score | **88 · 85 · 88 · 88** | **10 · 10 · 10 · 15 · 10 · 10** |
 
 **The score is the only thing that moves, and it is the only thing you must not quote.** The model
 writes it; nothing deterministic pins it. Say *"zero of five answered against four of four"* and
 point at the per-sign table. The ring is scenery.
 
-⚠️ **The old pitch line "95 against 20" is dead.** It was never reproducible: 95 and 20 come from
-two runs on an engine that has since changed twice. Quote the fraction.
+⚠️ **The old pitch line "95 against 20" is dead, and it was never true.** Checked against the 26
+judgements archived before the script was fixed: **95 appeared 0 times in 7 coached runs**, and the
+silent row we published — 20 with 3 caught, 0 handled, 3 missed — appeared **0 times in 19**, because
+`caught` was 1 every run and never 3. The bare score 20 did turn up, in 7 of the 19. Quote the
+fraction.
 
 ### On the local engine, the spread is wider
 
@@ -149,9 +154,10 @@ Three silent and three coached runs through `npm run dev` + `npm run api` on thi
 
 | | Coached (3) | Silent (3) |
 |---|---|---|
-| Signs missed | **0**, every run | 1 · 2 · 3 |
+| Signs raised | 5 | 4 |
+| Signs missed | **0**, every run | 2 · 3 · 1 |
 | The legal sign | **HANDLED**, every run | **MISSED**, every run |
-| Score | 90 · 80 · 75 | 30 · 30 · 20 |
+| Score | 90 · 75 · 80 | 30 · 20 · 30 |
 
 The two rows the demo rests on hold on both engines. The cue tips (stress, job loss, "worth asking")
 flip between **PARTLY** and **MISSED** on the older local model, because the silent worker genuinely
@@ -173,7 +179,9 @@ Both were removed. **Nothing was added to make the silent worker worse; two offe
 make were taken away.** A third change: both scripts now end on *"Alright. Bye for now, Sarah."*,
 because a sign raised on the final line of a call has no worker line after it, and the card is
 required to mark a verdict it cannot point at **unverified** — which withholds the score for the
-whole card. That happened on 2 of 4 silent runs before the sign-off existed and on 0 of 6 after.
+whole card. Counted in `eval/demo-runs.json`: across the **7** deployed silent runs recorded before
+the sign-off existed, the hardship-process prompt landed on the last line in **5**, and the card
+withheld its score in **exactly those 5**. After the sign-off: **0 of 6**.
 
 ⛔ **If you edit `demoScript.ts`, re-run `eval/demo-runs.ts` before you trust the table above.**
 Putting an offer back into either line will make the demo unrepeatable again.
@@ -184,10 +192,17 @@ Putting an offer back into either line will make the demo unrepeatable again.
   **26.8 s**, the legal sign and stress together **36.6 s**. Each is about 2 s after the line that
   caused it.
 - **The deterministic detector is on `main`** and runs in the browser before the model, with **zero
-  API calls**. Measured 13 Sep: typing *"I can't make the repayments, not this month and not for a
-  good few months after that."* as **Customer** raised the legal sign **and** the hardship-process
-  prompt from the detector alone — the model pass came back with nothing to add. So the flagging
-  does **not** stop when the key is rate-limited, and you may now say so on stage.
+  API calls**. Typing *"I can't make the repayments, not this month and not for a good few months
+  after that."* as **Customer** raises the legal sign **and** the hardship-process prompt from the
+  detector alone, with the model pass adding nothing.
+  ⛔ **It does not fire on this demo.** Replayed line by line over both scripts it raises **0 signs
+  on 12 of 12 lines**, and all **188 signs** in `eval/demo-runs.json` came from the model. Sarah's
+  key line — *"Just a few months without the full payment."* — pairs a period with an *implied*
+  inability, and the rules need both halves explicit in the same customer turn (`docs/DETECTOR.md`).
+  **So do not say "it cannot be rate-limited" over this call.** If a judge asks what happens when the
+  key runs out, the honest answer is the one in Fallbacks: the report card still comes, marked
+  `degraded`, with no invented score — and if you want to *show* the deterministic path, type the
+  sentence above into a fresh call rather than pointing at the replay.
 - **The reply-due date is computed, not canned** — always today + 21 days.
 - **The report card's `caught` counts obligations only**, not tips. A silent card reading "1 caught"
   with five signs is correct: one of the five is a legal duty.
@@ -202,17 +217,19 @@ Putting an offer back into either line will make the demo unrepeatable again.
 2. **The 2x control does not exist until the replay is running**, and every line already scheduled
    when you press it still runs at 1x. It appears the instant you click Replay, so press it in the
    same breath.
-3. **The "who said it" box flips after every typed line.** Type one sentence as Customer and the box
-   switches itself to Worker, so a second line typed straight after is attributed to the worker and
-   **raises nothing** — correctly, because the engine only flags the customer. **Check the box
-   before you press Enter.**
-4. **The hint under the transcript says "Watch line 7: the worker asks for money instead of
-   answering the sign."** That is true of the silent run only. Do not read it aloud on the second run.
+3. ~~The "who said it" box flips after every typed line~~ **— fixed.** It stays where you put it, so
+   two customer sentences in a row now both reach the engine. Still glance at it before Enter: a line
+   typed as Worker raises nothing, correctly, because the engine only flags the customer.
+4. ~~The hint under the transcript names line 7 on both runs~~ **— fixed.** It is conditioned on
+   coaching now: silent reads *"Watch line 7: the worker asks for money instead of answering the
+   sign."*, coached reads *"Watch what the worker does the moment each sign lands."* Either is safe
+   to read aloud.
 5. **Wait for the legal card on the coached run** — it fires on Sarah's last line, so it can land at
    or after the end of the script.
-6. **Entering a practice scenario and not speaking traps you on that screen.** End call is disabled
-   with no lines and the Live call tab keeps showing the practice session; only a page reload
-   escapes. Do not open Practice mid-demo unless you intend to talk.
+6. ~~Entering a practice scenario and not speaking traps you on that screen~~ **— fixed.** End call
+   is never disabled now; an empty call just produces an empty report. ⚠️ Confirmed by reading the
+   source, not by clicking it, so if you open Practice during Q&A know that the escape has not been
+   rehearsed on the live URL.
 7. **Delete everything on this device** opens the browser's own confirm dialog. Click OK; it does
    nothing without it.
 8. **A backgrounded tab gets no animation frames.** The counters have a safety timeout and land on

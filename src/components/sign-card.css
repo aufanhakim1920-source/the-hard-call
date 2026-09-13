@@ -349,3 +349,29 @@
 .signs-list .sign.done.is-moving {
   background: var(--ink-2);
 }
+
+/* The keyboard badge on "Mark handled" is a plain `.btn`, not a `.btn.gold`,
+   so it took the global grey — which is chosen against the page, not against
+   the gold ground a legal card sits on. MEASURED 1.01:1 on the dark ground and
+   2.30:1 on the light one: the only contrast failures left anywhere in the
+   app, and they were on the hero object.
+
+   It is the same root cause as the 23-colour sweep — a token that is correct
+   against one ground landing on another — and it survived that sweep because
+   the sweep ran on screens with no live sign card on them. ⭐ A contrast sweep
+   only covers the states you actually put on screen.
+
+   A handled card gives its gold ground up, so the override stops there. */
+.signs-list .sign .btn kbd {
+  /* The badge is part of the button's own label, so it takes the button's
+     colour. A separate token here is a colour chosen against the page while
+     the badge sits on a card — which is how it ended up at 4.08:1 on a tip
+     card and 1.01:1 on a legal one. */
+  color: inherit;
+  border-color: currentColor;
+  opacity: 1;
+}
+.signs-list .sign.legal:not(.done) .btn kbd {
+  border-color: var(--on-gold-line);
+  color: var(--on-gold);
+}

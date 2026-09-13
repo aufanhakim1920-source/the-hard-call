@@ -4,6 +4,12 @@
 reply-due date and one question to ask next.** After the call it grades the worker, not the
 customer, and the calls that went wrong become de-identified practice customers.
 
+**The measurement the whole thing rests on.** The same customer, the same words, the same engine, run
+ten times on the deployed function. With the signs on screen the worker answered **4 of the 4 signs
+raised**, in all four runs. With them hidden he answered **0 of 5**, in all six runs — and the
+statutory notice that starts a 21-day clock was **handled in every coached run and missed in every
+silent one**. Full table and the archived run records [below](#what-it-does).
+
 > **Live app:** https://aufanhakim1920-source.github.io/the-hard-call/
 > **Video:** _(link goes here)_ · **Demo:** [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md) ·
 > **Why it is built this way:** [docs/DECISIONS.md](docs/DECISIONS.md)
@@ -48,7 +54,8 @@ the harder half: **during the call, with the deadline and the next question.**
 ## What it does
 
 1. **It listens while the call is happening.** The worker puts the call on speaker and the browser's
-   own speech engine turns it into text. Nothing is recorded, and nothing is stored.
+   own speech engine turns it into text. **No audio is recorded and no transcript is stored** — what
+   persists is the signs, the report card, the deadlines and the lessons, never the words.
 2. **A sign appears, once per new thing, with the duty and the date.** A legal sign carries the
    reply-due date and the section it comes from; a tip carries a cue worth handling. Every sign
    carries **one question the worker can ask next**, word for word.
@@ -75,13 +82,16 @@ below are **10 runs on the deployed engine**, 4 coached and 6 silent, on 13 Sep:
 
 | | Coaching **on** | Coaching **off** |
 |---|---|---|
-| Sign cards on screen during the call | 4 | **0** |
+| Sign cards on screen during the call † | 4 | **0** |
 | Signs recorded and judged | 4 | **5** |
 | Signs answered | **4 of 4, every run** | **0 of 5, every run** |
 | The statutory notice (NCC s72) | **handled, 4 of 4** | **missed, 6 of 6** |
 | 21-day deadline created | yes | **yes — with nothing on screen** |
 | Withheld as unverified | 0 | 0 |
-| Score | 88 · 88 · 88 · 85 | 10 · 10 · 10 · 10 · 15 · 10 |
+| Score | 88 · 85 · 88 · 88 | 10 · 10 · 10 · 15 · 10 · 10 |
+
+† Every row but that one comes from the harness, which has no screen. The card count is a browser
+observation from the same day, counted by eye on twelve full runs.
 
 The silent run raises **more** signs than the coached one, which reads oddly until you see why: the
 worker who never mentions hardship assistance earns a prompt telling him to, and the worker who does
@@ -91,10 +101,12 @@ mention it never triggers one. The absence is the thing being measured.
 points between identical runs, because the written review is generated and the counted fields are
 not. The comparison to say out loud is the fraction: **four of four answered against zero of five.**
 
-⚠️ **An earlier version of this table quoted "95 against 20".** Those numbers came from a handful of
-runs and did not survive measurement — across 19 silent and 7 coached judgements, neither figure
-appeared once. They were replaced rather than defended, and the archived run records are in
-`eval/demo-runs.json` so anyone can check these.
+⚠️ **An earlier version of this table quoted "95 against 20".** Neither row survived measurement.
+Across 19 silent and 7 coached judgements recorded before the script was fixed, **the coached score
+95 appeared 0 times**, and the silent row we had published — *20 with 3 caught, 0 handled and 3
+missed* — appeared **0 times** either, because `caught` was 1 on all 19 runs and never 3. The bare
+score 20 did occur, in 7 of those 19. They were replaced rather than defended, and every run record
+is archived in `eval/demo-runs.json` so anyone can check both the old claim and this one.
 
 ## A hint is not a notice
 
@@ -141,8 +153,9 @@ localStorage today. Only signs, report cards, deadlines and lessons — never a 
 - **`supabase/functions/_shared/signs.ts`** — the taxonomy: 2 legal signs (hardship request, 21 days,
   NCC s72; complaint, 30 days, RG 271), 9 cause cues (job loss, health, bereavement, separation,
   safety, gambling, disaster, stress, scam), and 1 duty prompt (tell them the hardship process
-  exists — the ABA duty staff most often forget under pressure). A 12th sign is **derived**:
-  `ask-about-hardship`, the request tier. **Deadlines are computed in code, never by the model.**
+  exists — the ABA duty staff most often forget under pressure). That is twelve defined; a
+  **thirteenth is derived** — `ask-about-hardship`, the request tier.
+  **Deadlines are computed in code, never by the model.**
 - **`supabase/functions/api/flags.ts`** — one call per finished sentence: the last 14 lines in,
   speaker plus new signs out, deduplicated by key on both sides so a sign fires once. Manager lessons
   are appended to the prompt.
@@ -151,8 +164,10 @@ localStorage today. Only signs, report cards, deadlines and lessons — never a 
   triggering line, or it degrades to `unverified` and the score is withheld rather than invented.
 - **`supabase/functions/api/scenario.ts`** — turns a finished call into a practice customer with the
   name, job, suburb and every number changed. A person approves it before it can be used.
-- **`src/lib/practice.ts`** — the ElevenLabs agent is public with overrides enabled, so the browser
-  starts it with an agent id and hands it the scenario as a prompt override. No key in the browser.
+- **`src/lib/practice.ts`** — the browser starts the ElevenLabs agent with an agent id and hands it
+  the scenario as a prompt override. **No key in the browser.** ⚠️ That the agent is published with
+  overrides enabled is a setting in the ElevenLabs dashboard, not something this repository can show;
+  no connected voice call has been recorded end to end yet.
 
 ### Why these models
 
@@ -210,9 +225,11 @@ The results file marks that block `"scored": false` for exactly this reason. **R
 measurement of the labels, not of the engine** — which is why it is printed next to a precision of
 1.00 rather than alone.
 
-A one-off control run against `gemini-2.5-flash` scored **0.97 / 0.81** — one more hardship case
-caught, bought with a false positive on "the storm knocked our power out". Only the
-`gemini-flash-latest` run is committed, so treat that comparison as a measurement we took rather than
+A one-off control run against `gemini-2.5-flash` scored **0.97 precision / 0.81 recall** — one more
+hardship case caught, bought with a false positive on "the storm knocked our power out". ⚠️ **Read
+that pair against 1.00 / 0.74, not against the 0.69 above**: both control figures were taken before
+the quote requirement landed, which cost `gemini-flash-latest` 0.738 → 0.690. Only the
+`gemini-flash-latest` run is committed, so treat the comparison as a measurement we took rather than
 one you can reproduce from this repo. We chose the model that never invents an obligation.
 
 **We did not edit the test to flatter the code.** Recall fell the day the strict legal gate landed,
@@ -225,9 +242,12 @@ passing**, and on the clear-hardship call the legal sign fires **0.0 s off** the
 third is an open contract question between two engines, not a defect, and it is written down rather
 than tuned away.
 
-Measured end to end in the browser against the real engine, not in-process: a sign lands **1.7–2.7
-seconds** after the sentence that caused it, and the report card **3.0–3.8 seconds** after the call
-ends (twelve runs, 13 Sep).
+Measured end to end in a browser rather than in-process: a sign lands **1.7–2.7 seconds** after the
+sentence that caused it, and the report card **3.0–3.8 seconds** after the call ends (twelve runs,
+13 Sep). ⚠️ Those twelve browser runs went through a **local** engine on `gemini-2.5-flash`, not the
+deployed one — the numbers above them in this file are the deployed engine. These are the app's own
+timings, which the model choice barely moves, but they are not a deployed measurement and we do not
+present them as one.
 
 ## Privacy, enforced by the schema
 
@@ -262,11 +282,22 @@ worse than no claim. What is true, and checkable by reading the source:
 
 **Scaffolding, and said plainly:**
 
-- **Accounts are off.** Anonymous sign-in is disabled on the Supabase project, so the app runs on
-  "Saved here only" and everything lives in that browser. The sync layer and four RLS tables exist
-  and are unused. The chip in the top bar says so rather than pretending.
-- **The deterministic detector is on an open pull request**, not on `main`. When it merges, the legal
-  test stops being a model call at all.
+- **Accounts are off.** Anonymous sign-in is disabled on the Supabase project — checkable, and
+  re-checked: `/auth/v1/settings` returns `anonymous_users: false`. So the app runs on "Saved here
+  only" and everything lives in that browser. The sync layer is written and names four tables
+  (`reports`, `deadlines`, `lessons`, `scenarios`), all unused. ⚠️ **Their schema is not in this
+  repository** — there are no migrations here, so the tables and their row-level-security policies
+  can only be confirmed inside the Supabase project. The chip in the top bar says so rather than
+  pretending.
+- **The deterministic detector is merged and wired, and it does not carry the demo.** It runs in the
+  browser before every model call, with no network, and it is accurate where it fires: 40 of 41
+  agreement with `eval/cases.json`, 0 cases where it fires and the case expects silence, 4 of 4 of
+  its own fixtures. But replayed line by line over both demo scripts it raises **0 signs**, because
+  the demo's wording — *"Just a few months without the full payment"* — pairs a period with an
+  implied inability and matches nothing in its lexicon. All **188 signs** across every archived demo
+  run came from the model; the detector contributed none.
+  **So we do not claim the flagging cannot be rate-limited.** On a
+  transcript whose wording the rules do reach, it fires with no key at all; on this one it does not.
 - **Practice mode is configured, not proven.** The published ElevenLabs agent is live and the Start
   button is enabled; a full connected voice call needs a microphone and free-tier quota, and is on the
   pre-submission checklist.
@@ -274,9 +305,16 @@ worse than no claim. What is true, and checkable by reading the source:
 
 ## Run it
 
+⚠️ **`.env.example` is not complete, and a fresh clone will not reach the engine without two edits.**
+`VITE_SUPABASE_ANON_KEY` is deliberately blank, and `VITE_API_BASE` in the example stops at
+`/functions/v1` — the deployed function is named `api`, so that path returns
+`404 NOT_FOUND: Requested function was not found`. The value the live site is built with, and the one
+that works, ends `/functions/v1/api`. CI takes both from repository variables, which is why the
+deployed site is unaffected.
+
 ```bash
 npm install
-cp .env.example .env   # the public VITE_* values are in the example
+cp .env.example .env   # then fix VITE_API_BASE (append /api) and paste the anon key
 npm run dev            # localhost:5173, talking to the deployed Supabase function
 npm run gate           # the CSS gate CI runs
 node --test eval/report.test.mjs   # 7 offline report tests, no key
@@ -299,6 +337,11 @@ Four people, four parts. [CONTRIBUTING.md](CONTRIBUTING.md) has the branch plan;
 `main` rather than typed by anyone.
 
 ## Sources
+
+⚠️ **Every figure in this list comes from the source named beside it and none of them can be checked
+from inside this repository.** They were read against the published documents when written and have
+not been re-read since; the prior-art table above is in the same position. Treat them as cited, not as
+measured — the measured numbers in this README are the ones with a run record behind them.
 
 - National Credit Code section 72 — hardship notices, and the 21-day response
 - ASIC Regulatory Guide 271 — internal dispute resolution, 30-day written response

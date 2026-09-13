@@ -7,6 +7,7 @@ import { AGENT_ID } from "../lib/practice";
 import type { Scenario } from "../lib/types";
 // The only stylesheet this agent owns; the two classes it needs live there.
 import "./report-visuals.css";
+import "./practice.css";
 
 export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const store = useStore();
@@ -38,8 +39,11 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
               key={s.id}
               data-flip={s.id}
             >
-              <div className="lvl" aria-label={levelLabel(s.level)}>
-                <span className="bars">
+              <div className="lvl">
+                {/* aria-label is ignored on a plain div — a `generic` role does
+                    not take a name — so the level number was announced to
+                    nobody. The pips are the picture of it, so they carry it. */}
+                <span className="bars" role="img" aria-label={`Level ${s.level} of 3`}>
                   {[1, 2, 3].map((n) => (
                     <i key={n} className={n <= s.level ? "on" : ""} />
                   ))}
@@ -84,6 +88,7 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                   {s.source === "generated" && (
                     <button
                       className="btn ghost sm"
+                      aria-label={`Remove ${s.name} from practice`}
                       onClick={() => {
                         play("tap");
                         exit.remove(s.id, () => actions.removeScenario(s.id));
@@ -92,8 +97,12 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                       Remove
                     </button>
                   )}
+                  {/* Nine rows of "Start" and "Remove" are one word each to a
+                      screen reader, and the name is in a different element. The
+                      visible word stays short; the accessible name says which. */}
                   <button
                     className="btn gold sm"
+                    aria-label={`Start a practice call with ${s.name}`}
                     onClick={() => {
                       play("tap");
                       onStart(s);

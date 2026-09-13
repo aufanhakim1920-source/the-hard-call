@@ -39,26 +39,46 @@ export function useCallEngine(opts: EngineOptions) {
 
   // One place that puts a sign on the session, whichever pass found it, so the
   // sound and the announcement cannot drift apart between the two.
+  //
+  // ⚠️ The sound and the announcement MUST NOT live inside the setSession
+  // updater. React is allowed to run an updater more than once for a single
+  // update, and it does — measured, a demo call produced 8 play calls for 4
+  // sign events, in pairs 0-1ms apart. The sound layer only hid it because
+  // both calls land on one cached audio element and you hear a restart; the
+  // screen reader announcement beside it doubled with nothing to hide it, and
+  // every count ever taken here was twice the truth.
+  //
+  // So the new signs are worked out from the ref FIRST, side effects run once
+  // against that answer, and the updater stays pure. The ref is patched in the
+  // same breath, the way addLine already does it, so two commits landing in
+  // one tick cannot both think a key is fresh.
   const commitSigns = useCallback((fresh: Sign[]) => {
     if (!fresh.length) return;
+    const have = new Set(sessionRef.current.signs.map((g) => g.key));
+    const add: Sign[] = [];
+    for (const g of fresh) {
+      if (have.has(g.key)) continue;
+      have.add(g.key);
+      add.push(g);
+    }
+    if (!add.length) return;
+    sessionRef.current = { ...sessionRef.current, signs: [...sessionRef.current.signs, ...add] };
     setSession((cur) => {
-      const have = new Set(cur.signs.map((g) => g.key));
-      const add = fresh.filter((g) => !have.has(g.key));
-      if (!add.length) return cur;
-      // Coaching off silences the call, not the engine: the signs are still on
-      // the session, so the report card, the deadlines and the timeline all see
-      // them. Only the card, the sound and the announcement — the three things
-      // the worker would notice — stop.
-      if (coachingOn()) {
-        playSigns(add);
-        for (const g of add) {
-          // A legal sign starts a clock, so it interrupts; a tip waits its turn.
-          const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
-          announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
-        }
-      }
-      return { ...cur, signs: [...cur.signs, ...add] };
+      const seen = new Set(cur.signs.map((g) => g.key));
+      const missing = add.filter((g) => !seen.has(g.key));
+      return missing.length ? { ...cur, signs: [...cur.signs, ...missing] } : cur;
     });
+    // Coaching off silences the call, not the engine: the signs are still on
+    // the session, so the report card, the deadlines and the timeline all see
+    // them. Only the card, the sound and the announcement — the three things
+    // the worker would notice — stop.
+    if (!coachingOn()) return;
+    playSigns(add);
+    for (const g of add) {
+      // A legal sign starts a clock, so it interrupts; a tip waits its turn.
+      const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
+      announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
+    }
   }, []);
 
   const runFlags = useCallback(async (lineId: string) => {

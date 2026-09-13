@@ -42,7 +42,15 @@ export function Lessons() {
       </p>
       <form className="form-row" onSubmit={add}>
         <Select value={kind} onChange={(v) => setKind(v as LessonKind)} options={KIND_OPTIONS} label="What kind of lesson" />
-        <input className="field" placeholder='e.g. "a customer asking to move the due date by a week is a hardship request"' value={text} onChange={(e) => setText(e.target.value)} />
+        {/* A placeholder is not a name: it is gone the moment anyone types, and
+            the picker beside it already carries its name explicitly. */}
+        <input
+          className="field"
+          aria-label="What the engine should learn"
+          placeholder='e.g. "a customer asking to move the due date by a week is a hardship request"'
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
         <button className="btn gold" type="submit">
           Add lesson
         </button>
@@ -65,6 +73,7 @@ export function Lessons() {
           </div>
           <button
             className="btn ghost sm"
+            aria-label={`Remove lesson: ${l.text}`}
             onClick={() => {
               play("tap");
               exit.remove(l.id, () => actions.removeLesson(l.id));

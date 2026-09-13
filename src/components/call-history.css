@@ -1,0 +1,42 @@
+/* ---------- the compare board's arrival ----------
+   Loaded after report-visuals.css, which owns everything else about .cmp-*.
+
+   The board's channel used to grow from width 0 behind a requestAnimationFrame.
+   A CSS transition needs frames exactly as rAF does, so on a page that is
+   visible but not compositing it never left its first style: measured with the
+   transition paused and seeked, 0px of an 845px track at t=0, and still 0px at
+   t=2000ms. The one channel that says how many signs a call raised was drawing
+   nothing — on the screen the whole demo argument is made on, that is a false
+   statement about the product, not a quieter animation.
+
+   A guard can only choose WHEN a transition starts; it can never make one
+   advance. So a quantity that grows up from zero has no safe guard, and the
+   only fix is to be true on the first frame. The length already says how many
+   signs were raised; the sweep only said it again in time, and it is the half
+   that can lie. Same call as the answer-time lanes on the report card.
+
+   What is left is the row arriving, by the card's own 7px rise — transform
+   only, nothing relaying out, and frozen at its first frame it reads correctly
+   7px low rather than absent. rvRise is defined in report-visuals.css. */
+.cmp-bar {
+  transition: none;
+}
+
+.cmp-row {
+  animation: rvRise 320ms var(--ease-out) both;
+  /* Left then right, so the pair is read as a comparison rather than as one
+     object. Two rows only, so the stagger is short enough to stay a nudge. */
+  animation-delay: calc(var(--cmp-i, 0) * 80ms);
+}
+
+/* The global reduced-motion rules squash transition-duration and
+   animation-duration but NOT the delays, so a reader who asked for less motion
+   would sit through an invisible 80ms wait. Zero it by hand, both ways in. */
+.reduce-motion .cmp-row {
+  animation-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-row {
+    animation-delay: 0ms !important;
+  }
+}
