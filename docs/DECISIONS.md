@@ -826,3 +826,58 @@ card sat directly underneath it.
 now takes the stack's order. The sheet's auto-lift still keys on the genuinely
 newest sign, because *that* is a question about what just happened rather than
 about what matters most.
+
+## The numbers in our own pitch had never been measured
+
+`eval/demo-runs.ts` replays the demo script through the real engine — the same
+detector pass, the same `/flags`, the same `/report` — and archives every run.
+Nineteen silent and seven coached judgements were recorded **before** anything
+was changed.
+
+- **"Silent 20 / 3 caught / 0 handled / 3 missed" appeared in 0 of 19 runs.**
+- **"Coached 95 / 4 caught / 3 handled / 0 missed" appeared in 0 of 7.**
+
+Both were printed in the README as measurements. They came from a handful of
+early runs that happened to land that way.
+
+**The cause was not a race, and no sign was ever dropped.** The signs raised
+were byte-identical across every run — same keys, same trigger lines. Calling
+`/report` six times on one byte-identical session returned missed = **1, 1, 1,
+1, 2, 2**. The entire variance lives in the written review. The model's own
+note said why: *"You noted the file for someone to follow up."* The silent
+worker's script contained *"I can give you a couple of weeks before the next
+reminder goes out"* and *"someone will be in touch"* — on those words, partial
+discharge of the obligation is a fair reading. **The script was sitting exactly
+on the line it was supposed to be clearly one side of.**
+
+So the script stopped promising what that worker never meant to offer, and both
+scripts gained a neutral sign-off so a sign raised on the final line still has a
+worker line to be judged against. Sarah's words are untouched to the character,
+because that property is what makes the comparison honest.
+
+**After — 10 runs on the deployed engine, every counted field identical:**
+
+| | coached (4 runs) | silent (6 runs) |
+|---|---|---|
+| signs raised | 4 | **5** |
+| answered | **4 of 4** | **0 of 5** |
+| the statutory notice | **handled 4/4** | **missed 6/6** |
+| withheld as unverified | 0 | 0 |
+| score | 88 · 88 · 88 · 85 | 10 · 10 · 10 · 10 · 15 · 10 |
+
+Only the score still moves, by three points at most, which is why the docs
+already say never to quote it. **The line to say out loud is the fraction:
+four of four answered against zero of five.**
+
+And the silent run now raises *more* signs than the coached one, which reads
+oddly for a second and is then the better story: the worker who never mentions
+hardship assistance earns a prompt telling him to, and the worker who does
+never triggers one. **The absence is the thing being measured.**
+
+⭐ **Two rules out of this.** First: **a number in a pitch is a claim, and a
+claim needs a harness, not a memory of a good run.** Ours survived in the
+README for a day because nobody had a cheap way to re-run it; the harness cost
+an hour and would have caught it on day one. Second: **a dev server that never
+reloads its handlers will lie to you for as long as it is up.** The local API
+had been running eleven hours and was still serving the pre-request-tier
+engine — every "unreproducible" run measured against it was measuring old code.
