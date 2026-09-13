@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 import type { Report } from "../lib/types";
-import { useCountUp } from "../lib/useCountUp";
 import { ledger } from "./report-math";
 import "./report-visuals.css";
 
@@ -17,15 +16,26 @@ import "./report-visuals.css";
 // side by side. All three survive greyscale and high contrast, and the accent
 // is spent on the one thing the worker still has to fix.
 
-// Only the NUMERATOR counts. How many signs were raised was never in question
-// — it is the whole the fraction is read against — and counting it up put
-// "0 of 0", then "2 of 3", then the truth on screen in the first half second.
-// A denominator that moves makes every intermediate frame a different claim.
-const COUNT_MS = 420;
-
+// The numerator used to count up from zero over 420ms, which was already the
+// trimmed version of a worse one where the denominator moved too.
+//
+// It is gone entirely now, and the reason is the rule the rest of this card
+// was rebuilt around: A QUANTITY MUST BE TRUE ON THE FIRST FRAME. A screenshot
+// of the coached card caught "1 OF 5" on a call whose answer is five of five —
+// and this is the frame the pitch lands on, the one most likely to be paused,
+// photographed, or put in a video. Every intermediate frame of a count-up is a
+// different claim about the same call, and the last four rounds of work on
+// this card were spent removing exactly that.
+//
+// Worse in a tab that is not compositing: the animation frames never arrive,
+// so the figure sat at 0 until a 570ms safety timer rescued it.
+//
+// The arrival is still animated — the row rises — but the NUMBER is simply
+// true from the first paint. Motion may carry a value in; it may not pretend
+// the value is something else on the way.
 export function ReportLedger({ report, previous }: { report: Report; previous: Report[] }) {
   const l = ledger(report.items);
-  const nAnswered = useCountUp(l.answered, COUNT_MS);
+  const nAnswered = l.answered;
 
   if (l.total === 0) {
     return <p className="rv-empty">No signs were raised on this call, so there is nothing to score.</p>;
