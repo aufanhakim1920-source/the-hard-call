@@ -44,6 +44,34 @@ const KEY_FOR: Record<string, { key: string; kind: SignKind; title: string; dueL
     kind: "tip",
     title: "Worth asking about hardship",
   },
+  RG271_COMPLAINT_30D: {
+    // Was missing, so the detector's complaint detection was dropped here and
+    // the 30-day clock had no deterministic fallback if the model was
+    // unavailable - which is the whole reason the detector runs first.
+    // The app already owns this obligation under its own key, with the same
+    // authority and the same 30 days, so this is a mapping rather than a new
+    // idea.
+    key: "complaint",
+    kind: "legal",
+    title: "This is a complaint",
+    dueLabel: "Written response due",
+  },
+  // ON THE REQUEST TIER, checked rather than assumed after laural asked whether
+  // mapping HARDSHIP_REQUEST to a "tip" loses it before the report card.
+  //
+  // It does not. `kind` here is the card's VISUAL class - legal or tip - and it
+  // is not what decides persistence. The tier is derived from the KEY on the
+  // server: `tierOf()` returns "request" for `ask-about-hardship`, and the
+  // report input accepts `request` alongside `obligation` and `cue`. So a
+  // request is persisted and reported, and it is scored as its own tier rather
+  // than as an obligation. Verified in _shared/signs.ts and _shared/reportInput.ts.
+  //
+  // What genuinely has no home yet is `followup_days`. The detector now carries
+  // 7 on a request - Tron's day-7 callback - and the client `Sign` type has no
+  // field for a follow-up that is not a statutory deadline. Putting it in
+  // `dueDate` would be wrong: it would render as a clock the law did not start,
+  // which is the single error this product exists to avoid. It needs its own
+  // field, which is a taxonomy change and belongs to whoever owns the type.
   // NCC_72_WRITTEN_NOTICE_30D is deliberately absent: it is armed by a
   // variation being agreed and nothing said on the call can settle it, so it
   // belongs to the post-call record, not to a card in front of the worker.
