@@ -168,9 +168,15 @@
   font-size: 14px;
   color: var(--grey);
 }
-.clear-done:focus-visible {
-  outline: none;
-}
+/* This used to be `outline: none`, which beat the base :focus-visible on
+   specificity and left this control with NO focus ring at all in the default
+   state - not merely a thin one under Thicker focus ring. That is the exact
+   fault already recorded and fixed once for text inputs, reappearing on a
+   different control.
+
+   The base ring is correct here and there is nothing to override, so the rule
+   is gone rather than replaced. If this control ever needs a different ring,
+   it takes one - it never takes none. */
 
 /* ---------- the ledger: one part-to-whole, not four percentages ---------- */
 .rv-ledger {

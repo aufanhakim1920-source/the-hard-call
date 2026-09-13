@@ -115,8 +115,12 @@
 .reduce-transparency .cmp-keys .rv-key.answered i {
   background-color: var(--ink-2);
 }
-:root[data-theme="light"] .reduce-transparency .cmp-bar .rv-seg.answered,
-:root[data-theme="light"] .reduce-transparency .cmp-keys .rv-key.answered i {
+/* Was `:root[data-theme="light"] .reduce-transparency ...` with a SPACE,
+   which asks for a reduce-transparency element DESCENDED FROM the light root.
+   Both classes sit on <html> itself, so the selector has never matched once.
+   No space: the two conditions describe the same element. */
+:root[data-theme="light"].reduce-transparency .cmp-bar .rv-seg.answered,
+:root[data-theme="light"].reduce-transparency .cmp-keys .rv-key.answered i {
   background-color: var(--ink-3);
 }
 
@@ -209,7 +213,7 @@
    (.rv-rt-track, .rv-dl-track) and had simply never been extended to this one —
    the compare board's channel was the only track in the product that did not
    answer the setting. Same rule, same tokens. */
-.high-contrast .cmp-track {
-  border-top-color: var(--line-2);
-  border-bottom-color: var(--line-2);
-}
+/* .high-contrast .cmp-track lives in report-visuals.css, which owns the
+   shared channel language this board borrows. It was declared identically
+   in both files; one source of truth. */
+
