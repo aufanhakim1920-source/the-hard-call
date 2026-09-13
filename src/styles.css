@@ -2416,8 +2416,11 @@ select.field option {
   word-spacing: 0.1em;
 }
 
-/* --- a typeface drawn to be told apart --- */
-.hyper-font {
+/* --- a typeface drawn to be told apart ---
+   `:root.` and not a bare class: at (0,1,0) this TIED with the `:root` block
+   that declares --sans, and a tie is settled by whichever order the bundler
+   emits in. Nobody decided that order. */
+:root.hyper-font {
   --sans: "Atkinson Hyperlegible", "Instrument Sans", system-ui, sans-serif;
   --serif: "Atkinson Hyperlegible", Georgia, serif;
 }
@@ -2490,8 +2493,22 @@ select.field option {
   border-color: var(--gold);
 }
 
-/* --- higher contrast (works on either ground) --- */
-.high-contrast {
+/* --- higher contrast (works on either ground) ---
+ *
+ * ⚠ THE RULE THIS BLOCK EXISTS UNDER. `:root[data-theme="light"]` is (0,2,0).
+ * A bare `.high-contrast` is (0,1,0) and LOSES to it — so on the light ground
+ * every token both blocks name was silently unboosted, and the setting did
+ * nothing where a user could not tell it had done nothing. Measured before the
+ * fix: --gold-dim 1.231:1 with the setting off AND on; --gold-line 2.026:1
+ * both ways, under the 3.0 a border that carries state needs; --slate 1.86:1
+ * on cream for a status dot, also both ways.
+ *
+ * So: the dark values live at (0,2,0) — above `:root`, deterministic, no
+ * reliance on emit order — and EVERY token named here is named again in the
+ * light block below at (0,3,0). The two lists must stay the same length. A
+ * token boosted here and missing there is a dead setting on one ground.
+ */
+:root.high-contrast {
   --grey: #c3cad2;
   --line: rgba(195, 202, 210, 0.3);
   --line-2: rgba(195, 202, 210, 0.55);
@@ -2499,11 +2516,38 @@ select.field option {
   --gold-dim: rgba(199, 156, 90, 0.26);
   --gold-line: rgba(199, 156, 90, 0.85);
 }
+/* The same six tokens, in the light ground's own hues. Gold on cream is
+   #8A5E1C, not #C79C5A, so the dark alphas cannot simply be copied across —
+   they are re-derived to land on the same CONTRAST the dark boost reaches. */
 :root[data-theme="light"].high-contrast {
   --grey: #3a4452;
   --line: rgba(28, 31, 36, 0.34);
   --line-2: rgba(28, 31, 36, 0.6);
   --gold-2: #7a5214;
+  /* --slate is never text: it is the OFF state of the status dot, the account
+     dot, the scenario level bars and the timeline's unknown-speaker stroke —
+     meaningful graphics, so WCAG 1.4.11 wants 3.0:1. The dark boost takes it
+     1.675 → 3.63:1. #B8B0A1 on cream is 1.86:1; this reads 3.94:1 on the page,
+     3.60 on --ink-2 and 3.21 on --ink-3. Still warm, still in the cream
+     family — the dark ground's #6B7787 is a cool slate and would have been
+     wrong here even if it had won. */
+  --slate: #7d7566;
+  /* The tint. Dark goes 1.269 → 1.611:1 against its ground; 0.32 of the light
+     gold reads 1.541 on the page, 1.511 on --ink-2, 1.475 on --ink-3, from
+     1.231 / 1.21 / 1.207 before. */
+  --gold-dim: rgba(138, 94, 28, 0.32);
+  /* Raising the tint moves the ground under the tab badge's number, which is
+     the one piece of TEXT sitting on --gold-dim. #7A5214 measured 4.845:1 on
+     the unboosted tint and would have dropped to 3.871 on the boosted one —
+     the high-contrast setting would have pushed a label UNDER AA. Darkened
+     with the tint: 5.14:1, which is where the dark ground's own boosted badge
+     sits (5.25:1). */
+  --gold-on-tint: #63410c;
+  /* The state border — the open picker, the hovered trigger, the sign card's
+     edge. 0.5 read 2.026:1 on the page and failed 1.4.11 outright; 0.85, the
+     same alpha the dark ground uses, reads 3.70 on the page, 3.45 on --ink-2
+     and 3.15 on --ink-3. */
+  --gold-line: rgba(138, 94, 28, 0.85);
 }
 .high-contrast .ln.worker .text,
 .high-contrast .ln.unknown .text {
@@ -2526,6 +2570,18 @@ select.field option {
   background: var(--ink-2);
 }
 .reduce-transparency body::before {
+  opacity: 0;
+}
+/* The same specificity trap as high contrast, one setting over. The light
+   ground restates both of these at (0,3,0) and (0,2,1), so the two rules above
+   were dead on cream: the topbar stayed translucent — and, because
+   `backdrop-filter: none` DID apply, it lost its blur while keeping its
+   see-through, which is the worst of the two states — and the grain layer the
+   setting exists to remove stayed on at opacity .035. */
+:root[data-theme="light"].reduce-transparency .topbar {
+  background: var(--ink);
+}
+:root[data-theme="light"].reduce-transparency body::before {
   opacity: 0;
 }
 
@@ -2562,8 +2618,14 @@ select.field option {
   padding: 13px 4px;
 }
 
-/* --- focus --- */
-.thick-focus :focus-visible {
+/* --- focus ---
+   At (0,2,0) this lost to `.rv-raw > summary:focus-visible` (0,2,1), so the
+   raw-transcript disclosure kept a 2px ring with the setting on, and it TIED
+   with `.clear-done:focus-visible { outline: none }` (0,2,0) — a tie the
+   bundler's emit order settled, not anyone here. (0,3,0) clears both and still
+   sits under the legal card's outline-COLOUR override, which has to keep
+   winning: a gold ring on a gold card is 1:1. */
+:root.thick-focus :focus-visible {
   outline: 4px solid var(--gold);
   outline-offset: 3px;
 }
