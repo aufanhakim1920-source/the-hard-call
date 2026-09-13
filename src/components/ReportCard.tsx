@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "../lib/reportScore";
 import { useEffect, useState, type ReactNode } from "react";
 import { postScenario } from "../lib/api";
 import { fmtDate, fmtWhen, parseISO } from "../lib/dates";
@@ -277,7 +278,7 @@ export function ReportCard({
   const copy = async () => {
     const lines = [
       `CallFlag — report card, ${fmtWhen(report.at)}`,
-      `${report.customer} · ${report.mode} · score ${report.scoreUnverified ? "not verified" : report.score}`,
+      `${report.customer} · ${report.mode} · score ${!hasVerifiedReportScore(report) ? "not verified" : report.score}`,
       // A pasted card is read without the screen, so the mode has to travel
       // with it. Absent is left out rather than guessed.
       ...(report.coaching === false
@@ -290,7 +291,9 @@ export function ReportCard({
         : [report.summary]),
       ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
       ...report.deadlines.map((d) => `${d.label} ${fmtDate(d.date)} — ${d.title}`),
-      `Tip: ${report.tip}`,
+      // No model write-up means no tip. A bare "Tip:" pasted into a case note
+      // reads as advice that went missing, rather than one that was never given.
+      ...(report.tip.trim() ? [`Tip: ${report.tip}`] : []),
     ];
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
@@ -319,14 +322,14 @@ export function ReportCard({
             than leading with nothing — and on a phone it moves down beside the
             miss count, so the demoted reading stops being the first one. It
             stays here when there is no verdict to sit beside. */}
-        {(!phone || !ringInLead) && <ScoreRing score={report.score} unverified={report.scoreUnverified} size={phone ? 92 : 132} />}
+        {(!phone || !ringInLead) && <ScoreRing score={report.score} unverified={!hasVerifiedReportScore(report)} size={phone ? 92 : 132} />}
       </div>
 
       {/* The consequence first, then why the call ran the way it did, then the
           composition. Reading order is importance order. */}
       <Verdict
         report={report}
-        aside={ringInLead ? <ScoreRing score={report.score} unverified={report.scoreUnverified} size={92} /> : null}
+        aside={ringInLead ? <ScoreRing score={report.score} unverified={!hasVerifiedReportScore(report)} size={92} /> : null}
       />
 
       <RunNote report={report} />
@@ -445,13 +448,22 @@ export function ReportCard({
 
       <DeadlineTrack report={report} />
 
-      {report.tip && (
+      {report.tip ? (
         <div className="tip-box">
           <div className="label">One thing for next time</div>
           {report.tip}
         </div>
-      )}
-
+      ) : report.degraded ? (
+        // Hiding the box is right when there is simply no tip. When the write-up
+        // failed, silence reads as the coach having nothing to say about the
+        // call — which is the wrong thing to read during a quota outage. Name it.
+        <div className="tip-box">
+          <div className="label">One thing for next time</div>
+          {report.degradedReason === "quota"
+            ? "Not available: the AI service returned a quota or rate-limit error. The records above were kept by the call itself."
+            : "Not available: the AI could not be reached. The records above were kept by the call itself."}
+        </div>
+      ) : null}
       <div className="actions">
         <button className="btn gold" onClick={onNew}>
           New call

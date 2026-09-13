@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "../lib/reportScore";
 import { SEEDS, levelAsk, levelLabel, voiceFor } from "../lib/scenarios";
 import { useFlip, useRowExit } from "../lib/motion";
 import { play } from "../lib/sfx";
@@ -12,11 +13,7 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const store = useStore();
   const all: Scenario[] = [...SEEDS, ...store.scenarios.filter((s) => s.approved)];
   // Best score per scenario comes from the reports, so seeds get it too.
-  // Only a VERIFIED score counts. The report card withholds a score whenever any
-  // verdict is unverified, so taking r.score regardless meant Practice showed a
-  // best score the card itself refuses to print, and gated the next level on it.
-  const best = (id: string) =>
-    store.reports.filter((r) => r.scenarioId === id && !r.scoreUnverified).reduce((m, r) => Math.max(m, r.score), 0);
+  const best = (id: string) => store.reports.filter((r) => r.scenarioId === id && hasVerifiedReportScore(r)).reduce((m, r) => Math.max(m, r.score), 0);
   const plays = (id: string) => store.reports.filter((r) => r.scenarioId === id).length;
   const sorted = [...all].sort((a, b) => a.level - b.level || b.createdAt - a.createdAt);
   const next = sorted.find((s) => best(s.id) < 70);

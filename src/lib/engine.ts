@@ -8,7 +8,7 @@ import { postFlags, postReport } from "./api";
 import { localSigns } from "./detectorBridge";
 import { maskSensitive } from "./mask";
 import { play, playSigns } from "./sfx";
-import { actions, getStore, lessonTexts } from "./store";
+import { actions, getStore, getStoreScope, lessonTexts } from "./store";
 import type { AssistantState, Customer, Line, Mode, Report, Session, Sign, Speaker } from "./types";
 import { uid } from "./types";
 
@@ -20,6 +20,7 @@ export interface EngineOptions {
 }
 
 export function useCallEngine(opts: EngineOptions) {
+  const [startedScope] = useState(() => getStoreScope());
   const [session, setSession] = useState<Session>(() => newSession(opts));
   const [interim, setInterim] = useState("");
   const [assistant, setAssistant] = useState<AssistantState>("idle");
@@ -108,7 +109,7 @@ export function useCallEngine(opts: EngineOptions) {
         setSession((cur) => ({
           ...cur,
           lines: cur.lines.map((l) =>
-            l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown" ? { ...l, speaker: res.speaker } : l,
+            l.id === lineId && l.speaker === "unknown" ? { ...l, speaker: res.speaker, speakerConfidence: res.speakerConfidence ?? (res.speaker === "unknown" ? "unknown" : "inferred") } : l,
           ),
         }));
         commitSigns(fresh);
@@ -169,10 +170,13 @@ export function useCallEngine(opts: EngineOptions) {
       // mode the call was run in, not the switch's position an hour later.
       coaching: finalSession.coaching,
     };
+    if (getStoreScope().epoch !== startedScope.epoch) {
+      throw new Error("Account changed during the call. Start a new call in the current account.");
+    }
     actions.addReport(report);
     play("report");
     return report;
-  }, []);
+  }, [startedScope]);
 
   const elapsed = useElapsed(session.startedAt, session.endedAt);
   const newestOpen = useMemo(() => [...session.signs].reverse().find((g) => !g.handled), [session.signs]);

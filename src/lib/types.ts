@@ -1,4 +1,12 @@
 export type Speaker = "customer" | "worker" | "unknown";
+/** How the speaker of a turn was decided. Absent means "known".
+    known    — the source told us (practice: two streams; a person corrected it).
+    inferred — a model guessed it from the words. Live dictation on one mic.
+    unknown  — nobody could tell.
+    Only a `known` turn may assert an obligation: a staff line read as the
+    customer would start a statutory clock on the bank's own words, and a
+    customer line read as staff would mark a duty handled that nobody handled. */
+export type SpeakerConfidence = "known" | "inferred" | "unknown";
 export type Mode = "live" | "practice" | "demo";
 export type SignKind = "legal" | "tip";
 export type Direction = "inbound" | "outbound";
@@ -9,6 +17,8 @@ export interface Line {
   speaker: Speaker;
   text: string;
   masked?: boolean;
+  /** Absent = "known". Set it when a model decided the speaker. */
+  speakerConfidence?: SpeakerConfidence;
 }
 
 export interface Sign {
@@ -103,9 +113,10 @@ export interface Report {
   /** Which mode the call ran in. False = the worker was given nothing live, so
       a low score measures the gap, not a worker ignoring prompts.
       ⚠ Read it as `coaching === false`, never as `!coaching`: absent means the
-      mode was not recorded (a card pulled from the server, which has no column
-      for it yet). Cards already in this browser are backfilled true on load —
-      coaching was the only mode that existed when they were written. */
+      mode was not recorded; cache reloads preserve that absence.
+      A card pulled from the server carries it once
+      supabase/migrations/0001_report_metadata.sql has run; before that the
+      column does not exist and the field comes back absent. */
   coaching?: boolean;
 }
 
@@ -149,6 +160,7 @@ export interface Settings {
 }
 
 export interface Store {
+  pendingDeletes?: { lessons: string[]; scenarios: string[] };
   reports: Report[];
   deadlines: Deadline[];
   lessons: Lesson[];
@@ -158,6 +170,10 @@ export interface Store {
 
 export interface FlagsResponse {
   speaker: Speaker;
+  /** "known" when the request already labelled the line, "inferred" when this
+      answer is what decided it. The live screen should carry it onto the line
+      so a person can correct it and the report card can see it. */
+  speakerConfidence: SpeakerConfidence;
   signs: Omit<Sign, "id" | "t" | "lineId" | "handled" | "handledAt">[];
   model: string;
   ms: number;

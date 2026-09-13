@@ -13,7 +13,9 @@
     "api": "node --env-file=.env dev/api-server.mjs",
     "team": "node scripts/team-sync.mjs",
     "eval:fixtures": "node eval/fixtures.mjs",
-    "gate": "node scripts/gate-css.mjs"
+    "gate": "node scripts/gate-css.mjs",
+    "test": "node --test eval/*.test.mjs",
+    "eval:tier": "node eval/tier-live.mjs"
   },
   "dependencies": {
     "@elevenlabs/client": "^1.25.0",
