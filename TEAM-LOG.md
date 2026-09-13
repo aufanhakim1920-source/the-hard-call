@@ -4,6 +4,8 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 15:17 | aufanhakim1920-source | other | [a card with zero surfaces has no reading order, and demoting in doctrine is not demoting in paint](../../commit/15fd019326c727f09f1418a7595502fed3a71789) | DECISIONS.md | +64 / -0 |
+| 13 Sept, 15:17 | aufanhakim1920-source | report | [a screenshot caught "1 OF 5" on a call whose answer is five of five](../../commit/2a64137c0f1f103e5ac76664a075dd8834603e8a) | ReportLedger.tsx, useCountUp.ts | +18 / -46 |
 | 13 Sept, 15:15 | aufanhakim1920-source | report | [the biggest gold glyph on the failing card was the score](../../commit/4cd11dd5e13e6b6276801e8654cc7ab87cb668d0) | ReportCard.tsx, ScoreRing.tsx, report-lead.css +2 | +123 / -5 |
 | 13 Sept, 14:55 | aufanhakim1920-source | other | [eleven settings switches had no hover and no press at all](../../commit/67382d3f6dce080f80c45ac7797704e4d2f68e31) | Accessibility.tsx, settings.css | +207 / -3 |
 | 13 Sept, 14:50 | aufanhakim1920-source | live call + design | [on a phone the transcript never scrolled and Listen was under the sheet](../../commit/76353c31b9a63a9552c03cac04920170d6b1d5bd) | CallScreen.tsx, Transcript.tsx, styles.css | +64 / -10 |
