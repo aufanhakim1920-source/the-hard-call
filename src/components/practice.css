@@ -1,0 +1,21 @@
+/* ---------- the practice roster, phone only ----------
+   Everything else about .scen lives in the main stylesheet.
+
+   The "up next" card is marked by a 3px gold rail hung off the card's left
+   edge at -20px. That sits inside the page's 20px gutter on a wide window, but
+   the gutter drops to 14px at 760 and under, which put the rail at x = -6 on a
+   375px screen — measured off the left of the window. The one card the roster
+   is steering you to was marked by nothing at all on every phone.
+
+   -14px puts it flush against the screen edge, where a 3px gold tick reads as
+   deliberate. The badge still says "up next" in words, so the rail is the
+   second carrier of that state and never the only one.
+
+   Scoped through .scen-grid on purpose: a media query carries no specificity,
+   and this file is bundled BEFORE the main stylesheet, so a bare .scen.next
+   override loses on order and silently does nothing. Measured that way first. */
+@media (max-width: 760px) {
+  .scen-grid .scen.next::before {
+    left: -14px;
+  }
+}
