@@ -349,8 +349,11 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                   // before it offers anything: what is this, and what do I press.
                   <>
                     <b>This screen watches a hardship call as it happens.</b>
-                    The moment the customer says something that legally counts, a card appears on the right with the deadline and
-                    the one sentence to say next. Nothing is stored — only the signs.
+                    The moment the customer says something that legally counts, a card appears{" "}
+                    {/* The signs are a column on the right on a laptop and a tray you drag up on a
+                        phone. Telling a phone to look right points at nothing. */}
+                    {phone ? "in the tray at the bottom" : "on the right"} with the deadline and the one sentence to say next.
+                    Nothing is stored — only the signs.
                     <span className="empty-do">
                       <span>
                         <strong>▶ Play the demo call</strong> — a real fifty-second script, run line by line through the same
@@ -398,7 +401,15 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                 {!speech.supported && <span className="hint">This browser has no speech engine. Type what was said instead, or use Chrome or Edge.</span>}
                 <form className="type" onSubmit={submitTyped}>
                   <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
-                  <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
+                  {/* The long version is cut to "…and press |" at 375px, and a
+                      phone has no visible Enter key to name anyway. */}
+                  <input
+                    ref={typeRef}
+                    className="field"
+                    placeholder={phone ? "Type what was said" : "Or type what was said and press Enter"}
+                    value={typed}
+                    onChange={(e) => setTyped(e.target.value)}
+                  />
                 </form>
                 {/* The demo used to live here, ghost-styled beside a text box:
                     the lowest-weight thing on a screen whose loudest button was
@@ -500,7 +511,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
 
       <footer className="privacy-line">
         <span>Only signs are kept. Words are never stored.</span>
-        <span>Card and account numbers are masked before they leave this browser.</span>
+        <span className="pl-mask">Card and account numbers are masked before they leave this browser.</span>
         <span className="spacer" />
         {/* Idle, H has no sign to mark and E is guarded by the line count, so
             both were offering a key that does nothing. Only T works. */}

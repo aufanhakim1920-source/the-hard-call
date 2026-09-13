@@ -44,10 +44,31 @@ export function Transcript({
   emptyHint: React.ReactNode;
 }) {
   const box = useRef<HTMLDivElement>(null);
+  // Stay pinned to the newest line — but never yank someone who has scrolled up
+  // to re-read what was said. The flag is written by the element's own scroll
+  // events, so the jump below leaves it true and a finger is what turns it off.
+  const stick = useRef(true);
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-    el.scrollTop = el.scrollHeight;
+    const onScroll = () => {
+      stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || !stick.current) return;
+    // Nothing has been said yet, so the box holds the empty state — which is
+    // the paragraph explaining what this screen IS. Jumping to the bottom of it
+    // opens the app mid-sentence.
+    if (!lines.length && !interim) return;
+    // "instant", not the stylesheet's smooth: a smooth scroll needs frames and
+    // a throttled tab gives none — the same failure mode as an entrance that
+    // fades in from zero. Whether the newest line can be SEEN is not allowed to
+    // depend on an animation running.
+    el.scrollTo({ top: el.scrollHeight, behavior: "instant" });
   }, [lines.length, interim]);
 
   const quotesByLine = new Map<string, string[]>();

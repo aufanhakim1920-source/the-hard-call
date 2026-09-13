@@ -1760,11 +1760,25 @@ select.field option {
     background: var(--ink);
   }
   .call.phone {
-    /* The phone is the other shape on purpose: the page itself scrolls under
-       the bottom sheet, so the call must be free to grow past the viewport. */
-    height: auto;
-    min-height: 100dvh;
-    padding-bottom: calc(var(--peek) + var(--safe-bottom) + 12px);
+    /* The call column ends where the sheet's peek begins.
+       It used to be height:auto + min-height:100dvh with the peek carried as
+       bottom padding, on the theory that the page should scroll under the
+       sheet. Measured at 375x812 that cost two things, both of them the whole
+       point of the screen:
+       - the transcript stopped being a scroll container (scrollHeight ===
+         clientHeight on every sample of the demo), so "jump to the newest
+         line" was a no-op — line 6 arrived at y 565 behind a sheet whose top
+         was 189, and the page never moved from scrollY 0;
+       - at idle the Listen button sat at 644-684 against a sheet resting at
+         664, and elementFromPoint at the button's own CENTRE returned the
+         sheet, not the button.
+       A bounded height gives the middle grid row a real ceiling, which gives
+       the transcript its own scrollbar back and keeps every control clear of
+       the sheet. The page itself no longer scrolls on a phone; the transcript
+       does, which is where a finger expects to scroll anyway. */
+    height: calc(100vh - var(--bar-h, var(--topbar)) - var(--peek) - var(--safe-bottom));
+    height: calc(100dvh - var(--bar-h, var(--topbar)) - var(--peek) - var(--safe-bottom));
+    padding-bottom: 0;
     overscroll-behavior-y: none;
   }
   .call-head {
@@ -1815,6 +1829,14 @@ select.field option {
     padding: 8px 14px;
   }
   .privacy-line .hint {
+    display: none;
+  }
+  /* Two sentences wrap to four lines at 375px — 99px of an 812px screen spent
+     on boilerplate sitting directly above the sheet, and the space belongs to
+     the words. The masking promise is stated on About and repeated on every
+     line it applies to; the storage promise is the one that has to be under
+     the transcript. */
+  .privacy-line .pl-mask {
     display: none;
   }
   .practice-strip {
