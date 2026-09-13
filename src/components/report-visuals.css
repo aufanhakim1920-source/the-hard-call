@@ -741,6 +741,20 @@
   gap: 5px;
   pointer-events: none;
 }
+/* ⭐ The score reads in the QUIET tier, not the accent.
+
+   Gold is this app's positive signal — the handled fill, the tip rule, the
+   primary button — and the score was the only large gold glyph on the card.
+   Judged as a stranger would, that made the failing run's "30" the warmest,
+   brightest mark on a card whose lead says two obligations went unanswered:
+   the same fault the split bar's hazard stripes were introduced to fix, where
+   a full-width gold segment made the worst call look like the best.
+
+   It is the same reasoning the research already applied — the ring is
+   deliberately not the primary reading — carried into the paint, where it had
+   not been. Measured: --grey is 6.46:1 on ink and 5.01:1 on cream, both above
+   AA for a 27px numeral (which needs 3.0), and the lit ticks stay gold so the
+   dial still encodes the value. */
 .rv-ring-value {
   display: flex;
   align-items: baseline;
@@ -749,7 +763,7 @@
   letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--gold-2);
+  color: var(--grey);
 }
 .rv-unit {
   font-size: 10px;

@@ -18,12 +18,48 @@
    and colour is never the only carrier: the count and the word "missed" say
    the same thing in greyscale. */
 
+/* ⭐ The lead is the one thing on this card with a ground of its own.
+
+   MEASURED on the finished card, both runs: eleven regions, and not one
+   painted surface larger than 8000px² — every reading sat on the page's own
+   ink, separated by 25 hairlines and by margins of 18, 20, 20, 20, 22, 22, 24,
+   24 and 26px. That is a spacing scale with no hierarchy in it: the model's
+   write-up got the same air as the miss count, and the eye had no second or
+   third stop, only a walk down a stack of flat panels.
+
+   A ground, not a border. The hairline outline is the house failure mode (49
+   of 50 past builds) and it is already spent 25 times on this card.
+
+   ⚠ The plate is a DIFFERENT token per ground, and that is measured, not a
+   preference. Changing a ground re-opens every contrast question that ground
+   had answered, and the two grounds have different headroom:
+
+   - dark uses --ink-3, a 1.25:1 step off the page. --ink-2 was tried first and
+     looked at: 1.09:1, invisible on the rendered card. On this plate --bad
+     reads 6.62:1, --ok 7.20, --cream 11.48, --grey 5.19.
+   - light uses --ink-2, a 1.10:1 step. --ink-3 there is a fine 1.22:1 surface
+     but its text has nowhere to go — --ok lands on 4.53:1 and --grey, which is
+     the ring's own labels sitting inside this plate on a phone, fails outright
+     at 4.12:1. On --ink-2: --bad 5.13:1, --ok 5.03, --cream 13.04, --grey 4.57.
+
+   All eight above AA, on a card whose lead is the one reading a judge is
+   guaranteed to take. */
 .rc-verdict {
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(0, 1fr);
   align-items: center;
-  gap: 6px 24px;
-  margin: 0 0 22px;
+  gap: 6px 26px;
+  /* The bleed is EXACTLY the card's own side padding — 20px above 760px, 14px
+     below, which is where `.report` changes it — so the plate reaches the
+     card's edge while the figure and the sentence stay on the same left spine
+     as every reading under them. An inset plate put the lead 26px right of
+     everything else and the card's left edge visibly wobbled. Bleed and
+     padding cancel, so the plate is never wider than the card: measured 0px of
+     horizontal overflow at 375, 768 and 1280. */
+  margin: 0 -20px 34px;
+  padding: 22px 20px;
+  background: var(--ink-3);
+  border-radius: var(--r-card);
   /* Transform only, and it starts 8px low rather than invisible — frozen at
      frame 0 in a throttled tab this reads correctly. See the vault note
      "An Entrance Must Not Gate Visibility". */
@@ -36,6 +72,10 @@
   to {
     transform: none;
   }
+}
+
+:root[data-theme="light"] .rc-verdict {
+  background: var(--ink-2);
 }
 
 .rc-v-fig {
@@ -99,6 +139,10 @@
   .rc-verdict {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px 14px;
+    /* `.report` drops to 14px of side padding at this same breakpoint, so the
+       bleed follows it. */
+    padding: 16px 14px 18px;
+    margin: 0 -14px 26px;
   }
   .rc-v-say {
     grid-column: 1 / -1;

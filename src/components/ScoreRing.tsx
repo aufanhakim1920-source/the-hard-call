@@ -36,7 +36,13 @@ export function ScoreRing({ score, size = 132, label = "score", unverified = fal
     c.height = Math.round(size * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const gold = token(c, "--gold");
+    // --gold-2, not --gold. The lit ticks ARE the value, and WCAG 1.4.11 asks
+    // 3:1 of a graphic that carries meaning: plain --gold measured 2.18:1 on
+    // the light ground and 1.79:1 once the lead's plate sat behind it on a
+    // phone. --gold-2 reads 4.91:1 on cream and 6.79:1 on the dark plate. Same
+    // rule the rest of this card already follows, stated at the top of
+    // report-visuals.css: a mark that must be seen uses --gold-2.
+    const gold = token(c, "--gold-2");
     const slate = token(c, "--slate");
     const centre = size / 2;
     const r = centre - LIT_LEN - 2;

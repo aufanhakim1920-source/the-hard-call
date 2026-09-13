@@ -17,6 +17,7 @@ import { ScoreRing } from "./ScoreRing";
 import { daysBetween, ledger } from "./report-math";
 import "./report-visuals.css";
 import "./report-lead.css";
+import "./report-rows.css";
 import "./scenario-draft.css";
 
 /**
@@ -341,7 +342,7 @@ export function ReportCard({
             than leading with nothing — and on a phone it moves down beside the
             miss count, so the demoted reading stops being the first one. It
             stays here when there is no verdict to sit beside. */}
-        {(!phone || !ringInLead) && <ScoreRing score={report.score} unverified={!hasVerifiedReportScore(report)} size={phone ? 92 : 132} />}
+        {(!phone || !ringInLead) && <ScoreRing score={report.score} unverified={!hasVerifiedReportScore(report)} size={phone ? 92 : 100} />}
       </div>
 
       {/* The consequence first, then why the call ran the way it did, then the
