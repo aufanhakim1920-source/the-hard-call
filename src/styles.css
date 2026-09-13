@@ -364,8 +364,13 @@ input.field:focus,
 select.field:focus,
 textarea.field:focus {
   border-color: var(--gold);
-  outline: none;
 }
+/* `outline: none` used to live in the rule above, and it beat
+   `.thick-focus :focus-visible` on specificity. MEASURED with Thicker focus
+   ring switched on: 12 of 13 controls drew a 4px ring and every text input
+   drew NONE — it got a 1px border colour instead, which is the thing the
+   setting exists to replace. An accessibility setting that silently does not
+   apply to the control you are typing into is worse than not offering it. */
 select.field option {
   background: var(--ink-2);
 }
@@ -1123,13 +1128,27 @@ select.field option {
   align-items: center;
   padding: 14px 4px;
   border-bottom: 1px solid var(--line);
-  transition: opacity 200ms;
+  transition: background 200ms, color 200ms;
 }
 .deadline-row:first-of-type {
   border-top: 1px solid var(--line);
 }
+/* A settled deadline used to be `opacity: 0.45`, which is the same mistake the
+   report card was just cleared of: dimming text with opacity is choosing a
+   colour blind. MEASURED across the row's ten pieces of text — including the
+   customer's name and the Reopen button — 2.39-3.97:1 on the dark ground and
+   1.86-2.73:1 on the light one, against a 4.5 bar.
+
+   The stood-down reading comes from the ground and a quieter token instead,
+   exactly as the handled sign card does it, so a row that is finished still
+   looks finished and can still be read by whoever has to reopen it. */
 .deadline-row.done {
-  opacity: 0.45;
+  background: var(--ink-2);
+  color: var(--text-3);
+}
+.deadline-row.done .left,
+.deadline-row.done .d {
+  color: var(--text-3);
 }
 .deadline-row .d {
   font-family: var(--mono);

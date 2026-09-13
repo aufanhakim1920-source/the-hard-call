@@ -114,6 +114,10 @@ export function TopBar({ view, onView, assistant }: { view: View; onView: (v: Vi
           <button
             key={t.id}
             className={"tab" + (view === t.id ? " on" : "")}
+            // The underline and the colour say which section is open; neither
+            // reaches a screen reader, so without this the tab strip announces
+            // six identical buttons.
+            aria-current={view === t.id ? "page" : undefined}
             onClick={() => {
               play("tap");
               onView(t.id);
