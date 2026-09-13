@@ -254,9 +254,10 @@ so it darkens to `#8A5E1C` (4.91:1) for text while the sign's gold **fill** stay
   when a call starts. A web page cannot reach a desktop music app; that route needs the provider's own
   login and a paid tier.
 - **Relabelling evaluation cases to raise a number.** Under the strict legal gate, recall on the
-  40-case set fell from 1.00 to 0.83 — and 7 of those 8 "misses" are cases we had labelled wrongly
-  against the actual law. They were left alone. Editing the test to match the code is how a gate stops
-  meaning anything.
+  40-case set fell from 1.00 to 0.83 — and 7 of those 8 "misses" looked like cases we had labelled
+  wrongly against the actual law. They were left alone. Editing the test to match the code is how a
+  gate stops meaning anything. ⚠️ This was later challenged and re-settled; see
+  **The seven labels, argued twice** below.
 
 ## A 401 is not always a bad key — read the error code
 
@@ -1231,3 +1232,72 @@ to prevent.
 
 ⭐ **Count the irreversible clicks in a product and check each one has a guard.**
 There were three here and two of them had none; nobody had listed them.
+
+## The seven labels, argued twice
+
+The one place two of us reached opposite conclusions from the same documents, kept here in full
+because the reasoning is the part that normally disappears into a merged branch.
+
+Seven cases in `eval/cases.json` — c01, c02, c03, c08, c09, c11, c34 — are informal difficulty
+language with no stated period. All seven were expected to raise `hardship-request`, and under the
+strict legal gate none of them did.
+
+**The first reading (`a21931a`, Shawn).** The expectations are wrong, not the engine.
+`docs/hardship-flag-rules.md` triggers on inability over the medium term, a problem unresolvable
+within about six months, and states outright that it does **not** trigger on temporary difficulty
+with a stated near-term recovery. `fixtures/expected/expected_flags.json` goes further and calls a
+fire on that shape in `call_002` the single most important failure to avoid. c02 names a payday
+inside the same sentence; c11 names next month. So the seven were corrected to expect nothing, and
+the pull request said plainly that this contradicted the README rather than quietly leaving both
+standing.
+
+⭐ **The argument was not "the number is too low".** It was that the labels were being moved toward
+the **written authority**, which the code independently follows — a different act from moving them
+toward the code. That distinction is real, and it is the reason this was a decision and not a
+violation.
+
+**The second reading (`77d20fe`, aufan; reverted in `ebd2644`).** The labels were never the defect.
+Those seven *are* hardship turns. What the engine lacked was somewhere to put them: a second outcome
+between "statutory notice" and "nothing". Setting them to expect nothing would have raised recall by
+**deleting the evidence that the tier was missing** — the number would have improved and the gap
+would have become invisible. The request tier was built instead, the seven labels were restored
+verbatim, and the recall figure was left pointing at the gap.
+
+**Settled: the labels stand, the tier carries the difference.** `hardship-request` recall is 0.25
+because 9 of the 12 misses are the engine correctly raising `ask-about-hardship`, which the flat
+label set has no vocabulary for. The results file marks that block `"scored": false`.
+
+⭐ **The rule that came out of it, sharper than the one that went in:** *editing the test until it
+agrees with the code is how a gate stops meaning anything* — and when a label looks wrong, the
+repair is usually **a missing outcome, not a corrected label**. A low number that names a gap is
+worth more than a high one that hides it.
+
+Still open for laural: whether c09 ("the floods took the whole ground floor... no way I can pay this
+month") and c34 ("nothing left this fortnight") are requests or notices. Neither names a recovery,
+and the turn after usually settles it. That is a contract question, not a defect.
+
+## Re-running the eval after the suite grew
+
+`eval/cases.json` went from 41 to 44 when the three `inform-hardship-provisions` cases landed, and
+the published run stayed at n 41 until it was re-run on 13 Sep. Both numbers were correct for what
+they measured, which is exactly why the mismatch was easy to leave alone.
+
+| | published (41) | re-run (44) |
+|---|---|---|
+| precision | 1.000 | **1.000** |
+| recall | 0.690 | **0.721** |
+| F1 | 0.817 | **0.838** |
+| exact-set | 0.683 | **0.727** |
+| errors | 0 | **0** |
+| speaker | 41/41 | **44/44** |
+| p50 / p95 | 1.94 s / 3.30 s | **1.74 s / 3.00 s** |
+
+`inform-hardship-provisions` scores for the first time — support 1, 1.00 / 1.00 — because a case can
+now declare a sign already on record, so the ABA duty's precondition is finally writable.
+
+**One case moved, and it was the model, not the code.** `c04` went from request to notice. The notice
+gate reads the model's `period` and `recovery` fields and a quote check; the only engine change since
+the last run affects turns whose speaker is unknown, and `c04` resolved as `customer` both times.
+⭐ **A gate whose input is a model field inherits that field's variance** — one borderline utterance
+is the entire difference between the two runs, and a headline recall quoted to three decimals hides
+that. Worth remembering before reading the next 0.03 as progress.

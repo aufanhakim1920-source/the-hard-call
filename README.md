@@ -205,7 +205,7 @@ built from what is already known, marked `degraded`, with no invented score.
 
 ### Evaluation
 
-`eval/cases.json` holds **41 labelled utterances** — real phrasings that never use the word
+`eval/cases.json` holds **44 labelled utterances** — real phrasings that never use the word
 "hardship", hard negatives built to look similar, and one to three cases per cue. `npm run eval`
 replays them through the real handler and reports precision, recall, exact-set accuracy, speaker
 accuracy and latency. The published run (`public/eval-results.json`, also shown on the app's About
@@ -214,29 +214,48 @@ page) is measured against **the model the deployed function actually uses**, `ge
 | | |
 |---|---|
 | Precision | **1.00** (no false positives) |
-| Recall | **0.69** |
-| Exact set match | **28 of 41** |
-| Speaker accuracy | **41 of 41** |
-| Latency | **p50 1.94 s · p95 3.30 s** |
+| Recall | **0.72** |
+| Exact set match | **32 of 44** |
+| Speaker accuracy | **44 of 44** |
+| Latency | **p50 1.74 s · p95 3.00 s** |
 
-**Per key, the picture is sharper.** Nine cause cues and the complaint sign score **1.00 precision and
-1.00 recall** — every one, no misses. The entire recall figure comes from a single key:
+⚠️ **The suite grew from 41 to 44 and the numbers above are the re-run, not the old ones carried
+forward.** The three added cases are the first that can score the ABA duty prompt at all: it sat at
+support 0 because the duty exists only once a notice is on record, and until a case could declare a
+sign as already raised, its precondition was unwritable. `c42` must fire it, `c43` and `c44` must
+not. Against the previous published run of 41, precision held at **1.00**, recall moved
+**0.69 → 0.72**, F1 **0.817 → 0.838** and exact-set match **0.683 → 0.727**, with **0 errors** in
+both. One case changed side — see below.
+
+**Per key, the picture is sharper.** Nine cause cues, the complaint sign and the ABA duty prompt score
+**1.00 precision and 1.00 recall** — every one, no misses. The entire recall figure comes from a
+single key:
 
 | key | precision | recall |
 |---|---|---|
-| complaint, job loss, health, bereavement, separation, safety, gambling, disaster, stress, scam | **1.00** | **1.00** |
-| hardship-request | **1.00** | **0.19** |
+| complaint, job loss, health, bereavement, separation, safety, gambling, disaster, stress, scam, inform-hardship-provisions | **1.00** | **1.00** |
+| hardship-request | **1.00** | **0.25** |
 
 **Read that table the right way round.** For this product precision is the number that matters:
 a false notice starts a 21-day clock the bank does not owe and puts a customer into a process they
 never asked for. Recall costs a prompt the worker did not get; a false positive costs a legal
 obligation invented out of nothing.
 
-**And every one of the 13 misses is a `hardship-request`** — not one is a statutory notice. Under the
+**And every one of the 12 misses is a `hardship-request`** — not one is a statutory notice. Under the
 two-tier rule the team agreed, those are **requests**: a hint that should prompt the worker to ask,
 starting no clock and stored nowhere.
 
-**The request tier is built, and 9 of those 13 "misses" are the engine firing correctly under the
+**Exactly one case changed side between the two runs**, and it is worth naming rather than absorbing
+into a better number. `c04` — *"Is there any way to pause it for a bit? I just can't do it right
+now."* — was a request last run and is a notice this one. Nothing in the code explains it: the notice
+gate turns on the model's own `period` and `recovery` fields plus a quote check, and the one engine
+change since (an unknown speaker now downgrades a legal sign to a request instead of dropping it)
+cannot reach `c04`, whose speaker resolved as `customer` both times. **It is the model landing
+differently on a borderline utterance** — "I just can't do it right now" read once as a single
+payment and once as open-ended. The other eleven misses are the same eleven as before. That one
+case is the whole of the recall movement, which is the honest size of the difference.
+
+**The request tier is built, and 9 of those 12 "misses" are the engine firing correctly under the
 other key** (`ask-about-hardship` — the run records them). `eval/cases.json` predates the tier and has
 no label for a request, so under its flat labels a correct request can only ever score as a miss.
 The results file marks that block `"scored": false` for exactly this reason. **Recall here is a
@@ -245,14 +264,36 @@ measurement of the labels, not of the engine** — which is why it is printed ne
 
 A one-off control run against `gemini-2.5-flash` scored **0.97 precision / 0.81 recall** — one more
 hardship case caught, bought with a false positive on "the storm knocked our power out". ⚠️ **Read
-that pair against 1.00 / 0.74, not against the 0.69 above**: both control figures were taken before
+that pair against 1.00 / 0.74, not against the 0.72 above**: both control figures were taken before
 the quote requirement landed, which cost `gemini-flash-latest` 0.738 → 0.690. Only the
 `gemini-flash-latest` run is committed, so treat the comparison as a measurement we took rather than
 one you can reproduce from this repo. We chose the model that never invents an obligation.
 
-**We did not edit the test to flatter the code.** Recall fell the day the strict legal gate landed,
-and the cases it "missed" are ones we had labelled wrongly against the actual law. They were left
-alone. Editing the test until it agrees with the code is how a gate stops meaning anything.
+**We did not edit the test to flatter the code — and that was argued out, not assumed.** Recall fell
+the day the strict legal gate landed, and seven of the cases it "missed" (c01, c02, c03, c08, c09,
+c11, c34) all have the same shape: informal difficulty language with no stated period.
+
+**Shawn corrected those seven to expect nothing** (`a21931a`), and said plainly in the pull request
+that it contradicted what this section then claimed. His argument was that it is not the forbidden
+move. He was moving the labels toward the **written legal authority**, not toward the code:
+`docs/hardship-flag-rules.md` triggers on inability over the *medium term*, a problem unresolvable
+"within about 6 months", and explicitly does **not** trigger on "temporary difficulty with a stated
+near-term recovery" — and `fixtures/expected/expected_flags.json` puts it harder, calling a fire on
+that shape in `call_002` the single most important failure to avoid. Editing a test toward the law
+and editing it toward the code are different acts, and only one of them is cheating.
+
+**It was settled the other way, and the seven labels are back** (`ebd2644`). Not because the reading
+of the law was wrong — the law says what Shawn said it says — but because the labels were never the
+defect. Those seven *are* hardship turns; what the engine lacked was a second outcome to put them in.
+Expecting nothing would have raised recall by deleting the evidence that a tier was missing. **The
+tier was built instead** (`77d20fe`), and the labels stayed exactly as measured.
+
+So the original principle survives, and a reader can see which side of it this case fell on:
+**editing the test until it agrees with the code is how a gate stops meaning anything** — and when a
+label looks wrong, the repair is usually a missing outcome rather than a corrected label. Recall on
+`hardship-request` sits at **0.25** because 9 of the 12 misses are correct requests that the flat
+label set cannot express. That number is left low deliberately. Whether those seven are requests or
+notices is a contract question for laural, and it is worth more visible than tidied away.
 
 A second, stricter set comes from the detection branch: three full call fixtures with ground truth
 for *when* the obligation arises. `npm run eval:fixtures` replays them turn by turn — **2 of 3
@@ -310,7 +351,8 @@ worse than no claim. What is true, and checkable by reading the source:
 - **The deterministic detector is merged and wired, and it does not carry the demo.** It runs in the
   browser before every model call, with no network, and it is accurate where it fires: 40 of 41
   agreement with `eval/cases.json`, 0 cases where it fires and the case expects silence, 4 of 4 of
-  its own fixtures. But replayed line by line over both demo scripts it raises **0 signs**, because
+  its own fixtures. ⚠️ That agreement was measured when the set held 41 cases and has **not** been
+  re-measured against the three added since, so read it as 40 of 41, not 43 of 44. But replayed line by line over both demo scripts it raises **0 signs**, because
   the demo's wording — *"Just a few months without the full payment"* — pairs a period with an
   implied inability and matches nothing in its lexicon. All **188 signs** across every archived demo
   run came from the model; the detector contributed none.
