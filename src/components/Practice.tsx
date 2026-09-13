@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { hasVerifiedReportScore } from "../lib/reportScore";
 import { SEEDS, levelAsk, levelLabel, voiceFor } from "../lib/scenarios";
 import { useFlip, useRowExit } from "../lib/motion";
@@ -11,6 +12,17 @@ import "./practice.css";
 
 export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
   const store = useStore();
+  // Which Remove is armed, if any. It disarms on a timer so a click made and
+  // then thought better of does not stay loaded on a grid of nine rows — the
+  // timer is cleared on every change and on unmount, because an armed button
+  // that outlives the screen is the bug this is meant to prevent.
+  const [armed, setArmed] = useState<string | null>(null);
+  const disarm = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    window.clearTimeout(disarm.current);
+    if (armed) disarm.current = window.setTimeout(() => setArmed(null), 6000);
+    return () => window.clearTimeout(disarm.current);
+  }, [armed]);
   const all: Scenario[] = [...SEEDS, ...store.scenarios.filter((s) => s.approved)];
   // Best score per scenario comes from the reports, so seeds get it too.
   const best = (id: string) => store.reports.filter((r) => r.scenarioId === id && hasVerifiedReportScore(r)).reduce((m, r) => Math.max(m, r.score), 0);
@@ -87,14 +99,28 @@ export function Practice({ onStart }: { onStart: (s: Scenario) => void }) {
                 <span style={{ display: "flex", gap: 6 }}>
                   {s.source === "generated" && (
                     <button
-                      className="btn ghost sm"
-                      aria-label={`Remove ${s.name} from practice`}
+                      className={"btn sm" + (armed === s.id ? " danger" : " ghost")}
+                      aria-label={
+                        armed === s.id
+                          ? `Confirm removing ${s.name} from practice. This cannot be undone.`
+                          : `Remove ${s.name} from practice`
+                      }
                       onClick={() => {
                         play("tap");
+                        // One click used to delete an invented customer outright:
+                        // no confirmation, no undo, and the model call that built
+                        // them already spent. The first click arms, the second
+                        // removes, and it disarms itself after six seconds so a
+                        // stray click on a nine-row grid cannot sit there loaded.
+                        if (armed !== s.id) {
+                          setArmed(s.id);
+                          return;
+                        }
+                        setArmed(null);
                         exit.remove(s.id, () => actions.removeScenario(s.id));
                       }}
                     >
-                      Remove
+                      {armed === s.id ? "Remove for good" : "Remove"}
                     </button>
                   )}
                   {/* Nine rows of "Start" and "Remove" are one word each to a
