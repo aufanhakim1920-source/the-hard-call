@@ -1,0 +1,179 @@
+/* ---------- the settings panel's own controls ----------
+   A new file rather than a block in the main stylesheet, which another agent
+   holds this round. Everything is scoped through `.a11y-panel` on purpose:
+   this file is bundled BEFORE the main stylesheet, so a selector of equal
+   weight loses on source order and silently does nothing. Measured that way
+   on `.scen.next` once already; see practice.css.
+
+   Three things here were only WORKING. Eleven switches and two segmented
+   controls — the whole accessibility story, and the panel a judge opens first
+   — and between them they had one hover rule, which changed a word from grey
+   to cream.  See the vault note "The Small Interactions Get the Craft Too":
+   the hero gets hand-written craft and everything below it gets the default.
+
+   No colour literal appears below. Every value is a token that already means
+   something in this build, so both grounds and all twelve settings reach it
+   for free. */
+
+/* ---- 1. the switch row: hover, press and focus each say a different thing ----
+   The row IS the button — 340px of it — and hovering it did nothing at all, so
+   nothing told you the words were clickable and not a caption. Now hover
+   raises the row off the panel, a press makes it give under the finger while
+   the knob stretches, and the focus ring is the global one, untouched. Three
+   states, three different statements, and only one of them spends a colour.
+
+   The ground is the row's own box and nothing was moved to get it. A 10px
+   bleed toward the panel edge was tried first and measured wrong in both
+   directions: the scrolling body has `padding-left: 0`, so the left 10px was
+   clipped away unseen, and `overflow-y: auto` computes overflow-x to `auto`
+   too, so the right 10px became 2px of real sideways scroll inside the panel.
+   The row at its natural width already spans the panel's content box exactly,
+   which is what the bleed was trying to buy. */
+.a11y-panel .a11y-scroll .a11y-row {
+  border-radius: 8px;
+  transition:
+    background 140ms var(--ease-out),
+    transform 120ms var(--ease-out);
+}
+/* ⚠ NOT `--ink-2`, which was the first answer and was invisible: the panel's
+   own surface IS `--ink-2`, so the row hovered to exactly the colour it was
+   already sitting on. Measured, not noticed.
+
+   And "raised" is not the same direction in the two grounds. On the dark one
+   `--ink-3` is the step above the panel; on the light one the step above the
+   panel is the PAGE, because the light palette runs cream (page) → `--ink-2`
+   (panel) → `--ink-3` (deepest). Using `--ink-3` on light darkened the hint
+   line to 4.08:1 and broke AA on every one of the eleven rows. The cream reads
+   5.01:1, which is better than the 4.57:1 the hint has sitting on the panel. */
+.a11y-panel .a11y-scroll .a11y-row:hover {
+  background: var(--ink-3);
+}
+:root[data-theme="light"] .a11y-panel .a11y-scroll .a11y-row:hover {
+  background: var(--ink);
+}
+/* The press does NOT deepen the ground again. A third wash on a light panel
+   has nowhere to go without taking the hint text under AA, and a wash is the
+   weakest thing a press can say anyway: the row gives under the finger and the
+   knob stretches toward where it is about to travel. Two objects move, no
+   colour is spent, and hover / press / focus stay three different statements. */
+.a11y-panel .a11y-scroll .a11y-row:active {
+  transform: scale(0.995);
+}
+
+/* ---- 2. the knob lands, and answers the finger on the way ----
+   `--ease-back` is in the stylesheet described as "a control that lands" and
+   no control was using it. A toggle is the control that most wants it.
+
+   The squash is the press state. transform-origin points at where the knob is
+   ABOUT to go — off, it stretches right; on, it stretches left — which is the
+   motion note's "hint in the direction of travel", and it costs one property.
+
+   ⚠ Every rule restates the FULL transform. A transform keyframe or rule that
+   names only one function silently drops the others. */
+.a11y-panel .a11y-knob {
+  transform: translateX(0) scaleX(1);
+  transform-origin: left center;
+  transition:
+    transform 220ms var(--ease-back),
+    background 180ms;
+}
+.a11y-panel .a11y-row.on .a11y-knob {
+  transform: translateX(16px) scaleX(1);
+  transform-origin: right center;
+}
+.a11y-panel .a11y-row:active .a11y-knob {
+  transform: translateX(0) scaleX(1.28);
+}
+.a11y-panel .a11y-row.on:active .a11y-knob {
+  transform: translateX(16px) scaleX(1.28);
+}
+
+/* ---- 3. the segmented control: the selection TRAVELS ----
+   Four text sizes and two grounds, and picking one cross-dissolved: the gold
+   faded off the old segment while it faded onto the new one, 160ms each way,
+   nothing moving. Two things changed and neither of them connected.
+
+   Now one block slides from the old segment to the new one. It is positioned
+   from `--i` and `--n`, both written on the element by React, so it is CORRECT
+   ON THE FIRST FRAME — no measurement, no effect, nothing to arrive late in a
+   tab that is not painting.
+
+   translateX on the thumb is a percentage of the THUMB, and the thumb is
+   exactly one segment wide, so `--i * 100%` lands on segment `--i` for any
+   number of segments. The 1px gaps had to go for the arithmetic to be exact,
+   and they were the 1px-line habit anyway: the thumb is the divider now. */
+.a11y-panel .a11y-seg {
+  position: relative;
+  gap: 0;
+  background: var(--ink-2);
+}
+.a11y-panel .a11y-seg-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% / var(--n));
+  transform: translateX(calc(var(--i) * 100%));
+  background: var(--gold);
+  border-radius: var(--r-ctl);
+  transition: transform 260ms var(--ease-out);
+  pointer-events: none;
+}
+/* The labels ride on top of the thumb; the ground they sit on is the segment
+   strip, unchanged, so the measured contrast is unchanged too. */
+.a11y-panel .a11y-seg button {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  transition: color 140ms;
+}
+.a11y-panel .a11y-seg button.on {
+  background: transparent;
+  /* Held back until the block is most of the way there. Turning the words dark
+     before the gold arrives is the crossfade this replaced. */
+  transition: color 140ms var(--ease-out) 130ms;
+}
+
+/* ---- 4. Reset arrives and leaves ----
+   It is created by changing any setting and destroyed by pressing it, and it
+   did both by blinking. It moves in from where the panel's title is, which is
+   the direction the eye is already travelling.
+
+   ⚠ Entrance is TRANSFORM ONLY. An animation frozen at frame 0 in a throttled
+   tab holds its first keyframe forever, so `from { opacity: 0 }` would leave
+   this button permanently invisible. The exit may fade — it is leaving, and
+   the failure mode of a frozen exit is that the thing stays on screen. */
+.a11y-panel .a11y-reset {
+  animation: a11yResetIn 200ms var(--ease-out);
+}
+@keyframes a11yResetIn {
+  from {
+    transform: translateX(-8px) scale(0.94);
+  }
+  to {
+    transform: none;
+  }
+}
+.a11y-panel .a11y-reset.is-leaving {
+  animation: a11yResetOut 140ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes a11yResetOut {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/* `transition-duration: 1ms` reaches everything above, but a DELAY does not —
+   it has to be zeroed by name, or the segment label sits grey for 130ms after
+   the setting has already changed. Both spellings, because the class follows
+   the setting and the media query follows the operating system. */
+.reduce-motion .a11y-panel .a11y-seg button.on {
+  transition-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .a11y-panel .a11y-seg button.on {
+    transition-delay: 0ms !important;
+  }
+}
