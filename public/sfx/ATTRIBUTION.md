@@ -11,7 +11,7 @@ a file somebody recorded.
 | `sign-legal.mp3` | A legal sign fires | Quick switch click | https://assets.mixkit.co/active_storage/sfx/2582/2582-preview.mp3 |
 | `sign-tip.mp3` | A tip fires | Dry pop up notification alert | https://assets.mixkit.co/active_storage/sfx/2356/2356-preview.mp3 |
 | `mark-handled.mp3` | A sign is marked handled | Fast transitions swoosh | https://assets.mixkit.co/active_storage/sfx/3115/3115-preview.mp3 |
-| `mark-undo.mp3` | That mark is taken back | Light switch sound | https://assets.mixkit.co/active_storage/sfx/2579/2579-preview.mp3 |
+| `mark-undo.mp3` | That mark is taken back · **and the report card fails to arrive** | Light switch sound | https://assets.mixkit.co/active_storage/sfx/2579/2579-preview.mp3 |
 | `deadline-done.mp3` | A deadline is marked replied | Mechanical typewriter single hit | https://assets.mixkit.co/active_storage/sfx/1382/1382-preview.mp3 |
 | `report-ready.mp3` | The report card arrives | Retract clock mechanism | https://assets.mixkit.co/active_storage/sfx/1049/1049-preview.mp3 |
 | `switch-tap.mp3` | Switches, tabs, buttons | On or off light switch tap | https://assets.mixkit.co/active_storage/sfx/2585/2585-preview.mp3 |
@@ -50,3 +50,13 @@ above: -18.4 dB peak. See `src/lib/sfx.ts`.
 
 They were chosen and levelled by measurement, not by ear. **Aufan needs to hear
 them on a headset before this ships.**
+
+## Two events on one recording
+
+`mark-undo.mp3` carries both `undo` (a mark taken back) and `failed` (End call was pressed and the
+report card did not arrive). Seven files, eight named events — no eighth file was downloaded the
+night before the deadline, and the element cache and the repeat guard are both keyed by file, so the
+browser fetches it once and the three-repeat rule counts samples rather than names.
+
+The full event map, the live-call policy and what is deliberately silent are in
+[`docs/SOUND.md`](../../docs/SOUND.md).
