@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 14:55 | aufanhakim1920-source | other | [eleven settings switches had no hover and no press at all](../../commit/67382d3f6dce080f80c45ac7797704e4d2f68e31) | Accessibility.tsx, settings.css | +207 / -3 |
 | 13 Sept, 14:50 | aufanhakim1920-source | live call + design | [on a phone the transcript never scrolled and Listen was under the sheet](../../commit/76353c31b9a63a9552c03cac04920170d6b1d5bd) | CallScreen.tsx, Transcript.tsx, styles.css | +64 / -10 |
 | 13 Sept, 14:43 | aufanhakim1920-source | other | [type carries affordance, and a sweep for cursor:pointer will never find it](../../commit/84c08003fe8e06b9d09caa4adfe8c8ae347ed56d) | DECISIONS.md | +32 / -0 |
 | 13 Sept, 14:42 | aufanhakim1920-source | live call | [four things looked pressable and nothing in the CSS said so](../../commit/554f957a855b25d2522ff7489885d42396abc50f) | SignStack.tsx, watching.css | +54 / -8 |
