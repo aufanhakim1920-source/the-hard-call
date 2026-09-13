@@ -5,7 +5,8 @@ type SpeakerConfidence = "known" | "inferred" | "unknown";
 interface Line { id: string; speaker: string; t: number; text: string; speakerConfidence?: SpeakerConfidence }
 
 /** Absent is "known": every transcript written before the field existed. */
-const attributed = (line: Line) => (line.speakerConfidence ?? "known") === "known";
+const attributed = (line: Line) => ["customer", "worker"].includes(line.speaker) &&
+  (line.speakerConfidence ?? "known") === "known";
 interface Judgement { signId: string; verdict: Verdict; note: string; evidenceLineIds?: string[] }
 
 export function buildReportItems(signs: Sign[], lines: Line[], raw: Judgement[], startedAt: number) {
@@ -15,8 +16,9 @@ export function buildReportItems(signs: Sign[], lines: Line[], raw: Judgement[],
     const item = matches.length === 1 ? matches[0] : undefined;
     const triggerIndex = lines.findIndex((line) => line.id === sign.lineId);
     const trigger = triggerIndex >= 0 ? lines[triggerIndex] : undefined;
-    const responses = lines.filter((line, index) => line.speaker === "worker" && line.text.trim() &&
+    const following = lines.filter((line, index) => line.text.trim() &&
       (triggerIndex >= 0 ? index > triggerIndex : line.t >= sign.t));
+    const responses = following.filter((line) => line.speaker === "worker" && attributed(line));
     const ids = Array.isArray(item?.evidenceLineIds) ? item.evidenceLineIds : [];
     // Only a turn whose speaker is KNOWN can discharge a duty. A customer line
     // misread as staff would mark an obligation handled that nobody handled —
@@ -29,8 +31,13 @@ export function buildReportItems(signs: Sign[], lines: Line[], raw: Judgement[],
     // place. A staff line misread as the customer would put a statutory clock
     // on the bank's own words, so nothing definitive is said about it either
     // way — not handled, not partly, and not missed.
-    const attributionKnown = !trigger || attributed(trigger);
+    const attributionKnown = trigger ? attributed(trigger) : !sign.lineId;
+    // A miss asserts that an action was absent. An unattributed later turn may
+    // contain that action, so its absence cannot be established. Positive
+    // evidence from an identified worker may still support handled or partly.
+    const absenceKnown = following.every(attributed);
     const supported = valid && responses.length > 0 && attributionKnown &&
+      (item.verdict !== "missed" || absenceKnown) &&
       (!(item.verdict === "handled" || item.verdict === "partly") || evidence.length > 0);
     return {
       signId: sign.id, key: sign.key, title: sign.title, kind: sign.kind,

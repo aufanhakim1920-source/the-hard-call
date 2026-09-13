@@ -112,3 +112,23 @@ test("speaker_confidence is optional, validated, and defaults to known", () => {
     assert.throws(() => adaptReportInput(broken), /Invalid transcript turn at index 0/, `${JSON.stringify(bad)} must be refused`);
   }
 });
+
+test('detector kind and persist fields keep requests and transient cues out of the report', () => {
+ const input = structuredClone(positive);
+ const obligation = input.flags[0];
+ input.flags = [
+  { ...obligation, kind: 'obligation', persist: true },
+  { ...obligation, flag_id: 'request', rule_id: 'HARDSHIP_REQUEST', kind: 'request', persist: true },
+  { ...obligation, flag_id: 'cue', kind: 'cue', persist: false },
+  { ...obligation, flag_id: 'private', kind: 'obligation', persist: false },
+  { ...obligation, flag_id: 'legacy-request', tier: 'request' },
+ ];
+ assert.deepEqual(adaptReportInput(input).signs.map(s => s.id), [obligation.flag_id]);
+});
+
+test('unknown detector kinds and conflicting tiers are rejected', () => {
+ for (const patch of [{ kind: 'obligaton' }, { persist: 'false' }, { kind: 'request', tier: 'notice' }]) {
+  const input = structuredClone(positive); Object.assign(input.flags[0], patch);
+  assert.throws(() => adaptReportInput(input), /Invalid flag/);
+ }
+});

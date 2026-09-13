@@ -33,10 +33,9 @@ function load(): Store {
     return {
       ...EMPTY,
       ...parsed,
-      // Cards written before the coaching switch existed all ran coached —
-      // there was no other mode. Backfilled here so a missing field can never
-      // be read as "this call was silent".
-      reports: (parsed.reports ?? []).map((r) => ({ ...r, coaching: r.coaching ?? true })),
+      // Missing can also mean a cloud row never recorded the coaching mode.
+      // Reloading the cache must not turn that uncertainty into coached=true.
+      reports: parsed.reports ?? [],
       settings: { ...EMPTY.settings, ...(parsed.settings ?? {}) },
     };
   } catch {

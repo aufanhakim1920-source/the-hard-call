@@ -82,7 +82,7 @@ function reportFrom(x: Row): Report {
   const degraded = x.degraded === undefined || x.degraded === null ? undefined : Boolean(x.degraded);
   const reason = x.degraded_reason === "quota" || x.degraded_reason === "unreachable" ? x.degraded_reason : undefined;
   const coaching = x.coaching === undefined || x.coaching === null ? undefined : Boolean(x.coaching);
-  const withDegraded = { ...report, degraded };
+  const withDegraded = { ...report, degraded, scoreUnverified: x.score_unverified === true };
   return {
     ...withDegraded,
     degradedReason: degraded ? reason : undefined,

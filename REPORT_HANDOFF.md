@@ -1,3 +1,33 @@
+## Current review follow-up
+
+The latest main sound/accessibility fixes are integrated. Review of the 28
+code/test/migration files changed against main found additional verification
+and compatibility gaps, now covered by regression tests:
+
+- Cloud reads retain an explicit `score_unverified=true`; sync tests use the
+  real score predicate rather than a constant stub, and also check that a
+  verified score stays eligible.
+- A missing referenced trigger or unknown triggering speaker cannot support
+  a definitive report verdict. A `missed` verdict requires an attributable
+  response window; a later unknown turn may contain the missing action.
+- Cache reloads preserve an unrecorded coaching mode rather than inventing true.
+- Canonical detector `kind`/`persist` fields are validated. Requests and cues
+  do not become report obligations. Legacy flags without kind/tier still work.
+- `npm test` is offline. The former `eval/tier.test.mjs` live-model experiment
+  is now `npm run eval:tier`, outside the offline test glob.
+
+Actual rules-detector integration (mocked report model): call_001 3 events / 3
+report obligations, call_002 0 / 0, call_003 3 / 2, call_004 1 / 0. Batch results
+match streaming finalisation. A provisional live request can later disappear;
+consumers must use finalisation rather than count accumulated live emissions.
+
+No deployment, migration, real Gemini scoring, or browser run was performed.
+This review does not establish full free-text privacy: the legacy live-session
+path and generated prose still need end-to-end scrutiny. Acoustic overlap and
+model speaker accuracy remain unmeasured. See docs/report-review.md.
+
+---
+
 # Report card handoff
 
 Shawn's branch: `part/report-lessons`.

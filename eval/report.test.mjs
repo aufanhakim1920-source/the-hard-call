@@ -138,3 +138,27 @@ test("the report prompt names the turns nobody established the speaker of", asyn
     else process.env.GEMINI_API_KEY = originalKey;
   }
 });
+
+
+test('an inferred response cannot establish that the worker missed the duty', () => {
+ assert.equal(build([judge({ verdict: 'missed', evidenceLineIds: [] })], inferred('w1')).verdict, 'unverified');
+});
+
+test('unknown triggering speaker stays unverified even without confidence metadata', () => {
+ const transcript = lines.map(l => l.id === 'c1' ? { ...l, speaker: 'unknown' } : l);
+ for (const verdict of ['handled', 'partly', 'missed']) {
+  assert.equal(build([judge({ verdict })], transcript).verdict, 'unverified');
+ }
+});
+
+test('a missing referenced trigger cannot be replaced with the detection time', () => {
+ const missing = { ...sign, lineId: 'not-in-transcript', t: 1000 };
+ assert.equal(buildReportItems([missing], lines, [judge()], 1000)[0].verdict, 'unverified');
+});
+
+test('an ambiguous later turn prevents an absence-based missed verdict', () => {
+ const transcript = [...lines, { id: 'u2', speaker: 'unknown', t: 2700, text: 'I can lodge the application.' }];
+ assert.equal(build([judge({ verdict: 'missed', evidenceLineIds: [] })], transcript).verdict, 'unverified');
+ // Positive evidence from an established worker still stands.
+ assert.equal(build([judge()], transcript).verdict, 'handled');
+});

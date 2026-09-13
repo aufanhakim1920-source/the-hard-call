@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import loadTS from './helpers/load-ts.cjs';
+import { hasVerifiedReportScore } from '../src/lib/reportScore.ts';
 function setup(storageFails = false, missingColumns = []) {
  const storage = new Map();
  const localStorage = {
   getItem: (k) => { if (storageFails) throw Error('private'); return storage.get(k) ?? null; },
   setItem: (k,v) => { if (storageFails) throw Error('private'); storage.set(k,v); },
  };
- const store = loadTS('src/lib/store.ts', {react: {}, './types':{uid:()=> 'id'}, './reportScore':{hasVerifiedReportScore:()=>true}}, {localStorage});
+ const store = loadTS('src/lib/store.ts', {react: {}, './types':{uid:()=> 'id'}, './reportScore':{hasVerifiedReportScore}}, {localStorage});
  let user = null, time = 0, failed = false, deleteFailed = false, hold = null;
  const reads = [], writes = [], deletes = [], cloud = { reports: [], deadlines: [], lessons: [], scenarios: [] }, intervals = [], timers = new Map(); let nextTimer = 0;
  const win = { setInterval:(f)=>{intervals.push(f);return intervals.length;}, clearTimeout:(id)=>timers.delete(id), setTimeout:(f)=>{timers.set(++nextTimer,f);return nextTimer;} };
@@ -26,7 +27,7 @@ function setup(storageFails = false, missingColumns = []) {
   }})}),
  })};
  const sync = loadTS('src/lib/sync.ts', {
-  './auth':{getAuth:()=>({user})}, './store':store, './supabase':{supabase:db}, './reportScore':{hasVerifiedReportScore:()=>false},
+  './auth':{getAuth:()=>({user})}, './store':store, './supabase':{supabase:db}, './reportScore':{hasVerifiedReportScore},
  }, {window:win,Date:class extends Date {static now(){return time;}},console:{warn:()=>{}}}, 'export { pull, push };');
  const login = (id) => {user=id?{id}:null; store.setStoreOwner(id);};
  return {store,sync,reads,writes,deletes,cloud,intervals,timers,login,localStorage,setDeleteFailure:(v)=>deleteFailed=v,setFailure:(v)=>failed=v,advance:()=>time+=5001,setHold:(v)=>hold=v};
@@ -97,7 +98,7 @@ test('failed deletes remain queued and retry after backoff',async()=>{
 test('generated scenario delete persists across reload and is isolated from other users',()=>{
  const h=setup();h.login('A');h.store.actions.addScenario({id:'scenario-1',source:'generated'});
  h.store.actions.removeScenario('scenario-1');
- const restored=loadTS('src/lib/store.ts',{react:{},'./types':{uid:()=> 'id'},'./reportScore':{hasVerifiedReportScore:()=>true}},{localStorage:h.localStorage});
+ const restored=loadTS('src/lib/store.ts',{react:{},'./types':{uid:()=> 'id'},'./reportScore':{hasVerifiedReportScore}},{localStorage:h.localStorage});
  restored.setStoreOwner('B');assert.equal(restored.getStore().pendingDeletes,undefined);
  restored.setStoreOwner('A');assert.equal(restored.getStore().pendingDeletes.scenarios[0],'scenario-1');
 });
@@ -160,4 +161,31 @@ test('a row written before these columns existed comes back without inventing th
  assert.equal(r.coaching,undefined,'the mode was never recorded, which is not coaching being off');
  assert.equal(r.unverified,1,'derived from the items the row does carry');
  assert.equal(r.scoreUnverified,true,'an unverified item still withholds the score');
+});
+
+
+test('explicitly withheld scores remain withheld after a real-module round trip', async () => {
+ const h=setup(); h.login('A');
+ h.store.actions.addReport(REPORT({ score: 85, scoreUnverified: true,
+  items: [{ signId: 's1', verdict: 'handled', note: 'Observed response' }] }));
+ await h.sync.pull(); await h.sync.push(h.store.getStore());
+ const row=h.writes.find(w=>w.table==='reports').rows[0];
+ const b=setup(); b.login('A'); b.cloud.reports.push(row); await b.sync.pull();
+ assert.equal(b.store.getStore().reports[0].scoreUnverified, true);
+ assert.equal(hasVerifiedReportScore(b.store.getStore().reports[0]), false);
+});
+
+test('verified scores remain eligible after a real-module round trip', async () => {
+ const h=setup(); h.login('A');
+ h.store.actions.addReport(REPORT({ score: 85, scoreUnverified: false,
+  items: [{ signId: 's1', verdict: 'handled', note: 'Observed response' }] }));
+ await h.sync.pull(); await h.sync.push(h.store.getStore());
+ const b=setup(); b.login('A'); b.cloud.reports.push(h.writes.find(w=>w.table==='reports').rows[0]);
+ await b.sync.pull(); assert.equal(hasVerifiedReportScore(b.store.getStore().reports[0]), true);
+});
+
+test('unrecorded coaching mode remains unrecorded after a cache reload', () => {
+ const h=setup(); h.login('A'); h.store.actions.addReport(REPORT());
+ const restored=loadTS('src/lib/store.ts', {react:{}, './types':{uid:()=> 'id'}, './reportScore':{hasVerifiedReportScore}}, {localStorage:h.localStorage});
+ restored.setStoreOwner('A'); assert.equal(restored.getStore().reports[0].coaching, undefined);
 });
