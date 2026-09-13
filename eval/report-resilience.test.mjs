@@ -86,3 +86,37 @@ test("coaching switch alone changes neither model prompt nor report judgement", 
   if (oldKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = oldKey;
  }
 });
+
+test("an unresolved request creates an unscored operational follow-up", async () => {
+ const requestSign = { id: "rq", key: "ask-about-hardship", kind: "tip", tier: "request",
+  title: "Worth asking about hardship", askNext: "How long will this affect repayments?", evidence: "things are tight",
+  handled: false, t: 1000, lineId: "c", followUpDays: 7, followUpDate: "2026-09-20" };
+ const original = globalThis.fetch;
+ const oldKey = process.env.GEMINI_API_KEY;
+ process.env.GEMINI_API_KEY = "test-only";
+ globalThis.fetch = async () => Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify({
+  summary: "Ask the threshold question.", items: [{ signId: "rq", verdict: "missed", note: "The threshold question was not asked.", evidenceLineIds: [] }],
+  missedByAI: [], tip: "Ask how long repayments will be affected.", score: 100,
+ }) }] } }] });
+ try {
+  const report = await (await handle(req({ ...session, signs: [requestSign] }))).json();
+  assert.equal(report.items[0].tier, "request");
+  assert.equal(report.caught, 0);
+  assert.equal(report.missed, 0);
+  assert.equal(report.unverified, 0);
+  assert.equal(report.scoreUnverified, true);
+  assert.deepEqual(report.deadlines.map(d => [d.type, d.date]), [["followup", "2026-09-20"]]);
+ } finally {
+  globalThis.fetch = original;
+  if (oldKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = oldKey;
+ }
+});
+
+test("fallback keeps a request follow-up separate from legal deadlines", () => {
+ const report = localReport({ ...session, signs: [{ id: "rq", key: "ask-about-hardship", kind: "tip", title: "Ask about hardship",
+  askNext: "How long?", evidence: "tight", handled: false, t: 1000, lineId: "c", followUpDays: 7, followUpDate: "2026-09-20" }] }, new Error("429"));
+ assert.equal(report.items[0].tier, "request");
+ assert.equal(report.unverified, 0);
+ assert.equal(report.deadlines[0].type, "followup");
+ assert.equal(hasVerifiedReportScore(report), false);
+});

@@ -1,6 +1,6 @@
 // Only references and offsets are persisted; transcript quotes stay in the session.
 type Verdict = "handled" | "partly" | "missed" | "unverified";
-interface Sign { id: string; key: string; title: string; kind: "legal" | "tip"; lineId?: string; t: number }
+interface Sign { id: string; key: string; title: string; kind: "legal" | "tip"; lineId?: string; t: number; tier?: "obligation" | "request"; followUpDays?: number; followUpDate?: string }
 type SpeakerConfidence = "known" | "inferred" | "unknown";
 interface Line { id: string; speaker: string; t: number; text: string; speakerConfidence?: SpeakerConfidence }
 
@@ -48,6 +48,9 @@ export function buildReportItems(signs: Sign[], lines: Line[], raw: Judgement[],
           ? "Insufficient transcript evidence to verify the worker's response."
           : "The speaker of the triggering turn was not established, so no judgement is recorded either way.",
       evidence: supported ? evidence : [],
+      tier: sign.tier ?? (sign.key === "ask-about-hardship" ? "request" : "obligation"),
+      followUpDays: sign.followUpDays,
+      followUpDate: sign.followUpDate,
     };
   });
 }

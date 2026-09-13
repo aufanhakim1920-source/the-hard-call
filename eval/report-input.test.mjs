@@ -113,7 +113,7 @@ test("speaker_confidence is optional, validated, and defaults to known", () => {
   }
 });
 
-test('detector kind and persist fields keep requests and transient cues out of the report', () => {
+test('detector requests persist unscored while transient cues stay out of the report', () => {
  const input = structuredClone(positive);
  const obligation = input.flags[0];
  input.flags = [
@@ -123,7 +123,9 @@ test('detector kind and persist fields keep requests and transient cues out of t
   { ...obligation, flag_id: 'private', kind: 'obligation', persist: false },
   { ...obligation, flag_id: 'legacy-request', tier: 'request' },
  ];
- assert.deepEqual(adaptReportInput(input).signs.map(s => s.id), [obligation.flag_id]);
+ const signs = adaptReportInput(input).signs;
+ assert.deepEqual(signs.map(s => s.id), [obligation.flag_id, 'request', 'legacy-request']);
+ assert.deepEqual(signs.map(s => s.tier), ['obligation', 'request', 'request']);
 });
 
 test('unknown detector kinds and conflicting tiers are rejected', () => {

@@ -20,7 +20,7 @@ export interface Gap {
 export function responseGaps(session: Session, report: Report): Gap[] {
   const start = session.startedAt;
   const spokenAt = new Map(session.lines.map((l) => [l.id, l.t]));
-  return report.items.map((item) => {
+  return report.items.filter((item) => item.tier !== "request").map((item) => {
     const sign =
       session.signs.find((s) => s.id === item.signId) ?? session.signs.find((s) => s.key === item.key);
     // ⚠ The moment the trigger was SPOKEN — never `sign.t`, which the engine
@@ -66,6 +66,7 @@ export interface Ledger {
 }
 
 export function ledger(items: ReportItem[]): Ledger {
+  items = items.filter((item) => item.tier !== "request");
   const count = (v: Verdict) => items.filter((i) => i.verdict === v).length;
   const partly = count("partly");
   return {

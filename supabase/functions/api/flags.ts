@@ -348,6 +348,8 @@ Today's date: ${today}`;
           dueLabel: tier === "request" ? undefined : def.dueLabel,
           dueDays: tier === "request" ? undefined : def.dueDays,
           source: tier === "request" ? undefined : def.source,
+          followUpDays: tier === "request" ? 7 : undefined,
+          followUpDate: tier === "request" ? addDays(today, 7) : undefined,
         };
       });
 

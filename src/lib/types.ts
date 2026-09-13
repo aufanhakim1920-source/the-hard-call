@@ -38,6 +38,9 @@ export interface Sign {
   dueLabel?: string;
   dueDays?: number;
   source?: string;
+  /** Operational callback for an unresolved request. This is not a legal deadline. */
+  followUpDays?: number;
+  followUpDate?: string;
 }
 
 export interface Customer {
@@ -70,6 +73,10 @@ export interface ReportItem {
   verdict: Verdict;
   note: string;
   evidence?: { lineId: string; offsetMs: number }[];
+  /** Requests are retained for follow-up but excluded from compliance scoring. */
+  tier?: "obligation" | "request";
+  followUpDays?: number;
+  followUpDate?: string;
 }
 
 export interface Deadline {
@@ -82,6 +89,8 @@ export interface Deadline {
   callId: string;
   done: boolean;
   createdAt: number;
+  /** Absent means a statutory deadline for records written before this field existed. */
+  type?: "statutory" | "followup";
 }
 
 export interface Report {

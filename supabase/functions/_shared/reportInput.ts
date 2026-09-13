@@ -33,6 +33,7 @@ export interface FlagEvent {
   tier?: "notice" | "request";
   kind?: "obligation" | "request" | "cue";
   persist?: boolean;
+  followup_days?: number | null;
 }
 export interface TranscriptReportRequest { transcript: Transcript; flags: FlagEvent[] }
 
@@ -89,6 +90,8 @@ export function adaptReportInput(input: unknown) {
         !(flag.tier === undefined || flag.tier === "notice" || flag.tier === "request") ||
         !(flag.kind === undefined || ["obligation", "request", "cue"].includes(String(flag.kind))) ||
         !(flag.persist === undefined || typeof flag.persist === "boolean") ||
+        !(flag.followup_days === undefined || flag.followup_days === null ||
+          (Number.isSafeInteger(flag.followup_days) && (flag.followup_days as number) > 0)) ||
         (flag.kind !== undefined && flag.tier !== undefined &&
           !(flag.kind === "obligation" && flag.tier === "notice") &&
           !(flag.kind === "request" && flag.tier === "request"))) {
@@ -97,15 +100,17 @@ export function adaptReportInput(input: unknown) {
     const lineId = refs.get(`${flag.raised_at.speaker}:${flag.raised_at.start_ms}`);
     if (!lineId || ids.has(flag.flag_id)) throw new Error(`Invalid or duplicate flag reference at index ${index}.`);
     ids.add(flag.flag_id);
-    // Requests can be recorded elsewhere but are never scored as obligations.
-    // Transient cues and explicit non-persistence must not enter report output.
-    if (flag.persist === false || flag.kind === "cue" || flag.kind === "request" || flag.tier === "request") return [];
+    // Cues disappear. Requests remain as unscored follow-up records.
+    if (flag.persist === false || flag.kind === "cue") return [];
+    const request = flag.kind === "request" || flag.tier === "request";
     return [{
       id: flag.flag_id, key: flag.rule_id,
-      kind: "legal" as const,
+      kind: (request ? "tip" : "legal") as "tip" | "legal",
+      tier: request ? "request" as const : "obligation" as const,
       title: flag.obligation, askNext: flag.staff_prompt, lineId,
       evidence: "", handled: false, t: flag.raised_at.start_ms,
       source: flag.authority, dueDays: flag.deadline_days,
+      followUpDays: request ? (flag.followup_days as number | null | undefined) ?? 7 : undefined,
       deadlineFrom: flag.deadline_from,
       // No calendar date can be inferred from relative transcript timestamps.
     }];

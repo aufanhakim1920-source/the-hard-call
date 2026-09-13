@@ -188,6 +188,8 @@ export function ReportCard({
   // The worker's own earlier calls in this mode — the only honest benchmark for
   // a number out of 100. Newest first, as the store keeps them.
   const previous = store.reports.filter((r) => r.mode === report.mode && r.callId !== report.callId);
+  const obligationItems = report.items.filter((item) => item.tier !== "request");
+  const requestItems = report.items.filter((item) => item.tier === "request");
   const phone = useMedia(PHONE);
   // The ring only moves into the lead when there IS a lead to move it into.
   const ringInLead = phone && hasVerdict(report);
@@ -309,7 +311,8 @@ export function ReportCard({
       ...(report.degraded
         ? [`No write-up: ${report.degradedReason === "quota" ? "the model's daily limit was reached" : "the model could not be reached"}.`]
         : [report.summary]),
-      ...report.items.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
+      ...obligationItems.map((i) => `${i.verdict.toUpperCase()} — ${i.title}: ${i.note}`),
+      ...requestItems.map((i) => `FOLLOW-UP — ${i.title}: ${i.note}${i.followUpDate ? ` Call back by ${fmtDate(i.followUpDate)}.` : ` Follow up within ${i.followUpDays ?? 7} days.`}`),
       ...report.deadlines.map((d) => `${d.label} ${fmtDate(d.date)} — ${d.title}`),
       // No model write-up means no tip. A bare "Tip:" pasted into a case note
       // reads as advice that went missing, rather than one that was never given.
@@ -382,7 +385,7 @@ export function ReportCard({
       )}
 
       <div className="verdicts">
-        {report.items.map((i) => (
+        {obligationItems.map((i) => (
           <div className="verdict" key={i.signId}>
             <span className={"v " + i.verdict}>{i.verdict}</span>
             <div>
@@ -465,6 +468,22 @@ export function ReportCard({
           </div>
         ))}
       </div>
+
+      {requestItems.length > 0 && (
+        <section className="tip-box" aria-labelledby="request-followup-title">
+          <div className="label" id="request-followup-title">Request follow-up · not a statutory deadline · not scored</div>
+          {requestItems.map((item) => (
+            <p key={item.signId}>
+              <b>{item.title}.</b> {item.note}{" "}
+              {item.verdict === "handled" || item.verdict === "partly"
+                ? "No callback was added."
+                : item.followUpDate
+                  ? `Call back by ${fmtDate(item.followUpDate)} to ask the threshold question.`
+                  : `Follow up within ${item.followUpDays ?? 7} days to ask the threshold question.`}
+            </p>
+          ))}
+        </section>
+      )}
 
       <DeadlineTrack report={report} />
 

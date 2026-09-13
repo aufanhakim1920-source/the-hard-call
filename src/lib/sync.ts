@@ -43,7 +43,7 @@ function reportRow(r: Report, withMetadata = reportMetadata): Row {
     ...row,
     // Derived only as a fallback for cards written before these fields existed.
     score_unverified: r.scoreUnverified ?? !hasVerifiedReportScore(r),
-    unverified: r.unverified ?? r.items.filter((i) => i.verdict === "unverified").length,
+    unverified: r.unverified ?? r.items.filter((i) => i.tier !== "request" && i.verdict === "unverified").length,
     degraded: r.degraded ?? false,
     degraded_reason: r.degradedReason ?? null,
     coaching: r.coaching ?? null,
@@ -88,8 +88,8 @@ function reportFrom(x: Row): Report {
     degradedReason: degraded ? reason : undefined,
     coaching,
     // A stored count is still checked against the items it claims to describe.
-    unverified: report.items.filter((item) => item.verdict === "unverified").length,
-    handled: report.items.filter((item) => item.verdict === "handled").length,
+    unverified: report.items.filter((item) => item.tier !== "request" && item.verdict === "unverified").length,
+    handled: report.items.filter((item) => item.tier !== "request" && item.verdict === "handled").length,
     scoreUnverified: !hasVerifiedReportScore(withDegraded),
   };
 }
@@ -107,6 +107,7 @@ function deadlineFrom(x: Row): Deadline {
     customer: String(x.customer),
     done: Boolean(x.done),
     createdAt: new Date(String(x.created_at)).getTime(),
+    type: x.key === "ask-about-hardship" ? "followup" : "statutory",
   };
 }
 function lessonRow(l: Lesson): Row {
