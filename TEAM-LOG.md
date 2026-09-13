@@ -4,6 +4,7 @@ Written by GitHub Actions on every push to `main` — nobody types this. Newest 
 
 | When (AEST) | Who | Part | What | Files | Lines |
 |---|---|---|---|---|---|
+| 13 Sept, 10:02 | aufanhakim1920-source | other | [a number in a pitch is a claim and needs a harness](../../commit/8839c525d94b65fd698557ad807ef8db308356c7) | DECISIONS.md | +55 / -0 |
 | 13 Sept, 10:00 | aufanhakim1920-source | project + engine | [the numbers in the pitch never existed, and the script sat on the line](../../commit/12223ba122358e11f592b5f7d22d9a2090aeec22) | README.md, DEMO-SCRIPT.md, demo-runs.json +2 | +3724 / -147 |
 | 13 Sept, 09:44 | aufanhakim1920-source | other | [a quantity that animates from zero has no safe guard, and one accent cannot carry two verdicts](../../commit/d962a0c51aca7fb24c38746cf5711c910d497ca6) | DECISIONS.md | +49 / -0 |
 | 13 Sept, 09:43 | aufanhakim1920-source | report | [gold as the only signal made the worst call look like the best](../../commit/5db32af2156050c341a82281ef1a834e7659938f) | CallScreen.tsx, CallTimeline.tsx, ReportLedger.tsx +2 | +129 / -85 |
