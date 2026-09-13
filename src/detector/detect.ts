@@ -9,13 +9,34 @@
  *              still never hit the model, so quota goes on the hard calls only.
  */
 
-import type { Adjudicator, Candidate, Flag, Resolution, Transcript, Turn, TurnRef } from "./types.js";
-import { findCandidates, contextWindow } from "./lexicon.js";
+import type {
+  Adjudicator,
+  Candidate,
+  Flag,
+  Resolution,
+  SpeakerConfidence,
+  Transcript,
+  Turn,
+  TurnRef,
+} from "./types.js";
+import { findCandidates, contextWindow, hasComplaint } from "./lexicon.js";
 import { RULES, ASKS_ABOUT_PROCESS, VARIATION_PROPOSED } from "./rules.js";
 
 export type Mode = "rules" | "hybrid";
 
 const ref = (t: Turn): TurnRef => ({ speaker: t.speaker, start_ms: t.start_ms });
+
+/** Attribution defaults to "known" so existing transcripts behave as before. */
+const conf = (t: Turn): SpeakerConfidence => t.speaker_confidence ?? "known";
+
+/**
+ * Only a turn whose speaker is KNOWN can carry a legal assertion. Attribution
+ * is load-bearing: a staff line misread as the customer would assert a clock on
+ * the bank's own words, and a customer line misread as staff would mark an
+ * obligation discharged that nobody discharged. Inferred attribution is good
+ * enough to prompt, never to assert.
+ */
+const assertable = (t: Turn): boolean => conf(t) === "known";
 const anyMatch = (text: string, ps: RegExp[]) => ps.some((p) => p.test(text));
 
 function makeFlag(
@@ -33,6 +54,7 @@ function makeFlag(
     persist: rule.persist,
     rule_id,
     raised_at: ref(raisedAt),
+    attribution: conf(raisedAt),
     obligation: rule.obligation,
     deadline_days: rule.deadline_days,
     deadline_from: rule.deadline_from,
@@ -89,6 +111,16 @@ function resolve(flag: Flag, turns: Turn[]): Resolution {
   const after = turns.filter((t) => t.speaker === "staff" && t.start_ms >= flag.raised_at.start_ms);
   const hit = after.find((t) => anyMatch(t.text, rule.satisfiedBy ?? []));
 
+  if (hit && !assertable(hit)) {
+    return {
+      status: "unverified",
+      evidence: ref(hit),
+      reason: `A turn at ${hit.start_ms}ms appears to discharge this, but the speaker was only ${conf(
+        hit
+      )}. Attribution must be confirmed before it counts as handled.`,
+    };
+  }
+
   if (hit) {
     return {
       status: "satisfied",
@@ -111,7 +143,14 @@ export async function detect(
   const { call_id, turns } = transcript;
 
   const candidates = findCandidates(turns);
-  const notices = await adjudicate(turns, candidates, mode, opts.adjudicator);
+  const adjudicated = await adjudicate(turns, candidates, mode, opts.adjudicator);
+
+  // Attribution gate. An inability stated on a turn whose speaker was only
+  // inferred cannot start a statutory clock; it becomes a request instead, so
+  // the staff member is still prompted and nothing false is asserted.
+  const notices = adjudicated.filter((c) => assertable(c.turn));
+  const downgraded = adjudicated.filter((c) => !assertable(c.turn));
+
   const flags: Flag[] = [];
   let seq = 1;
 
@@ -126,13 +165,17 @@ export async function detect(
    * for nothing. There is no threshold question left to ask in that case.
    */
   const firstNoticeAt = notices.length > 0 ? notices[0].turn.start_ms : Infinity;
-  const requestCandidate = candidates.find(
-    (c) =>
-      (c.hasRequest || (c.hasDifficulty && c.verdict !== "delay")) &&
-      // Only worth raising if it precedes the notice. A request and a notice on
-      // the same turn is one event, not two prompts on screen at once.
-      c.turn.start_ms < firstNoticeAt
-  );
+  const requestCandidate =
+    // A downgraded obligation is the most consequential moment on the call, so
+    // the request stands there rather than on an earlier, weaker hint.
+    downgraded[0] ??
+    candidates.find(
+      (c) =>
+        (c.hasRequest || (c.hasDifficulty && c.verdict !== "delay")) &&
+        // Only worth raising if it precedes the notice. A request and a notice
+        // on the same turn is one event, not two prompts on screen at once.
+        c.turn.start_ms < firstNoticeAt
+    );
   let request: Flag | undefined;
   if (requestCandidate) {
     request = makeFlag(
@@ -142,15 +185,23 @@ export async function detect(
       requestCandidate.hasRequest ? 0.88 : 0.72,
       seq++
     );
+    // Say so when this request is standing in for an obligation we could not
+    // assert, so the UI and the report card can show why.
+    if (downgraded.some((d) => d.turn === requestCandidate.turn)) {
+      request.downgraded_from = "NCC_72_ORAL_NOTICE";
+      request.staff_prompt =
+        "Possible hardship notice, but we could not confirm who was speaking. Confirm the speaker, then ask whether they can recover in the near term.";
+    }
     flags.push(request);
   }
 
   if (notices.length > 0) {
     // Debounce: one notice per call, raised at the first qualifying turn.
     const first = notices[0];
-    const conf = confidenceFor(first);
+    // Named `score` rather than `conf` so it cannot shadow the attribution helper.
+    const score = confidenceFor(first);
 
-    const notice = makeFlag(call_id, "NCC_72_ORAL_NOTICE", first.turn, conf, seq++);
+    const notice = makeFlag(call_id, "NCC_72_ORAL_NOTICE", first.turn, score, seq++);
     flags.push(notice);
 
     // A request that turned into a notice is one story, not two events.
@@ -158,7 +209,7 @@ export async function detect(
       request.superseded_by = notice.flag_id;
     }
 
-    const inform = makeFlag(call_id, "ABA_INFORM_HARDSHIP_PROVISIONS", first.turn, conf, seq++);
+    const inform = makeFlag(call_id, "ABA_INFORM_HARDSHIP_PROVISIONS", first.turn, score, seq++);
     const asked = turns.find(
       (t) =>
         t.speaker === "customer" &&
@@ -180,6 +231,14 @@ export async function detect(
     }
   }
 
+  /* ---- complaint: a second statutory clock, independent of hardship ---- */
+  const complaintTurn = turns.find(
+    (t) => t.speaker === "customer" && assertable(t) && hasComplaint(t.text)
+  );
+  if (complaintTurn) {
+    flags.push(makeFlag(call_id, "RG271_COMPLAINT_30D", complaintTurn, 0.85, seq++));
+  }
+
   for (const f of flags) f.resolution = resolve(f, turns);
   return flags;
 }
@@ -192,12 +251,12 @@ export async function detect(
 export class LiveDetector {
   private turns: Turn[] = [];
   private emitted = new Set<string>();
-
   private call_id: string;
   private opts: { mode?: Mode; adjudicator?: Adjudicator };
 
   // Fields assigned explicitly rather than via constructor parameter
-  // properties: this repo's tsconfig sets erasableSyntaxOnly (TS1294).
+  // properties: this repo's tsconfig sets erasableSyntaxOnly, which rejects
+  // `private x` in a parameter list (TS1294).
   constructor(call_id: string, opts: { mode?: Mode; adjudicator?: Adjudicator } = {}) {
     this.call_id = call_id;
     this.opts = opts;

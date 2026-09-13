@@ -1,10 +1,26 @@
 export type Speaker = "customer" | "staff";
 
+/**
+ * How sure we are who spoke. Load-bearing: only customer turns can raise an
+ * obligation and only staff turns can discharge one, so a wrong speaker
+ * corrupts the record in both directions.
+ *
+ *   "known"    — attribution is structural, not guessed. Practice mode knows
+ *                whether audio came from the user or the ElevenLabs agent.
+ *   "inferred" — a model guessed the speaker from the text (live dictation on
+ *                one mixed mic). Good enough to prompt, not to assert.
+ *   "unknown"  — no attribution at all.
+ *
+ * Optional, defaulting to "known", so existing transcripts are unaffected.
+ */
+export type SpeakerConfidence = "known" | "inferred" | "unknown";
+
 export interface Turn {
   speaker: Speaker;
   start_ms: number;
   end_ms: number;
   text: string;
+  speaker_confidence?: SpeakerConfidence;
 }
 
 export interface Transcript {
@@ -58,6 +74,14 @@ export interface Flag {
   persist: boolean;
   rule_id: string;
   raised_at: TurnRef;
+  /** Attribution confidence of the turn this was raised from. */
+  attribution: SpeakerConfidence;
+  /**
+   * Set when an obligation could not be asserted because the speaker was only
+   * inferred, so it was emitted as a request instead. Names the rule_id that
+   * would have fired with sound attribution.
+   */
+  downgraded_from?: string;
   /** Set when a later turn makes an already-raised obligation more urgent
    *  (e.g. the customer directly asks whether a hardship process exists). */
   escalated_at?: TurnRef;
