@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { setStoreOwner } from "./store";
 
 export type AuthStatus = "loading" | "local" | "guest" | "account";
 
@@ -25,6 +26,7 @@ let state: AuthState = { status: supabase ? "loading" : "local", user: null, ema
 
 function set(next: Partial<AuthState>) {
   state = { ...state, ...next };
+  setStoreOwner(state.user?.id ?? null);
   listeners.forEach((l) => l());
 }
 

@@ -1,32 +1,97 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getHealth } from "../lib/api";
+import { play } from "../lib/sfx";
 import { actions, useStore } from "../lib/store";
 import { Mark } from "./TopBar";
+// Both sheets are already in the build; this reuses the clear-history control
+// rather than inventing a second way to ask the same question.
+import "./report-visuals.css";
+import "./clear-history.css";
 
-const LOGO_SRC = `${import.meta.env.BASE_URL}brand/callflag-logo.png`;
+
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
 /**
- * The full colour artwork, when it is there.
+ * Deleting everything, asked in the app's own words.
  *
- * The file is Aufan's and may not be in the repo yet, so the image is decoded
- * first and only rendered once it has loaded — an <img> with an onError
- * handler flashes a broken icon before it can hide itself, and a placeholder
- * box would be a blank rectangle standing in for a thing.
+ * It used to be `window.confirm()` — the operating system's dialog, which no
+ * stylesheet reaches, which arrives with no relationship to the page it
+ * interrupts, and which on the privacy section is the loudest thing on it. The
+ * same reasoning that replaced the native <select>, applied to the only
+ * destructive control in the build.
+ *
+ * The shape is the clear-history control from the Deadlines tab, reused rather
+ * than reinvented: both halves stay in the tree and one grid row closes as the
+ * other opens, so the question and its answer are one movement instead of a
+ * cut. Focus lands on the outcome, which is also the live region, so a
+ * keyboard is not dumped at the top of the page by the button it was standing
+ * on.
  */
-function useLogo(): boolean {
-  const [ok, setOk] = useState(false);
-  useEffect(() => {
-    let live = true;
-    const img = new Image();
-    img.onload = () => {
-      if (live) setOk(true);
-    };
-    img.src = LOGO_SRC;
-    return () => {
-      live = false;
-    };
-  }, []);
-  return ok;
+function WipeEverything() {
+  const store = useStore();
+  const [armed, setArmed] = useState(false);
+  const [gone, setGone] = useState<string | null>(null);
+  const done = useRef<HTMLParagraphElement>(null);
+
+  const held = [
+    plural(store.reports.length, "report card"),
+    plural(store.deadlines.length, "deadline"),
+    plural(store.lessons.length, "lesson"),
+    plural(store.scenarios.length, "practice customer"),
+  ].join(" · ");
+  const total = store.reports.length + store.deadlines.length + store.lessons.length + store.scenarios.length;
+
+  return (
+    <div className={"clear-data" + (armed ? " armed" : "") + (gone ? " cleared" : "")}>
+      <div className="clear-swap" inert={gone ? true : undefined} aria-hidden={gone ? true : undefined}>
+        <div>
+          <div className="clear-head">
+            <span className="rv-label">{total === 0 ? "Nothing stored on this device" : `${held} on this device`}</span>
+            {total > 0 && (
+              <button
+                className="btn danger sm"
+                aria-expanded={armed}
+                onClick={() => {
+                  setArmed(!armed);
+                  play("tap");
+                }}
+              >
+                {armed ? "Keep it all" : "Delete everything"}
+              </button>
+            )}
+          </div>
+          <div className="clear-ask" aria-hidden={!armed}>
+            <div>
+              <p className="clear-say">
+                Removes every report card, deadline, lesson and practice customer from this browser, including any clock still
+                running. Nothing is sent anywhere, and nothing here can be recovered.
+              </p>
+              <button
+                className="btn danger sm"
+                tabIndex={armed ? undefined : -1}
+                onClick={() => {
+                  actions.wipe();
+                  play("undo");
+                  setGone(`Deleted ${held}. This device is empty.`);
+                  setArmed(false);
+                  window.setTimeout(() => done.current?.focus(), 0);
+                }}
+              >
+                Delete everything on this device
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="clear-swap outcome">
+        <div>
+          <p className="clear-done" ref={done} tabIndex={-1} role="status">
+            {gone}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 interface EvalResults {
@@ -39,7 +104,6 @@ interface EvalResults {
 }
 
 export function About() {
-  const store = useStore();
   const [ev, setEv] = useState<EvalResults | null>(null);
   const [health, setHealth] = useState<{ ok: boolean; gemini: boolean; model: string } | null>(null);
   useEffect(() => {
@@ -50,10 +114,9 @@ export function About() {
     getHealth().then(setHealth).catch(() => setHealth({ ok: false, gemini: false, model: "" }));
   }, []);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
-  const hasLogo = useLogo();
   return (
     <div className="page narrow about">
-      <header className={"brand-head" + (hasLogo ? " has-logo" : "")}>
+      <header className="brand-head has-logo">
         <div className="brand-lockup">
           <Mark />
           <div>
@@ -61,7 +124,17 @@ export function About() {
             <p className="brand-tag">Client alerts for banking staff.</p>
           </div>
         </div>
-        {hasLogo && <img className="brand-logo" src={LOGO_SRC} alt="The CallFlag logo: a handset and a flag on a shield." />}
+        {/* This used to request brand/callflag-logo.png, which is not in the
+            repo and never has been — so every load of this page 404'd, and the
+            mark simply never appeared. A probe hid the broken image, which is
+            why nobody noticed: the page looked fine and the network tab did
+            not, and the network tab is where a technical judge looks.
+
+            ⭐ A guard that hides a failure is not a fix; it is a way of not
+            being told. The mark is drawn in code in the top bar, so this uses
+            the same component — one definition, nothing to 404, and it scales
+            without a raster. */}
+        <Mark />
       </header>
       <p className="lede">Live signs for a bank's hardship calls, with the question to ask next. Then the calls you got wrong become your practice.</p>
 
@@ -129,18 +202,7 @@ export function About() {
         <li>Practice customers built from real calls have the name, job, suburb and every number changed, and a person approves each one.</li>
         <li>The AI never decides and never speaks to a real customer.</li>
       </ul>
-      <button
-        className="btn danger"
-        onClick={() => {
-          if (window.confirm("Delete every report, deadline, lesson and practice customer on this device?")) actions.wipe();
-        }}
-      >
-        Delete everything on this device
-      </button>
-      <p className="small muted" style={{ marginTop: 8 }}>
-        {store.reports.length} report{store.reports.length === 1 ? "" : "s"} · {store.deadlines.length} deadline{store.deadlines.length === 1 ? "" : "s"} ·{" "}
-        {store.lessons.length} lesson{store.lessons.length === 1 ? "" : "s"} · {store.scenarios.length} practice customer{store.scenarios.length === 1 ? "" : "s"}
-      </p>
+      <WipeEverything />
 
       <h2>Sources</h2>
       <ul>

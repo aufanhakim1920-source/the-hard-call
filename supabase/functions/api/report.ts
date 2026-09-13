@@ -14,6 +14,8 @@ interface Line {
   t: number;
   speaker: string;
   text: string;
+  /** Absent = "known". Marked in the transcript below when it is not. */
+  speakerConfidence?: "known" | "inferred" | "unknown";
 }
 interface Sign {
   id: string;
@@ -82,6 +84,7 @@ For each sign the app raised during the call, decide from the transcript:
 - partly: they touched it but pushed on (e.g. acknowledged the job loss then asked for the full amount).
 - missed: they did not act on it.
 - unverified: the transcript does not provide enough evidence to judge the worker.
+A turn marked "speaker inferred" or "speaker unknown" is a turn nobody established the speaker of. Do not treat it as proof of who said it, and do not rest a handled or partly on one.
 For handled or partly, evidenceLineIds must cite the IDs of worker lines AFTER the sign's triggering customer line that demonstrate the response. For missed, cite relevant worker lines if present; explain the missing action without inventing a quote. An empty or unknown-speaker response is unverified, not missed.
 Only assess actions observable in this call. Do not infer that a later decision, written notice or deadline was completed. Do not invent legal requirements or penalise failure to recite a deadline unless a supplied rule explicitly requires it.
 Never repeat sensitive customer circumstances in summary, notes, missedByAI or tip. Describe the worker's action and the duty only.
@@ -125,7 +128,14 @@ export async function handle(req: Request): Promise<Response> {
 
   const t0 = s.startedAt;
   const transcript = s.lines
-    .map((l) => `[id=${l.id} ${fmt(l.t - t0)}] ${l.speaker}: ${l.text}`)
+    .map((l) => {
+      // A turn nobody established the speaker of is named as such, so the model
+      // is not invited to read a guess as a fact. Turns written before the field
+      // existed carry no marker and read exactly as they did.
+      const c = l.speakerConfidence ?? "known";
+      const mark = c === "known" ? "" : c === "inferred" ? " (speaker inferred, not established)" : " (speaker unknown)";
+      return `[id=${l.id} ${fmt(l.t - t0)}] ${l.speaker}${mark}: ${l.text}`;
+    })
     .join("\n");
   const signs = s.signs
     .map(
@@ -146,7 +156,10 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
   try {
     const { data, model } = await askGemini<ModelReport>({ system: SYSTEM + (canonical ? "\nThe supplied flags are the detector output. Assess only those flags; do not detect additional obligations. Return missedByAI as an empty array." : ""), user, schema: SCHEMA, temperature: 0.2 });
     const items = buildReportItems(s.signs, s.lines, data.items, t0);
-    const caught = s.signs.length;
+    // Obligations only. A request is a live prompt to ASK, not a duty to
+    // discharge, so counting one as "caught" makes a call where every hint was
+    // handled well read as a call full of unhandled obligations.
+    const caught = s.signs.filter((g) => g.kind === "legal").length;
     const handled = items.filter((i) => i.verdict === "handled").length;
     const partly = items.filter((i) => i.verdict === "partly").length;
     const missed = items.filter((i) => i.verdict === "missed").length;
@@ -190,15 +203,18 @@ ${s.scenarioExpected?.length ? `\nThis was a practice call. Signs the scenario w
     return json(req, 200, {
       callId: s.id,
       summary: quota
-        ? "The written review is unavailable: the free daily limit on the AI has been reached. Everything below was recorded during the call itself and is complete."
-        : "The written review is unavailable because the AI could not be reached. Everything below was recorded during the call itself and is complete.",
+        ? "The written review is unavailable: the AI service returned a quota or rate-limit error. The available call records are shown below; handling has not been verified."
+        : "The written review is unavailable because the AI could not be reached. The available call records are shown below; handling has not been verified.",
       items,
       missedByAI: [],
       tip: "",
       score: 0,
       scoreUnverified: true,
-      caught: s.signs.length,
-      handled: s.signs.filter((g) => g.handled).length,
+      // Obligations only (main): a request is a prompt to ask, not a duty.
+      // handled stays 0 (this branch): a tick is what the worker CLAIMED, and
+      // the degraded path has no transcript judgement to verify it against.
+      caught: s.signs.filter((g) => g.kind === "legal").length,
+      handled: 0,
       partly: 0,
       unverified: items.length,
       missed: 0,

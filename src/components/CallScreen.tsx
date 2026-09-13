@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useA11y } from "../lib/a11y";
 import { fmtClock } from "../lib/dates";
-import { DEMO_SCRIPT } from "../lib/demoScript";
+import { demoScriptFor } from "../lib/demoScript";
 import { useCallEngine } from "../lib/engine";
 import { usePractice } from "../lib/practice";
 import { play, setCallMode } from "../lib/sfx";
 import { useSpeech } from "../lib/speech";
-import type { AssistantState, Customer, Mode, Report, Scenario, Session, Speaker } from "../lib/types";
+import type { AssistantState, Customer, Mode, Report, Scenario, Session, Sign, Speaker } from "../lib/types";
 import { levelLabel } from "../lib/scenarios";
 import { PHONE, useMedia } from "../lib/useMedia";
 import { Select } from "./Select";
@@ -75,6 +75,24 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   const signCount = session.signs.length;
   const newestSign = signCount ? session.signs[signCount - 1] : undefined;
   const openCount = session.signs.filter((g) => !g.handled).length;
+  // What the sheet's handle names. NOT the newest sign: the stack is ordered
+  // open legal, then open tips, then handled, so the newest is often a tip
+  // sitting BELOW the legal card the head was naming it over. The head and the
+  // first card are read as one object — a head naming a different card than the
+  // one under it is the worst version of both.
+  //
+  // SignStack owns this order; this mirrors it because the two files cannot
+  // share a helper without another lane's file being opened. If the stack's
+  // order changes, this changes with it.
+  const leadSign = useMemo<Sign | undefined>(() => {
+    const newestFirst = (a: Sign, b: Sign) => b.t - a.t;
+    const open = session.signs.filter((s) => !s.handled);
+    return (
+      open.filter((s) => s.kind === "legal").sort(newestFirst)[0] ??
+      open.filter((s) => s.kind !== "legal").sort(newestFirst)[0] ??
+      [...session.signs].sort((a, b) => (b.handledAt ?? 0) - (a.handledAt ?? 0))[0]
+    );
+  }, [session.signs]);
   // On a phone, a legal sign lifts the sheet by itself; tips wait in the peek.
   // With coaching off it must not — a sheet rising on its own is the loudest
   // prompt on the screen.
@@ -91,27 +109,44 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   }, [phone, newestSign, signCount, coaching]);
   const speedRef = useRef(speed);
   speedRef.current = speed;
+  const coachingRef = useRef(coaching);
+  coachingRef.current = coaching;
   const typeRef = useRef<HTMLInputElement>(null);
 
   // Demo mode: the script plays through the real engine.
+  //
+  // One chained timer, not eleven scheduled up front. Every delay used to be
+  // computed at mount from the speed AT THAT MOMENT, so pressing 2x after the
+  // replay started changed nothing at all — measured, the line times were
+  // identical. Which mattered: the whole call is 49.6s, and the demo runs it
+  // TWICE (coaching off, then on) inside 90 seconds. Chaining means each delay
+  // is read fresh, so 2x takes effect from the next line.
   useEffect(() => {
     if (mode !== "demo") return;
     let cancelled = false;
-    const timers: number[] = [];
-    let at = 600;
-    DEMO_SCRIPT.forEach((l, i) => {
-      at += (l.gap * 1000) / speedRef.current;
-      timers.push(
-        window.setTimeout(() => {
-          if (cancelled) return;
-          addLine(l.text, l.speaker);
-          if (i === DEMO_SCRIPT.length - 1) setDemoDone(true);
-        }, at),
-      );
-    });
+    let timer = 0;
+    let i = 0;
+    // Which worker: the one who had the signs, or the one who did not. The
+    // customer's words are identical in both, so the engine raises the same
+    // signs at the same moments and the only variable is what was done about
+    // them. Read once at mount — flipping the setting mid-call would splice two
+    // different workers into one transcript.
+    const script = demoScriptFor(coachingRef.current);
+    const step = () => {
+      if (cancelled || i >= script.length) return;
+      const line = script[i];
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        addLine(line.text, line.speaker);
+        i += 1;
+        if (i >= script.length) setDemoDone(true);
+        else step();
+      }, (line.gap * 1000) / speedRef.current);
+    };
+    timer = window.setTimeout(step, 600);
     return () => {
       cancelled = true;
-      timers.forEach(clearTimeout);
+      clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
@@ -138,6 +173,10 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
       const report = await endCall();
       onEnd(report, { ...session, endedAt: Date.now() });
     } catch (e) {
+      // The only event whose silence is ambiguous with success: the tap is
+      // muted during a live call, the report sound never comes, and the error
+      // sits on a screen the worker has just looked away from.
+      play("failed");
       setEndErr(e instanceof Error ? e.message : String(e));
       setEnding(false);
     }
@@ -146,8 +185,16 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
   // keyboard: H = handle newest, E = end, T = type
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+      // A bare letter must not reach the call while the person is somewhere
+      // else. Typing was already covered; a floating panel was not. Settings is
+      // deliberately non-modal — the worker may be on a live call — so focus can
+      // sit on its Reset button with the call still listening on window.
+      // Measured: Tab into the open panel, press "e", and the call ended
+      // ("Writing report…") with the panel still open over it.
+      if (el?.isContentEditable || el?.closest('[role="dialog"], [role="listbox"], .sel-pop')) return;
       // H marks the newest sign handled — with nothing on screen there is
       // nothing to mark, and a silent keystroke that changes hidden state is
       // worse than a key that does nothing.
@@ -169,18 +216,33 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
     if (!typed.trim()) return;
     addLine(typed, typedAs);
     setTyped("");
-    setTypedAs((s) => (s === "customer" ? "worker" : "customer"));
+    // It used to alternate, on the theory that a call alternates. It does not
+    // reliably, and the cost is asymmetric: typing the customer's sentence while
+    // the box has silently flipped to Worker raises NOTHING. Measured — the same
+    // hardship sentence gave 0 signs in 16s as Worker and the legal sign in 2.7s
+    // as Customer. Anyone typing during questions hits it. It stays where it was
+    // put; the person typing knows who is speaking.
     play("tap");
   };
 
   const started = session.lines.length > 0;
   const canEdit = !started && mode === "live";
+  // Nothing has been said and the microphone is off, so there is no call. A
+  // clock counting up from zero and an "End call" button were the two things
+  // that made someone opening this cold read it as a session already running —
+  // and the only way in was the quietest control on the screen. While it is
+  // true, the header's action slot holds the way IN instead of the way out.
+  const idle = mode === "live" && !started && !speech.listening;
 
   return (
     <div className={"call" + (phone ? " phone" : "")}>
       <header className="call-head">
         {canEdit ? (
           <div className="setup">
+            {/* The running header carries a chip saying which kind of call this
+                is. Before one starts there was nothing, so the state had to be
+                inferred from a clock — and it read as a call in progress. */}
+            {idle && <span className="chip">not started</span>}
             <span className="label">Call with</span>
             <input className="field" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} aria-label="Customer name" />
             <input className="field" value={customer.product} onChange={(e) => setCustomer({ ...customer, product: e.target.value })} aria-label="Product" />
@@ -206,12 +268,24 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             ))}
           </div>
         )}
-        <div className="clock" aria-label="Call length">
-          {fmtClock(elapsed)}
+        <div className={"clock" + (idle ? " idle" : "")} aria-label={idle ? "No call started" : "Call length"}>
+          {idle ? "--:--" : fmtClock(elapsed)}
         </div>
-        <button className="btn gold" onClick={() => void finish()} disabled={!started || ending}>
-          {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
-        </button>
+        {/* One slot, one primary: start the call or end it. Before anything has
+            been said the loudest control on the screen must be the way in, not
+            the way out — there is nothing to end and no report to write.
+            A practice call with nothing said used to be a trap: End call was
+            disabled, and the only escape was reloading the page. Leaving is
+            always allowed — an empty call simply produces an empty report. */}
+        {idle && onDemo ? (
+          <button className="btn gold" onClick={onDemo}>
+            ▶ Play the demo call
+          </button>
+        ) : (
+          <button className="btn gold" onClick={() => void finish()} disabled={ending}>
+            {ending ? "Writing report…" : "End call"} {!ending && <kbd>E</kbd>}
+          </button>
+        )}
       </header>
 
       {mode === "practice" && scenario && (
@@ -251,7 +325,9 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
           <div className="words-head">
             <span className="label">Live words</span>
             <span className="small muted">
-              {mode === "live" && (speech.listening ? "listening" : "microphone off")}
+              {/* "microphone off" on a screen nothing has happened on yet reads
+                  as a fault. The chip in the header already says the state. */}
+              {mode === "live" && (idle ? "" : speech.listening ? "listening" : "microphone off")}
               {mode === "demo" && (demoDone ? "script finished — end the call for the report card" : "playing the demo script through the real engine")}
               {mode === "practice" && (practice.status === "connected" ? "both sides transcribed live" : "")}
             </span>
@@ -267,10 +343,34 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
             flashId={flashId}
             emptyHint={
               mode === "live" ? (
-                <>
-                  <b>Put the call on speaker and press Listen.</b>
-                  The words appear here as they are said. Or type what the customer says. Nothing is stored — only the signs.
-                </>
+                idle ? (
+                  // The largest empty area on the screen, and the only place a
+                  // stranger will actually read. It has to answer two questions
+                  // before it offers anything: what is this, and what do I press.
+                  <>
+                    <b>This screen watches a hardship call as it happens.</b>
+                    The moment the customer says something that legally counts, a card appears{" "}
+                    {/* The signs are a column on the right on a laptop and a tray you drag up on a
+                        phone. Telling a phone to look right points at nothing. */}
+                    {phone ? "in the tray at the bottom" : "on the right"} with the deadline and the one sentence to say next.
+                    Nothing is stored — only the signs.
+                    <span className="empty-do">
+                      <span>
+                        <strong>▶ Play the demo call</strong> — a real fifty-second script, run line by line through the same
+                        engine a live call uses.
+                      </span>
+                      <span>
+                        <strong>Listen</strong> — put your own call on speaker and the words appear here as they are said. Or type
+                        them.
+                      </span>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <b>Listening.</b>
+                    The words appear here as they are said. Or type what the customer says. Nothing is stored — only the signs.
+                  </>
+                )
               ) : mode === "practice" ? (
                 <>
                   <b>Start the practice call above.</b>
@@ -301,13 +401,21 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                 {!speech.supported && <span className="hint">This browser has no speech engine. Type what was said instead, or use Chrome or Edge.</span>}
                 <form className="type" onSubmit={submitTyped}>
                   <Select value={typedAs} onChange={(v) => setTypedAs(v as Speaker)} options={SPEAKER_OPTIONS} label="Who said it" />
-                  <input ref={typeRef} className="field" placeholder="Or type what was said and press Enter" value={typed} onChange={(e) => setTyped(e.target.value)} />
+                  {/* The long version is cut to "…and press |" at 375px, and a
+                      phone has no visible Enter key to name anyway. */}
+                  <input
+                    ref={typeRef}
+                    className="field"
+                    placeholder={phone ? "Type what was said" : "Or type what was said and press Enter"}
+                    value={typed}
+                    onChange={(e) => setTyped(e.target.value)}
+                  />
                 </form>
-                {onDemo && !started && (
-                  <button className="btn ghost" onClick={onDemo}>
-                    ▶ Replay the demo call
-                  </button>
-                )}
+                {/* The demo used to live here, ghost-styled beside a text box:
+                    the lowest-weight thing on a screen whose loudest button was
+                    End call. It is the header's primary while the call is idle,
+                    and a second copy would only split the one action a stranger
+                    has. Stop listening and it comes back where it now belongs. */}
                 {speech.error && <span className="warn">{speech.error}</span>}
               </>
             )}
@@ -334,7 +442,7 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
                     </button>
                   ))}
                 </div>
-                <span className="hint">Line 7 is the deliberate miss — watch the report card.</span>
+                <span className="hint">{coaching ? "Watch what the worker does the moment each sign lands." : "Watch line 7: the worker asks for money instead of answering the sign."}</span>
               </>
             )}
             {mode === "practice" && (
@@ -365,9 +473,9 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
               <>
                 <span className={"sheet-count" + (openCount ? " on" : "")}>{signCount}</span>
                 <span className="sheet-title">
-                  {newestSign ? (
+                  {leadSign ? (
                     <>
-                      <b>{newestSign.title}</b>
+                      <b>{leadSign.title}</b>
                       <span className="small muted"> · {openCount} open</span>
                     </>
                   ) : (
@@ -403,15 +511,25 @@ export function CallScreen({ mode, customer: initialCustomer, scenario, onEnd, o
 
       <footer className="privacy-line">
         <span>Only signs are kept. Words are never stored.</span>
-        <span>Card and account numbers are masked before they leave this browser.</span>
+        <span className="pl-mask">Card and account numbers are masked before they leave this browser.</span>
         <span className="spacer" />
+        {/* Idle, H has no sign to mark and E is guarded by the line count, so
+            both were offering a key that does nothing. Only T works. */}
         <span className="hint">
-          {coaching && (
+          {idle ? (
             <>
-              <kbd>H</kbd> handle newest ·{" "}
+              <kbd>T</kbd> type
+            </>
+          ) : (
+            <>
+              {coaching && (
+                <>
+                  <kbd>H</kbd> handle newest ·{" "}
+                </>
+              )}
+              <kbd>E</kbd> end call · <kbd>T</kbd> type
             </>
           )}
-          <kbd>E</kbd> end call · <kbd>T</kbd> type
         </span>
       </footer>
     </div>

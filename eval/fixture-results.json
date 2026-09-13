@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-12T09:15:13.176Z",
+  "ranAt": "2026-09-12T15:17:21.648Z",
   "passed": 2,
   "total": 3,
   "results": [
@@ -8,14 +8,25 @@
       "pass": true,
       "notes": [
         "ok    NCC_72_ORAL_NOTICE at 51200ms (0.0s off)",
-        "      tips (not scored): Lost their job; Customer sounds stressed about money; Told customer about hardship process"
+        "      requests (not scored): 22800ms \"So I got a letter saying the last repayment didn't go through.\"",
+        "      tips (not scored): Customer lost their job; Sounds stressed about money; Told customer about hardship process"
       ],
       "raised": [
+        {
+          "key": "ask-about-hardship",
+          "rule_id": null,
+          "kind": "tip",
+          "tier": "request",
+          "title": "Repayment did not go through",
+          "atMs": 22800,
+          "turn": 5,
+          "evidence": "So I got a letter saying the last repayment didn't go through."
+        },
         {
           "key": "job-loss",
           "rule_id": null,
           "kind": "tip",
-          "title": "Lost their job",
+          "title": "Customer lost their job",
           "atMs": 35500,
           "turn": 7,
           "evidence": "I lost my job. Six weeks ago now. The site got shut down, they let the whole crew go."
@@ -24,6 +35,7 @@
           "key": "hardship-request",
           "rule_id": "NCC_72_ORAL_NOTICE",
           "kind": "legal",
+          "tier": "notice",
           "title": "Cannot make repayments for a period",
           "atMs": 51200,
           "turn": 9,
@@ -33,7 +45,7 @@
           "key": "stress",
           "rule_id": null,
           "kind": "tip",
-          "title": "Customer sounds stressed about money",
+          "title": "Sounds stressed about money",
           "atMs": 51200,
           "turn": 9,
           "evidence": "I've got maybe two weeks of savings left and after that I can't make the repayment. Not this month and honestly not for a while. My partner's working but it's part-time, it doesn't cover the mortgage on its own."
@@ -45,7 +57,7 @@
           "title": "Told customer about hardship process",
           "atMs": 86600,
           "turn": 12,
-          "evidence": "Daniel, what you've just told me counts as a hardship notice — that's a formal thing under the National Credit Code, and it means we have to look at whether we can change your loan arrangements. I'm lodging that now while we're on the call."
+          "evidence": "Okay. Daniel, what you've just told me counts as a hardship notice — that's a formal thing under the National Credit Code, and it means we have to look at whether we can change your loan arrangements. I'm lodging that now while we're on the call."
         }
       ]
     },
@@ -54,17 +66,28 @@
       "pass": true,
       "notes": [
         "ok    NCC_72_ORAL_NOTICE correctly did not fire",
-        "      tips (not scored): Changed jobs, new pay cycle"
+        "      requests (not scored): 15700ms \"I missed the repayment on the third and I got the text about it. I wanted to call before it turned into something. It's honestly been a struggle this month, I couldn't afford the full amount when it came out.\"",
+        "      tips (not scored): Customer changed jobs"
       ],
       "raised": [
+        {
+          "key": "ask-about-hardship",
+          "rule_id": null,
+          "kind": "tip",
+          "tier": "request",
+          "title": "Customer missed a repayment",
+          "atMs": 15700,
+          "turn": 3,
+          "evidence": "I missed the repayment on the third and I got the text about it. I wanted to call before it turned into something. It's honestly been a struggle this month, I couldn't afford the full amount when it came out."
+        },
         {
           "key": "job-loss",
           "rule_id": null,
           "kind": "tip",
-          "title": "Changed jobs, new pay cycle",
+          "title": "Customer changed jobs",
           "atMs": 31300,
           "turn": 5,
-          "evidence": "I changed jobs in August and the new place pays monthly instead of fortnightly, so I've had this awkward five-week gap with nothing coming in. The first full pay lands on the twentieth."
+          "evidence": "I changed jobs in August and the new place pays monthly instead of fortnightly, so I've had this awkward five-week gap with nothing coming in."
         }
       ]
     },
@@ -72,16 +95,18 @@
       "call": "call_003",
       "pass": false,
       "notes": [
-        "LATE  NCC_72_ORAL_NOTICE fired at 16500ms, expected 45000ms (28.5s off, tolerance 3s)",
+        "ok    NCC_72_ORAL_NOTICE at 45000ms (0.0s off)",
         "LATE  ABA_INFORM_HARDSHIP_PROVISIONS fired at 64600ms, expected 103200ms (38.6s off, tolerance 3s)",
-        "      tips (not scored): Customer had surgery; Customer is off work due to health; Tell them hardship process exists"
+        "      requests (not scored): 16500ms \"I've missed the last two and I don't think I'm going to make the next one either.\"",
+        "      tips (not scored): Customer had surgery; Customer is off work; Customer sounds stressed; Tell customer about hardship process"
       ],
       "raised": [
         {
-          "key": "hardship-request",
-          "rule_id": "NCC_72_ORAL_NOTICE",
-          "kind": "legal",
-          "title": "Cannot make repayments for a period",
+          "key": "ask-about-hardship",
+          "rule_id": null,
+          "kind": "tip",
+          "tier": "request",
+          "title": "Customer cannot make repayments",
           "atMs": 16500,
           "turn": 3,
           "evidence": "I've missed the last two and I don't think I'm going to make the next one either."
@@ -99,16 +124,35 @@
           "key": "job-loss",
           "rule_id": null,
           "kind": "tip",
-          "title": "Customer is off work due to health",
+          "title": "Customer is off work",
           "atMs": 26300,
           "turn": 5,
           "evidence": "I'm signed off work until at least February. I'm on the income protection but it's about sixty per cent of what I was on."
         },
         {
+          "key": "hardship-request",
+          "rule_id": "NCC_72_ORAL_NOTICE",
+          "kind": "legal",
+          "tier": "notice",
+          "title": "Cannot cover repayments for months",
+          "atMs": 45000,
+          "turn": 7,
+          "evidence": "On sixty per cent I cannot cover the repayment. Not next month, not the month after. It's going to be like this until I'm cleared to go back, and that's four or five months away at best."
+        },
+        {
+          "key": "stress",
+          "rule_id": null,
+          "kind": "tip",
+          "title": "Customer sounds stressed",
+          "atMs": 45000,
+          "turn": 7,
+          "evidence": "Look, I've done the numbers a dozen times. On sixty per cent I cannot cover the repayment. Not next month, not the month after. It's going to be like this until I'm cleared to go back, and that's four or five months away at best."
+        },
+        {
           "key": "inform-hardship-provisions",
           "rule_id": "ABA_INFORM_HARDSHIP_PROVISIONS",
           "kind": "tip",
-          "title": "Tell them hardship process exists",
+          "title": "Tell customer about hardship process",
           "atMs": 64600,
           "turn": 8,
           "evidence": "Okay. What I can do is set up an arrangement where you pay what you can each month and we'll review it."
@@ -117,7 +161,8 @@
           "key": "complaint",
           "rule_id": "RG271_COMPLAINT",
           "kind": "legal",
-          "title": "Customer is concerned about impact of arrangement",
+          "tier": "notice",
+          "title": "Customer is concerned about arrangement",
           "atMs": 71600,
           "turn": 9,
           "evidence": "What does that mean, though? Am I still behind? Does it still count against me?"

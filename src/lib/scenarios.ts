@@ -180,3 +180,136 @@ Have a realistic call. If the worker offers a concrete next step that fits your 
 export function levelLabel(l: 1 | 2 | 3): string {
   return l === 1 ? "Level 1 · opens up" : l === 2 ? "Level 2 · defensive" : "Level 3 · hides it";
 }
+
+/**
+ * What the level asks of the WORKER, not what it says about the customer.
+ *
+ * "Hides it" was the only thing the practice roster said about a level, and it
+ * describes the customer's behaviour — which leaves the worker with no idea
+ * what they are supposed to do differently. The prompt in `buildPrompt` already
+ * encodes the answer; this is the same three rules said to the person who has
+ * to act on them.
+ */
+export function levelAsk(l: 1 | 2 | 3): string {
+  return l === 1
+    ? "One caring question is enough. Ask what changed and they tell you."
+    : l === 2
+      ? "They will not volunteer it. Ask an open question about what changed before you ask for a date — push for money and they shut down."
+      : "They deflect and apologise. Slow down, check it is a safe time to talk, and take one piece at a time.";
+}
+
+/**
+ * Why a generated customer could not be built, in words a worker can act on.
+ *
+ * This is the one model call on the report card with no local fallback — a card
+ * degrades to what the browser recorded, but a customer cannot be half-invented.
+ * So the failure has to SAY something. The raw strings are written for a
+ * developer ("/api/scenario failed (429)"), and the third act of the pitch
+ * failing quietly is worse than it failing loudly.
+ */
+export function scenarioFailure(raw: string): string {
+  const m = (raw ?? "").toLowerCase();
+  // The one failure where "try again" is a lie. The server refuses a call with
+  // no lines, and no number of retries will put words into a call that had
+  // none — so the sentence has to send the worker somewhere that can work.
+  if (/empty session|no lines/.test(m)) {
+    return "No practice customer was built: nothing was said on this call, so there is nothing to read. Run a call with some conversation in it and this will work.";
+  }
+  if (/429|quota|rate.?limit|exhausted/.test(m)) {
+    return "No practice customer was built: the free daily limit on the model has been reached. The call and its report card are untouched, and the customers already in Practice still work.";
+  }
+  if (/401|403|unauthor|forbidden|api.?key/.test(m)) {
+    return "No practice customer was built: the server refused the request. Its key to the model may have expired. The call and its report card are untouched.";
+  }
+  if (/failed to fetch|networkerror|network|timeout|abort|502|503|504|econn/.test(m)) {
+    return "No practice customer was built: the server could not be reached. Check the connection and try again — the call and its report card are untouched.";
+  }
+  return "No practice customer was built. The call and its report card are untouched, so nothing was lost — try again.";
+}
+
+/**
+ * The server's own words, made safe to put on a worker's screen.
+ *
+ * A Gemini 503 answers with its entire JSON body, and that body went under the
+ * friendly sentence at full length: several lines of machine text shouting over
+ * the one sentence a person can act on. Two jobs here, in order.
+ *
+ * First, take out anything that identifies an account. A raw error is the most
+ * likely place a key, a bearer token or an agent id reaches a screen, and this
+ * screen is the one most likely to be pointed at a room. Redact by shape, not
+ * by hope.
+ *
+ * Then flatten and cap it. It is diagnostic detail, not the message — a
+ * developer needs the first line, and nobody needs page three.
+ */
+const REDACT: RegExp[] = [
+  // Bearer / key / token, with whatever follows it.
+  /\b(?:api[-_ ]?key|access[-_ ]?token|refresh[-_ ]?token|authorization|bearer|secret|password)\b["' :=]*\S+/gi,
+  // JWTs: three dot-separated base64 runs starting `ey`.
+  /\bey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{4,}/g,
+  // Provider-prefixed ids and keys: agent_…, sk-…, conv_…, proj_…
+  /\b(?:agent|conv|convai|user|proj|org|sess|asst|run)_[A-Za-z0-9]{6,}/gi,
+  /\b[sprk]k-[A-Za-z0-9_-]{8,}/g,
+  // Anything long enough to be an opaque handle.
+  /\b[A-Fa-f0-9]{24,}\b/g,
+];
+
+export function scenarioDetail(raw: string | undefined, cap = 180): string {
+  let t = (raw ?? "").trim();
+  if (!t) return "";
+  for (const re of REDACT) t = t.replace(re, "[removed]");
+  t = t.replace(/\s+/g, " ").trim();
+  if (!t || t === "[removed]") return "";
+  return t.length > cap ? `${t.slice(0, cap - 1).trimEnd()}…` : t;
+}
+
+/**
+ * Whether this freshly built customer is one Practice already has.
+ *
+ * The generator runs at temperature 0.7 inside the edge function, and from one
+ * recorded call it returned the same person — same name, same job — in 3 of 6
+ * runs. Nothing on this side of the wire can change that temperature. What this
+ * side can refuse to do is present the repeat as a fresh invention, which is
+ * the claim that actually breaks if a judge sees two of the same person.
+ *
+ * A match is the same name, or the same job on the same product: a second
+ * Marcus Reid is obvious, and so is a second logistics coordinator on a
+ * variable rate home loan.
+ */
+const flat = (s: string | undefined) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+
+export function scenarioEcho(draft: Scenario, existing: readonly Scenario[]): Scenario | null {
+  const name = flat(draft.name);
+  const job = flat(draft.job);
+  const product = flat(draft.product);
+  for (const s of existing) {
+    if (s.id === draft.id) continue;
+    if (name && flat(s.name) === name) return s;
+    if (job && product && flat(s.job) === job && flat(s.product) === product) return s;
+  }
+  return null;
+}
+
+/**
+ * Whether a generated customer is complete enough to put on screen.
+ *
+ * The model is asked for eleven fields and can return ten. `expectedSigns`
+ * arriving undefined threw inside the draft card's `.join()`, which takes the
+ * whole report screen with it — a blank page at the end of the demo. Check it
+ * before it is drawn, and fail in a sentence instead.
+ *
+ * Returns the reason it cannot be used, or null when it can.
+ */
+export function scenarioFault(s: Partial<Scenario> | null | undefined): string | null {
+  if (!s || typeof s !== "object") return "The model returned nothing usable.";
+  const words = ["name", "job", "product", "situation", "hiddenProblem", "firstMessage", "whyThisOne"] as const;
+  const missing = words.filter((k) => typeof s[k] !== "string" || !(s[k] as string).trim());
+  if (missing.length) return `The customer came back with no ${missing.join(", no ")}.`;
+  if (typeof s.age !== "number" || !Number.isFinite(s.age) || s.age < 18 || s.age > 100) {
+    return "The customer came back without a believable age.";
+  }
+  if (s.voice !== "female" && s.voice !== "male") return "The customer came back without a voice to speak in.";
+  if (s.level !== 1 && s.level !== 2 && s.level !== 3) return "The customer came back without a difficulty level.";
+  if (!Array.isArray(s.expectedSigns)) return "The customer came back with nothing to test.";
+  return null;
+}

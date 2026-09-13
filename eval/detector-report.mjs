@@ -11,7 +11,7 @@ import { handle } from "../supabase/functions/api/report.ts";
 if (!process.argv[2]) throw new Error("Pass the compiled detector index.js path.");
 const { detect, LiveDetector } = await import(pathToFileURL(resolve(process.argv[2])).href);
 const read = (name) => JSON.parse(readFileSync(new URL(`../fixtures/${name}`, import.meta.url)));
-const calls = [read("call_002_temporary_difficulty.json"), read("call_001_clear_hardship.json"), read("call_003_missed_notice.json")];
+const calls = [read("call_002_temporary_difficulty.json"), read("call_001_clear_hardship.json"), read("call_003_missed_notice.json"), read("call_004_deferral_request.json")];
 const request = (transcript, flags) => new Request("http://localhost/api/report", {
   method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ transcript, flags }),
 });
@@ -25,18 +25,23 @@ try {
     const emitted = [];
     for (const turn of call.turns) emitted.push(...await live.push(turn));
     assert.deepEqual(await live.finalise(), flags);
-    assert.equal(emitted.length, flags.length);
+    // A provisional request may disappear when a later turn names recovery.
+    // The report consumes finalise(), not the accumulated live prompt list.
+    for (const flag of flags) assert.ok(emitted.some(f => f.rule_id === flag.rule_id));
+    if (call.call_id === "call_002") assert.ok(emitted.every(f => f.kind === "request"));
     if (call.call_id === "call_002") assert.deepEqual(flags, []);
     if (call.call_id === "call_001") {
       assert.equal(flags.length, 3);
       assert.equal(flags[0].raised_at.start_ms, 51200);
     }
     if (call.call_id === "call_003") {
-      assert.equal(flags.length, 2);
-      assert.equal(flags[0].raised_at.start_ms, 45000);
+      assert.equal(flags.length, 3);
+      assert.equal(flags.find((f) => f.rule_id === "NCC_72_ORAL_NOTICE").raised_at.start_ms, 45000);
       assert.equal(flags.find((f) => f.rule_id === "ABA_INFORM_HARDSHIP_PROVISIONS").escalated_at.start_ms, 103200);
     }
     const session = adaptReportInput({ transcript: call, flags });
+    const obligations = flags.filter(f => f.kind === "obligation" && f.persist);
+    assert.equal(session.signs.length, obligations.length);
     // Stub the report model only. Deliberately omit all judgements: detector
     // resolution must not silently become the report's own evidence-based mark.
     let modelCalls = 0;
@@ -49,14 +54,14 @@ try {
     const response = await handle(request(call, flags));
     assert.equal(response.status, 200);
     const report = await response.json();
-    assert.equal(report.items.length, flags.length);
-    assert.equal(report.unverified, flags.length);
+    assert.equal(report.items.length, obligations.length);
+    assert.equal(report.unverified, obligations.length);
     assert.equal(report.handled, 0);
-    assert.equal(modelCalls, flags.length ? 1 : 0);
+    assert.equal(modelCalls, obligations.length ? 1 : 0);
     assert.equal(report.scoreUnverified, true);
     assert.deepEqual(report.missedByAI, []);
     assert.equal(session.lines.length, call.turns.length);
-    console.log(`${call.call_id}: ${flags.length} flags, batch/stream agreement, adapter and report API PASS`);
+    console.log(`${call.call_id}: ${flags.length} detector events / ${obligations.length} report obligations, batch/stream agreement, adapter and report API PASS`);
   }
   // Same customer utterances, changed worker response: no coaching toggle is
   // supplied to either engine. This exercises a demo candidate, not an AI grade.

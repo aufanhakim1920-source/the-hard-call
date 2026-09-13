@@ -1,3 +1,4 @@
+import { hasVerifiedReportScore } from "./reportScore";
 // A small persistent store over localStorage. Only outcomes are kept —
 // reports, deadlines, lessons, practice customers — never a transcript.
 
@@ -6,6 +7,10 @@ import type { Lesson, Report, Scenario, Store } from "./types";
 import { uid } from "./types";
 
 const KEY = "the-hard-call:v1";
+let owner: string | null = null;
+let epoch = 0;
+const memory = new Map<string, Store>();
+const storageKey = () => owner === null ? KEY : `${KEY}:user:${encodeURIComponent(owner)}`;
 
 const EMPTY: Store = {
   reports: [],
@@ -20,16 +25,17 @@ const listeners = new Set<() => void>();
 
 function load(): Store {
   try {
-    const raw = localStorage.getItem(KEY);
+    const cached = memory.get(storageKey());
+    if (cached) return cached;
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return EMPTY;
     const parsed = JSON.parse(raw) as Partial<Store>;
     return {
       ...EMPTY,
       ...parsed,
-      // Cards written before the coaching switch existed all ran coached —
-      // there was no other mode. Backfilled here so a missing field can never
-      // be read as "this call was silent".
-      reports: (parsed.reports ?? []).map((r) => ({ ...r, coaching: r.coaching ?? true })),
+      // Missing can also mean a cloud row never recorded the coaching mode.
+      // Reloading the cache must not turn that uncertainty into coached=true.
+      reports: parsed.reports ?? [],
       settings: { ...EMPTY.settings, ...(parsed.settings ?? {}) },
     };
   } catch {
@@ -39,13 +45,28 @@ function load(): Store {
 
 function commit(next: Store) {
   state = next;
+  memory.set(storageKey(), next);
   try {
-    localStorage.setItem(KEY, JSON.stringify(next));
+    localStorage.setItem(storageKey(), JSON.stringify(next));
   } catch {
     /* private mode or full — keep running in memory */
   }
   listeners.forEach((l) => l());
 }
+
+
+// Unscoped legacy data stays on this device; never silently assign it to whoever
+// signs in next. Anonymous-user upgrades keep their user ID and their partition.
+export function setStoreOwner(next: string | null) {
+  if (owner === next) return;
+  memory.set(storageKey(), state);
+  owner = next;
+  epoch += 1;
+  state = load();
+  listeners.forEach((listener) => listener());
+}
+
+export function getStoreScope() { return { owner, epoch }; }
 
 export function getStore(): Store {
   return state;
@@ -92,7 +113,7 @@ export const actions = {
       const scenarios = r.scenarioId
         ? s.scenarios.map((sc) =>
             sc.id === r.scenarioId
-              ? { ...sc, plays: sc.plays + 1, bestScore: Math.max(sc.bestScore ?? 0, r.score) }
+              ? { ...sc, plays: sc.plays + 1, bestScore: hasVerifiedReportScore(r) ? Math.max(sc.bestScore ?? 0, r.score) : sc.bestScore }
               : sc,
           )
         : s.scenarios;
@@ -106,7 +127,11 @@ export const actions = {
     update((s) => ({ ...s, lessons: [{ ...l, id: uid("ls"), t: Date.now(), usedOn: 0 }, ...s.lessons] }));
   },
   removeLesson(id: string) {
-    update((s) => ({ ...s, lessons: s.lessons.filter((l) => l.id !== id) }));
+    update((s) => ({ ...s, lessons: s.lessons.filter((l) => l.id !== id),
+      pendingDeletes: owner && s.lessons.some((l) => l.id === id)
+        ? { lessons: [...new Set([...(s.pendingDeletes?.lessons ?? []), id])], scenarios: s.pendingDeletes?.scenarios ?? [] }
+        : s.pendingDeletes,
+    }));
   },
   addScenario(sc: Scenario) {
     update((s) => ({ ...s, scenarios: [sc, ...s.scenarios] }));
@@ -115,7 +140,19 @@ export const actions = {
     update((s) => ({ ...s, scenarios: s.scenarios.map((x) => (x.id === id ? { ...x, approved: true } : x)) }));
   },
   removeScenario(id: string) {
-    update((s) => ({ ...s, scenarios: s.scenarios.filter((x) => x.id !== id) }));
+    update((s) => ({ ...s, scenarios: s.scenarios.filter((x) => x.id !== id),
+      pendingDeletes: owner && s.scenarios.some((sc) => sc.id === id && sc.source === "generated")
+        ? { lessons: s.pendingDeletes?.lessons ?? [], scenarios: [...new Set([...(s.pendingDeletes?.scenarios ?? []), id])] }
+        : s.pendingDeletes,
+    }));
+  },
+  /** The call history only — the report cards, and the deadlines those cards
+      started. A deadline exists only because a report created it, so the two
+      clear together or the survivor is an orphan.
+      Lessons and practice customers are the learning loop the team built; a
+      tidy-up before a demo must not take them. That is what `wipe` is for. */
+  clearCallHistory() {
+    update((s) => ({ ...s, reports: [], deadlines: [] }));
   },
   wipe() {
     commit(EMPTY);

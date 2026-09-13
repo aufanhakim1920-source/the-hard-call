@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { getStoreScope, subscribe } from "./lib/store";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { About } from "./components/About";
+import { CallHistory } from "./components/CallHistory";
 import { CallScreen } from "./components/CallScreen";
 import { Deadlines } from "./components/Deadlines";
 import { Lessons } from "./components/Lessons";
@@ -22,7 +24,13 @@ interface ActiveCall {
 
 const LIVE_DEFAULT: Customer = { name: "Sarah M.", product: "home loan", direction: "outbound" };
 
+const scopeEpoch = () => getStoreScope().epoch;
 export default function App() {
+  const epoch = useSyncExternalStore(subscribe, scopeEpoch);
+  return <AppContent key={epoch} />;
+}
+
+function AppContent() {
   const [view, setView] = useState<View>("live");
   const [call, setCall] = useState<ActiveCall>({ key: 1, mode: "live", customer: LIVE_DEFAULT });
   const [result, setResult] = useState<{ report: Report; session: Session } | null>(null);
@@ -82,7 +90,13 @@ export default function App() {
       <div className="view" id="main" key={`${view}-${result ? result.report.callId : call.key}`}>
       {view === "live" &&
         (result ? (
-          <ReportCard report={result.report} session={result.session} onNew={startLive} onPractice={startPractice} />
+          <ReportCard
+            report={result.report}
+            session={result.session}
+            onNew={startLive}
+            onPractice={startPractice}
+            onCompare={() => setView("calls")}
+          />
         ) : (
           <CallScreen
             key={call.key}
@@ -94,6 +108,7 @@ export default function App() {
             onAssistant={setAssistant}
           />
         ))}
+      {view === "calls" && <CallHistory onNewCall={startLive} />}
       {view === "practice" && <Practice onStart={startPractice} />}
       {view === "deadlines" && <Deadlines />}
       {view === "lessons" && <Lessons />}

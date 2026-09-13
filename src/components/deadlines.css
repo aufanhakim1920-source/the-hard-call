@@ -1,0 +1,66 @@
+/* ---------- ranking the open clocks against each other ----------
+   Scoped through `.page.narrow` because this file is bundled BEFORE the main
+   stylesheet and a bare `.deadline-row` override would lose on source order.
+
+   This morning's pass got the first ranking right: open rows come forward onto
+   the raised plane with a gold leading edge, settled ones fall back to the
+   page. MEASURED after it, at 1280 with four real clocks stored: 3 painted
+   surfaces across 522 px, and the hairlines left on the screen belong to
+   buttons, not to the separating.
+
+   What it did NOT rank is the open rows against EACH OTHER. An IDR
+   acknowledgement two days overdue and a hardship response due in sixteen
+   days were the same object: same ground, same 3 px gold edge, same height.
+   The only thing separating them was one 15 px coloured word. That is the
+   report card's fault at the next level down — type ranking inside a surface
+   where the ranking needed is between surfaces.
+
+   So the row the bank is exposed on comes further forward: a 6 px edge in the
+   hazard token, more air inside and under it, and the date and the count
+   scaled up. Every step is visible in greyscale — width, height, space, size —
+   so the red is the fourth carrier of "overdue" and never the only one. The
+   row already says "2 days overdue" in words.
+
+   No new ground. --ink-3 was the obvious way to push it forward and was
+   rejected: on the light theme --ink-3 is #DED8CB, where this row's own
+   --grey customer name measures 4.09:1 and fails AA. Air and edge cost
+   nothing and re-open no contrast question. */
+.page.narrow .deadline-row.urgent {
+  box-shadow: inset 6px 0 0 var(--bad);
+  padding: 20px 16px 20px 20px;
+  margin-bottom: 14px;
+}
+.page.narrow .deadline-row.urgent .d {
+  font-size: 19px;
+}
+.page.narrow .deadline-row.urgent .left {
+  font-size: 17px;
+}
+/* The middle tier: inside the statutory week, wider edge, no extra air. */
+.page.narrow .deadline-row.soon {
+  box-shadow: inset 6px 0 0 var(--gold);
+  padding-left: 20px;
+}
+/* MEASURED on the light ground with the row already raised: "3 days left" is
+   --gold-2 and lands at 4.48:1 on --ink-2, under the 4.5 bar. It was already
+   under it before this file existed — the row took a ground this morning and
+   the days-left token was not re-measured against it — but this pass is what
+   makes that row loud, so it is this pass's to fix. --gold-on-tint is the
+   token that exists for exactly this case, gold as TEXT on a tint that is not
+   the page: 5.45:1 light, 7.77:1 dark. The gold FILL of the edge is untouched.
+   ⭐ Changing a ground re-opens every contrast question that ground answered. */
+.page.narrow .deadline-row .left.soon {
+  color: var(--gold-on-tint);
+}
+/* A settled row keeps its own marker — this file must not out-specify it. */
+.page.narrow .deadline-row.done {
+  box-shadow: inset 3px 0 0 var(--line-2);
+  padding: 14px 16px;
+  margin-bottom: 6px;
+}
+.page.narrow .deadline-row.done .d {
+  font-size: 17px;
+}
+.page.narrow .deadline-row.done .left {
+  font-size: 15px;
+}

@@ -1,0 +1,91 @@
+/* ---------- the lessons corpus ----------
+   A new file rather than a block in the main stylesheet, which another agent
+   holds this round. Scoped through `.page.narrow` on purpose: this file is
+   bundled BEFORE the main stylesheet, so a bare `.lesson` override loses on
+   source order and silently does nothing.
+
+   MEASURED on the finished screen before this existed, at 1280 with four real
+   lessons stored:
+
+   - **1 painted surface** larger than 8000 px² across 627 px of page — and it
+     was the empty text INPUT, 17,388 px² of sunken black.
+   - 17 hairline borders.
+   - the four lessons themselves: no ground, no air, separated by 1 px rules.
+
+   So the **form outranked the corpus**. On the screen whose whole claim is
+   that the team's judgement reaches the engine, the loudest object was the box
+   you type into and the evidence it works was flat page. Same fault the report
+   card and the compare board were just cleared of, one screen along:
+   ⭐ type ranks things within a surface; between regions the ranking is ground
+   and air, and with neither there is no ranking at all.
+
+   The lessons take the raised plane (--ink-2, the same step up the deadline
+   rows and the practice roster's "up next" card already use — no new motion
+   language, no new ground). They share ONE continuous surface instead of
+   becoming four cards: four equal cards is the 46/50 failure [[No Boxes No
+   Instinct]] measures, not a cure for it. The hairline stays and finally does
+   an honest job — dividing rows INSIDE a surface rather than standing in for
+   one. */
+.page.narrow .lesson {
+  background: var(--ink-2);
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+.page.narrow .lesson:first-of-type {
+  border-top: none;
+  border-radius: var(--r-card) var(--r-card) 0 0;
+}
+.page.narrow .lesson:last-of-type {
+  border-bottom-color: transparent;
+  border-radius: 0 0 var(--r-card) var(--r-card);
+}
+/* A one-lesson corpus is a single rounded plane, not a lozenge with a seam. */
+.page.narrow .lesson:first-of-type:last-of-type {
+  border-radius: var(--r-card);
+}
+
+/* Rank by consequence, not by category — the rule the deadline rows already
+   follow (the date a statutory clock hangs on is 17 px, the customer 12 px).
+
+   The loudest thing in every row was the KIND: gold, uppercase, mono, tracked,
+   alone in a 120 px column. Two of the four rows said the same word. What the
+   lesson actually teaches the engine was 14 px body, and the number of calls
+   it has already shaped — the one figure that proves the loop is live — was
+   11 px grey at the bottom of a sentence.
+
+   Gold in this product means "this one" (the sign rail, `.sel-opt.is`, the
+   practice card the roster is steering you to). A category is never "this
+   one", so it gives the colour back and drops a tier. Measured on --ink-2:
+   --text-2 is 9.30:1 dark and 6.97:1 light, where --gold-2 was 4.48:1 light
+   and failed AA the moment this row took a ground. */
+.page.narrow .lesson .k {
+  color: var(--text-2);
+  font-weight: 500;
+}
+.page.narrow .lesson .lt {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.page.narrow .lesson .ev {
+  color: var(--text-3);
+  margin-top: 6px;
+}
+/* The count leads its own line and is cream, not grey: "used on 14 calls" is
+   the evidence, and the date it was added is the footnote. */
+.page.narrow .lesson .used {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 8px;
+}
+.page.narrow .lesson .used b {
+  color: var(--cream);
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .page.narrow .lesson {
+    padding: 14px 14px 16px;
+  }
+}

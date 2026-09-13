@@ -58,7 +58,8 @@ Two things make your row read well:
 npm install
 cp .env.example .env     # the VITE_* values in the example are all you need to run the app
 npm run dev              # http://localhost:5173 — uses the deployed engine
-npm run eval             # scores the sign engine; needs GEMINI_API_KEY in .env (ask Aufan, never paste it in chat)
+npm run eval             # previews the sign engine; needs GEMINI_API_KEY in .env (ask Aufan, never paste it in chat)
+npm run eval -- --publish # real, full, error-free standard run only; updates published score
 ```
 
 Deadline: **Monday 14 Sep, 12:00pm**. Freeze `main` at 11:00am — after that only the video link and README go in.

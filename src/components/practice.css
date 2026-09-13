@@ -1,0 +1,49 @@
+/* ---------- the practice roster, phone only ----------
+   Everything else about .scen lives in the main stylesheet.
+
+   The "up next" card is marked by a 3px gold rail hung off the card's left
+   edge at -20px. That sits inside the page's 20px gutter on a wide window, but
+   the gutter drops to 14px at 760 and under, which put the rail at x = -6 on a
+   375px screen — measured off the left of the window. The one card the roster
+   is steering you to was marked by nothing at all on every phone.
+
+   -14px puts it flush against the screen edge, where a 3px gold tick reads as
+   deliberate. The badge still says "up next" in words, so the rail is the
+   second carrier of that state and never the only one.
+
+   Scoped through .scen-grid on purpose: a media query carries no specificity,
+   and this file is bundled BEFORE the main stylesheet, so a bare .scen.next
+   override loses on order and silently does nothing. Measured that way first. */
+@media (max-width: 760px) {
+  .scen-grid .scen.next::before {
+    left: -14px;
+  }
+}
+
+/* ---------- the loudest line in the row was the identical one ----------
+   MEASURED at 1280 with the five seeds: 1 painted surface across 809 px (the
+   "up next" card, 120,280 px² — correct, one rich object), 27 hairlines, and
+   a reading order that was inverted inside every row.
+
+   `.ask-of-you` is keyed to the LEVEL, not the customer, so three of the five
+   rows carry it word for word. It was the strongest thing in the middle
+   column: --text-2, 13 px, 1.5 leading, with a 2 px gold rule down its left
+   edge. The line that actually differs between rows — what this particular
+   call is — sat beside it in 13 px --grey with no mark at all.
+
+   That is the compare board's defect exactly: the loudest type in the region
+   is the part that is the same on every row, and the part that differs is the
+   quietest. So they swap tiers. The gold rule stays on the coaching line, in
+   the hairline token rather than gold, because it is still the instruction —
+   it just is not the news. --text-2 reads 9.30:1 dark / 6.97:1 light and
+   --grey 5.01:1 on the page ground, both clear of the 4.5 bar. */
+.scen-grid .scen .sit {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.scen-grid .scen .ask-of-you {
+  color: var(--grey);
+  font-size: 12px;
+  border-left-color: var(--line-2);
+}

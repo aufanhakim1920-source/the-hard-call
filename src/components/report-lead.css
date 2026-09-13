@@ -1,0 +1,184 @@
+/* The card's first reading: how many signs went unanswered.
+
+   Measured against the two cards the pitch puts side by side — the same call
+   coached and silent — the top of the card read almost identically on both.
+   Same customer name at 24px, same ring frame, same full-width bar under the
+   same fraction. In the first second the only glyph that differed was the
+   leading digit of "0 of 3" against "4 of 4", and the word that carries the
+   legal consequence ("missed") was 10px uppercase grey, the smallest type in
+   the region.
+
+   So the consequence gets the display size and the state colour, and the
+   composition keeps the fraction directly below it. The two readings are
+   complements, not a repeat: this one is what it costs, the ledger is what the
+   call was made of.
+
+   --ok and --bad are the card's existing state pair — already carried on the
+   verdict chips, already measured on both grounds. No new hue was introduced,
+   and colour is never the only carrier: the count and the word "missed" say
+   the same thing in greyscale. */
+
+/* ⭐ The lead is the one thing on this card with a ground of its own.
+
+   MEASURED on the finished card, both runs: eleven regions, and not one
+   painted surface larger than 8000px² — every reading sat on the page's own
+   ink, separated by 25 hairlines and by margins of 18, 20, 20, 20, 22, 22, 24,
+   24 and 26px. That is a spacing scale with no hierarchy in it: the model's
+   write-up got the same air as the miss count, and the eye had no second or
+   third stop, only a walk down a stack of flat panels.
+
+   A ground, not a border. The hairline outline is the house failure mode (49
+   of 50 past builds) and it is already spent 25 times on this card.
+
+   ⚠ The plate is a DIFFERENT token per ground, and that is measured, not a
+   preference. Changing a ground re-opens every contrast question that ground
+   had answered, and the two grounds have different headroom:
+
+   - dark uses --ink-3, a 1.25:1 step off the page. --ink-2 was tried first and
+     looked at: 1.09:1, invisible on the rendered card. On this plate --bad
+     reads 6.62:1, --ok 7.20, --cream 11.48, --grey 5.19.
+   - light uses --ink-2, a 1.10:1 step. --ink-3 there is a fine 1.22:1 surface
+     but its text has nowhere to go — --ok lands on 4.53:1 and --grey, which is
+     the ring's own labels sitting inside this plate on a phone, fails outright
+     at 4.12:1. On --ink-2: --bad 5.13:1, --ok 5.03, --cream 13.04, --grey 4.57.
+
+   All eight above AA, on a card whose lead is the one reading a judge is
+   guaranteed to take. */
+.rc-verdict {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 26px;
+  /* The bleed is EXACTLY the card's own side padding — 20px above 760px, 14px
+     below, which is where `.report` changes it — so the plate reaches the
+     card's edge while the figure and the sentence stay on the same left spine
+     as every reading under them. An inset plate put the lead 26px right of
+     everything else and the card's left edge visibly wobbled. Bleed and
+     padding cancel, so the plate is never wider than the card: measured 0px of
+     horizontal overflow at 375, 768 and 1280. */
+  margin: 0 -20px 34px;
+  padding: 22px 20px;
+  background: var(--ink-3);
+  border-radius: var(--r-card);
+  /* Transform only, and it starts 8px low rather than invisible — frozen at
+     frame 0 in a throttled tab this reads correctly. See the vault note
+     "An Entrance Must Not Gate Visibility". */
+  animation: rcLead 300ms var(--ease-out) both;
+}
+@keyframes rcLead {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+:root[data-theme="light"] .rc-verdict {
+  background: var(--ink-2);
+}
+
+.rc-v-fig {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+.rc-v-fig b {
+  font-family: var(--mono);
+  /* Big text goes LIGHTER, the same rule the rest of the card follows. */
+  font-weight: 300;
+  font-size: clamp(46px, 7vw, 62px);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bad);
+}
+.rc-v-fig i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bad);
+}
+.rc-verdict.clean .rc-v-fig b,
+.rc-verdict.clean .rc-v-fig i {
+  color: var(--ok);
+}
+
+.rc-v-say {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  /* The strong text colour, never an alpha over it — the same 0.75 measured
+     8.56:1 on one surface here and 3.93:1 on another. */
+  color: var(--cream);
+  max-width: 56ch;
+  min-width: 0;
+}
+/* The clause that carries the legal consequence, so it is not lost inside a
+   sentence a judge will not finish reading. */
+.rc-v-say b {
+  font-weight: 600;
+  color: var(--bad);
+}
+.rc-verdict.clean .rc-v-say b {
+  font-weight: 600;
+  color: var(--cream);
+}
+
+/* The phone puts the figure and the score ring on one row and drops the
+   sentence beneath them, because on a 375px screen the ring was taking a row
+   of its own ABOVE the finding — the reading the research deliberately demoted,
+   read first. The breakpoint is 760px to the pixel, because that is where
+   `PHONE` in useMedia decides to hand the ring over; a CSS breakpoint that
+   disagreed with it by even a pixel would leave the ring in a column that no
+   longer exists. */
+@media (max-width: 760px) {
+  .rc-verdict {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 14px;
+    /* `.report` drops to 14px of side padding at this same breakpoint, so the
+       bleed follows it. */
+    padding: 16px 14px 18px;
+    margin: 0 -14px 26px;
+  }
+  .rc-v-say {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  .rc-v-aside {
+    justify-self: end;
+    align-self: center;
+  }
+}
+
+/* The two largest text settings reflow the sentence to full width — at 21px
+   body a 56ch measure beside a 62px figure does not fit a 900px card. Scoped
+   above the phone breakpoint so it cannot undo the row the ring sits in. The
+   sentence grows with them too, the same 14 → 16 step the run note takes; a
+   lead that ignored the text-size control would be the one line on the card
+   that did. */
+@media (min-width: 761px) {
+  :root[data-text="2"] .rc-verdict,
+  :root[data-text="3"] .rc-verdict {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}
+:root[data-text="2"] .rc-v-say,
+:root[data-text="3"] .rc-v-say {
+  font-size: 17px;
+}
+
+/* The global rules squash transition-duration, not animation, and never a
+   delay — so this is zeroed by name. */
+:root.reduce-motion .rc-verdict {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rc-verdict {
+    animation: none;
+  }
+}

@@ -28,3 +28,7 @@ dist-ssr
 .env.*
 !.env.example
 .netlify
+
+# Per-run scratch output from eval/demo-runs.ts. The archive that matters is
+# eval/demo-runs.json, which is committed; this is whatever the last run wrote.
+eval/demo-runs.latest.json

@@ -19,6 +19,17 @@ export const AGENT_ID: string = (import.meta.env.VITE_ELEVENLABS_AGENT_ID as str
  */
 function humanError(raw: string): string {
   const m = (raw ?? "").toLowerCase();
+  // The same endpoint returns 429 for two unrelated reasons and they need
+  // opposite advice. Measured against the live agent on 13 Sep from the
+  // deployed origin: {"status":"workspace_concurrency_limit_exceeded",
+  // "message":"Workspace has reached its maximum concurrent capacity."} — that
+  // is the free plan's FOUR simultaneous sessions, and it clears in a minute.
+  // Its words contain both "limit" and "capacity", so the quota branch below
+  // was catching it and telling a room the month's minutes were gone. Must be
+  // tested first.
+  if (/concurren|capacity|simultaneous|too many/.test(m)) {
+    return "Too many practice calls are running at once — the free plan allows four. Give it a minute and start the call again.";
+  }
   if (/quota|limit|exceed|insufficient|credit/.test(m)) {
     return "The practice voice has used up this month's free minutes. The live call and the report card still work.";
   }
@@ -28,6 +39,12 @@ function humanError(raw: string): string {
   if (/microphone|permission|notallowed/.test(m)) {
     return "This browser blocked the microphone. Allow it in the address bar, then start the call again.";
   }
+  // A laptop with no microphone at all rejects with NotFoundError / "Requested
+  // device not found", which matched none of the branches above and went on
+  // screen as the browser's own words.
+  if (/notfound|requested device|no.{0,12}(microphone|audio input)|devicesnotfound/.test(m)) {
+    return "This computer has no microphone the browser can use. Plug one in or pick one in the browser's site settings, then start the call again.";
+  }
   if (/network|timeout|websocket|disconnect/.test(m)) {
     return "Lost the connection to the practice voice. Check the network and try again.";
   }
@@ -36,7 +53,10 @@ function humanError(raw: string): string {
     // without a reason. Say the likely cause AND the raw text, so we can tell.
     return "Couldn't start the practice voice — most likely this month's free minutes are used up. The live call and the report card are unaffected.";
   }
-  return raw;
+  // Anything still unrecognised is shown as-is, so never let an identifier
+  // travel with it: the SDK puts the agent id in its connection errors, and
+  // this string is read off a projector.
+  return raw.replace(/agent_[A-Za-z0-9]+/g, "the practice agent");
 }
 
 export function usePractice(opts: { onLine: (speaker: Speaker, text: string) => void }) {
@@ -132,7 +152,16 @@ export function usePractice(opts: { onLine: (speaker: Speaker, text: string) => 
         };
         raf.current = requestAnimationFrame(tick);
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        // Everything that goes wrong BEFORE the session exists — no microphone,
+        // and the conversation-token request, which is where a spent quota
+        // actually shows up — rejects this promise instead of reaching
+        // `onError`. So the whole translation above was being skipped on the
+        // one path most likely to run in front of a room, and the SDK's
+        // developer string went on screen with the agent id inside it.
+        // Measured with the token request forced to 429: "Failed to fetch
+        // conversation token for agent agent_…: ElevenLabs API returned 429
+        // You have exceeded your current quota." Both paths translate now.
+        setError(humanError(e instanceof Error ? e.message : String(e)));
         setStatus("error");
       }
     },

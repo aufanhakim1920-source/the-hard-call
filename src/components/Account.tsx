@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
+import { useExit } from "../lib/motion";
 import { play } from "../lib/sfx";
 import { useStore } from "../lib/store";
 import { counts, onSync, type SyncState } from "../lib/sync";
@@ -19,6 +20,9 @@ export function AccountChip() {
   const [msg, setMsg] = useState<string | null>(null);
   const [sync, setSync] = useState<SyncState>("off");
   useEffect(() => onSync(setSync), []);
+  // The panel opened with motion and closed by disappearing. `open` still
+  // flips on the click — only the node stays behind long enough to leave.
+  const panel = useExit(open);
 
   const label =
     auth.status === "loading"
@@ -58,8 +62,8 @@ export function AccountChip() {
         <span className="acct-label">{label}</span>
         {dot && <span className="acct-sync">{dot}</span>}
       </button>
-      {open && (
-        <div className="acct-panel" role="dialog" aria-label="Account">
+      {panel.mounted && (
+        <div className={"acct-panel" + (panel.leaving ? " is-leaving" : "")} role="dialog" aria-label="Account" inert={panel.leaving}>
           {auth.status === "account" ? (
             <>
               <div className="label">Signed in</div>
@@ -100,11 +104,23 @@ export function AccountChip() {
                 </button>
               </div>
               <form onSubmit={submit} className="acct-form">
-                <input className="field" type="email" autoComplete="email" placeholder="you@bank.com.au" value={email} onChange={(e) => setEmail(e.target.value)} />
+                {/* Named, not just placeheld — a placeholder is gone the moment
+                    anyone types, and these two are the only fields in the app
+                    where getting the wrong box is a sign-in failure. */}
+                <input
+                  className="field"
+                  type="email"
+                  autoComplete="email"
+                  aria-label="Work email"
+                  placeholder="you@bank.com.au"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
                 <input
                   className="field"
                   type="password"
                   autoComplete={mode === "create" ? "new-password" : "current-password"}
+                  aria-label={mode === "create" ? "New password, at least 6 characters" : "Password"}
                   placeholder="password"
                   value={pw}
                   onChange={(e) => setPw(e.target.value)}
@@ -118,7 +134,13 @@ export function AccountChip() {
                   Signing in to a different account leaves this guest's {have} behind.
                 </p>
               )}
-              {(msg ?? auth.error) && <p className="small" style={{ marginTop: 8 }}>{msg ?? auth.error}</p>}
+              {/* Mounted from the start rather than created already holding its
+                  text — a status region that appears full is the one a screen
+                  reader misses. Empty, a <p> makes no line box and costs no
+                  height. */}
+              <p className="small" role="status" style={{ marginTop: (msg ?? auth.error) ? 8 : 0 }}>
+                {msg ?? auth.error}
+              </p>
             </>
           )}
         </div>

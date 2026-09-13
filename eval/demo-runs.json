@@ -1,0 +1,3092 @@
+{
+  "measured": "2026-09-13",
+  "tool": "eval/demo-runs.ts",
+  "note": "phase = before/after the demoScript.ts wording fix; local = eval harness on the repo source (gemini-2.5-flash), remote = the deployed Supabase function (gemini-flash-latest)",
+  "runs": [
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 40,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 3,
+        "missed": 1,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 20660
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "partly",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 19075
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 4,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 19463
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 4,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 4,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 20439
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 5,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 4,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 47011
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 6,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 19597
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 5,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 90,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 5,
+        "partly": 0,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "handled",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 20174
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 85,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 20955
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 80,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 20311
+    },
+    {
+      "phase": "before-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 4,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 90,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 5,
+        "partly": 0,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "handled",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 19352
+    },
+    {
+      "phase": "before-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 4,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 33306
+    },
+    {
+      "phase": "before-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 10
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "partly",
+            "kind": "legal"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 40011
+    },
+    {
+      "phase": "before-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 18,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 38192
+    },
+    {
+      "phase": "before-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 85,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 31548
+    },
+    {
+      "phase": "before-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 85,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 32410
+    },
+    {
+      "phase": "before-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 85,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal"
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 35892
+    },
+    {
+      "phase": "before-remote-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.01,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 10
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 0,
+        "partly": 2,
+        "missed": 2,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer mentioned things being tight, you asked for payment by Friday instead of checking what support or options might help."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "Following the customer's disclosure of reduced employment, you asked when the full amount could be paid rather than exploring their situation or offering tailored options."
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You offered a temporary pause on reminders, but you did not explore the customer's distress or discuss available repayment arrangements."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "partly",
+            "kind": "legal",
+            "note": "You noted the file for someone to follow up, but you did not initiate or outline a formal hardship application after the customer asked for reduced payments."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip",
+            "note": "Insufficient transcript evidence to verify the worker's response."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 33810
+    },
+    {
+      "phase": "before-remote-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.02,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 10
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You moved straight to requesting payment by Friday instead of checking on the customer's financial situation."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You asked when the full amount could be paid rather than acknowledging the customer's change in employment circumstances."
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You offered a brief hold on reminders, but did not pause to explore repayment support options with the customer."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "You ended the call by stating someone would be in touch rather than identifying or initiating a hardship assessment."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip",
+            "note": "Insufficient transcript evidence to verify the worker's response."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 37192
+    },
+    {
+      "phase": "before-remote-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.03,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 10
+        }
+      ],
+      "report": {
+        "score": 18,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You pressed for immediate payment by Friday rather than exploring the customer's financial difficulty."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You acknowledged the comment briefly but immediately asked when the full amount could be paid without discussing the situation further."
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You offered a brief hold on reminders, but did not slow down or explore assistance options to address the customer's expressed stress."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "When a direct request for reduced payments was made, you did not initiate a hardship application or discuss formal arrangements."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip",
+            "note": "Insufficient transcript evidence to verify the worker's response."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 42065
+    },
+    {
+      "phase": "before-remote-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.04,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 10
+        }
+      ],
+      "report": {
+        "score": 18,
+        "scoreUnverified": true,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 1,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You acknowledged the comment briefly but immediately asked for payment by Friday instead of asking about hardship options."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You did not acknowledge the change in employment and instead asked when the full amount could be paid."
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You offered a brief hold on reminders, but did not slow down to explore repayment options or offer support."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "You did not initiate a hardship assessment or clarify the customer's request for reduced repayments, only noting that someone would be in touch."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "unverified",
+            "kind": "tip",
+            "note": "Insufficient transcript evidence to verify the worker's response."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 45653
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 10
+        }
+      ],
+      "report": {
+        "score": 10,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer mentioned things being tight, you pressed for payment by Friday rather than exploring their circumstances."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "Following the customer's disclosure of job loss, you continued to ask when the full payment could be made without checking their income situation."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer voiced significant stress, you highlighted system overdue rules instead of acknowledging their distress or slowing down."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "You did not offer or assess hardship options after the customer asked for a few months of reduced payments, closing the call with just a file note."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You ended the conversation without informing the customer that formal hardship support provisions exist."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 33089
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 10,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer mentioned things were tight, you asked for payment by Friday instead of inquiring about their situation or offering repayment options."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You acknowledged the comment with 'Okay' but immediately asked when the full amount could be paid rather than addressing the change in employment."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You responded to the customer's distress by stating the account would remain overdue on the system instead of acknowledging their stress or slowing down."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "When the customer expressed uncertainty about resuming payments, you did not identify this as a hardship request or discuss relief arrangements."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You closed the call with a note on the file without informing the customer of the bank's hardship provisions or available assistance."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 31888
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 10,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You moved straight to asking for a payment deadline rather than checking if hardship support was needed."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You continued asking for the full balance rather than exploring repayment arrangements or assistance options."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You did not acknowledge the customer's distress or slow down to offer support options."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "When the customer stated uncertainty about future payments, you did not identify or explore potential hardship arrangements."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You noted the account status without outlining any available hardship relief provisions or next steps."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 35090
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 4,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 15,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer mentioned things were tight, you asked if the payment could be made by Friday instead of exploring what was happening or offering options."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When informed of the customer's change in employment circumstances, you immediately asked when the full payment could be made rather than acknowledging the situation or assessing hardship."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer expressed feeling stressed, you stated the system requirements rather than acknowledging their distress or slowing down the conversation."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "You did not treat the uncertainty around repayments and request for time as a prompt to initiate hardship assistance, ending the call with only a file note."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You explained that the account stays overdue without informing the customer about available hardship provisions or options to adjust payments."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 35855
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 5,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 10,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer mentioned things were tight, you asked if they could pay by Friday instead of exploring hardship options."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "After the customer disclosed their job loss, you immediately asked when the full amount could be paid without exploring their situation."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "When the customer expressed feeling stressed, you stated the account status instead of acknowledging their distress or providing support."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "You did not identify or explore potential hardship options when the customer expressed uncertainty about resuming payments."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You ended the call with a file note rather than informing the customer about available hardship assistance."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 34054
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 6,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 10,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 0,
+        "missed": 5,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You moved straight to asking for payment by Friday instead of inquiring into the customer's financial situation."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You did not explore the customer's change in circumstances, asking instead when the full amount could be paid."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You did not acknowledge the customer's distress or offer to slow down, reiterating instead that the account would stay overdue."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "When the customer indicated uncertainty about paying, you did not initiate a discussion around hardship assistance or temporary relief."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "You closed the call with a note on the file without outlining available hardship solutions or support pathways."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 32674
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 88,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You initially asked for payment by Friday, but followed up shortly after by offering to look at changing repayments."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You gave the customer space and asked an open question about what would make things easier."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You validated the customer's feelings and introduced hardship options to ease the pressure."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "You acknowledged the request for temporary relief and agreed to send the hardship form to begin the process."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 37275
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 85,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You initially pressed for a payment by Friday, but after the customer reiterated their difficulty, you offered to look at changing repayments."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You responded calmly, encouraged the customer to take their time, and asked what would help ease the pressure."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You validated the customer's feelings and introduced the hardship process to help manage their situation."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "You accepted the request for temporary payment relief and committed to sending out the hardship documentation immediately."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 34730
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 88,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You initially pressed for a payment date after the customer mentioned things were tight, but adjusted your approach on the next turn by offering repayment changes."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You gave the customer space and asked open questions to explore what support would help."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You validated the customer's distress and introduced the support team to step them through options."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "You acted immediately on the request by committing to send the hardship form and setting out the next step."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 36282
+    },
+    {
+      "phase": "after-remote",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 4,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 9,
+          "dueDate": "2026-10-04"
+        }
+      ],
+      "report": {
+        "score": 88,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You initially asked for payment by Friday, but after the customer expressed broader difficulty, you offered to look at repayment changes."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You gave the customer space and asked an open question about what would make things easier."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You acknowledged the emotional strain by connecting them directly to hardship options and offering to walk through them."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "You acted immediately on the request for reduced payments by committing to send the hardship form today."
+          }
+        ],
+        "model": "gemini-flash-latest"
+      },
+      "ms": 31519
+    },
+    {
+      "phase": "after-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 2,
+        "missed": 2,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "The worker acknowledged the customer's statement about things being tight but immediately asked for payment by Friday, rather than exploring the hardship."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "The worker acknowledged the job loss but immediately asked when the full amount could be paid, rather than exploring the impact of the job loss."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "The worker did not offer any repayment assistance or explore options after the customer stated they didn't know when they could pay the full amount."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "The worker did not acknowledge the customer's stress or ask what would be helpful, instead focusing on the system status of the overdue amount."
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 21841
+    },
+    {
+      "phase": "after-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 20,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 1,
+        "missed": 3,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "The worker acknowledged the customer's statement but immediately asked for payment instead of exploring the hardship."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "The worker acknowledged the job loss but immediately asked when the full amount could be paid, rather than exploring the impact of the job loss."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "The worker did not offer any repayment assistance or explore options after the customer stated they didn't know when they could pay the full amount."
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip",
+            "note": "The worker acknowledged the customer's stress but did not ask what would help them or offer support."
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 21187
+    },
+    {
+      "phase": "after-local",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 3,
+        "missed": 1,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You acknowledged the customer's statement about things being tight, but immediately asked for payment rather than exploring their hardship."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You acknowledged the job loss but immediately asked about the full payment rather than exploring how this impacted their ability to pay."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal",
+            "note": "The customer indicated they could not make repayments, but you did not offer any repayment assistance or explore options."
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You acknowledged the customer's stress but did not explore what would help most or offer support."
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 21503
+    },
+    {
+      "phase": "after-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 1,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 5,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 90,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 5,
+        "partly": 0,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "The worker acknowledged the customer's statement and offered a repayment change."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "The worker acknowledged the job loss and asked what would make things easier."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "The worker asked what changes to repayments would help right now."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "The worker acknowledged the customer's stress and explained how the hardship team could help."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "The worker informed the customer about the hardship process and offered to send a form."
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 21280
+    },
+    {
+      "phase": "after-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 2,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 75,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 3,
+        "partly": 2,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You acknowledged the customer's statement about things being tight, but then immediately asked for a payment by Friday, rather than exploring the hardship situation further at that point."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You acknowledged the job loss and followed up by asking what would make things easier, which is an appropriate response to explore the impact."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You acknowledged the customer's stress and immediately connected it to the hardship team's ability to help, offering a clear next step."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "You correctly identified the customer's difficulty with repayments and offered to send the hardship form, which is a direct action to address the request."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You mentioned the hardship team and offered to take the customer through it, but then quickly ended the call after offering to send a form, without fully explaining the process or asking if they had questions."
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 22264
+    },
+    {
+      "phase": "after-local",
+      "model": "gemini-2.5-flash",
+      "side": "coached",
+      "run": 3,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "inform-hardship-provisions",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 8
+        }
+      ],
+      "report": {
+        "score": 80,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 4,
+        "partly": 1,
+        "missed": 0,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip",
+            "note": "You acknowledged the customer's statement about things being tight but immediately asked for payment by Friday, rather than exploring the underlying issue first."
+          },
+          {
+            "key": "job-loss",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You acknowledged the job loss and asked an open-ended question to understand the customer's current needs."
+          },
+          {
+            "key": "stress",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You acknowledged the customer's stress and offered the support of the hardship team."
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "handled",
+            "kind": "legal",
+            "note": "You offered to look at changing repayments and then offered hardship assistance when the customer expressed stress about repayments."
+          },
+          {
+            "key": "inform-hardship-provisions",
+            "verdict": "handled",
+            "kind": "tip",
+            "note": "You offered hardship assistance and committed to sending the form."
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 21053
+    },
+    {
+      "phase": "before-local-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.01,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 3,
+        "missed": 1,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 20885
+    },
+    {
+      "phase": "before-local-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.02,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 3,
+        "missed": 1,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 23410
+    },
+    {
+      "phase": "before-local-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.03,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 3,
+        "missed": 1,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 25906
+    },
+    {
+      "phase": "before-local-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.04,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 2,
+        "missed": 2,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "missed",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 29316
+    },
+    {
+      "phase": "before-local-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.05,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 2,
+        "missed": 2,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "missed",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 31910
+    },
+    {
+      "phase": "before-local-same-session",
+      "model": "gemini-2.5-flash",
+      "side": "silent",
+      "run": 1.06,
+      "signs": [
+        {
+          "key": "ask-about-hardship",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 1
+        },
+        {
+          "key": "job-loss",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 5
+        },
+        {
+          "key": "hardship-request",
+          "kind": "legal",
+          "from": "model",
+          "lineIndex": 7,
+          "dueDate": "2026-10-04"
+        },
+        {
+          "key": "stress",
+          "kind": "tip",
+          "from": "model",
+          "lineIndex": 7
+        }
+      ],
+      "report": {
+        "score": 30,
+        "scoreUnverified": false,
+        "caught": 1,
+        "handled": 0,
+        "partly": 3,
+        "missed": 1,
+        "unverified": 0,
+        "items": [
+          {
+            "key": "ask-about-hardship",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "job-loss",
+            "verdict": "partly",
+            "kind": "tip"
+          },
+          {
+            "key": "hardship-request",
+            "verdict": "missed",
+            "kind": "legal"
+          },
+          {
+            "key": "stress",
+            "verdict": "partly",
+            "kind": "tip"
+          }
+        ],
+        "model": "gemini-2.5-flash"
+      },
+      "ms": 34630
+    }
+  ]
+}

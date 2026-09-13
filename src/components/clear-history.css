@@ -1,0 +1,58 @@
+/* The close half of the clear-history control (Deadlines tab).
+   A new file rather than a new block in the main stylesheet, which another
+   agent holds this round.
+
+   The question already opened properly — the space is made, then the words
+   arrive in it — and then the whole control was REPLACED by its outcome on the
+   same frame, which is the one thing an animated open must not do. Here both
+   halves are always in the tree and one grid row closes while the other opens,
+   so removing the data reads as one movement instead of a cut.
+
+   `grid-template-rows` because the heights are not known and must not be
+   guessed: `height: auto` does not animate and `max-height` either clips long
+   text or eases against nothing. `minmax(0, Nfr)` and never a bare `Nfr` —
+   that is what the css gate exists to catch. */
+.clear-swap {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows 340ms var(--ease-out);
+}
+.clear-swap > div {
+  overflow: hidden; /* REQUIRED — the row is what animates, not the content */
+}
+.clear-data.cleared .clear-swap {
+  grid-template-rows: minmax(0, 0fr);
+}
+
+/* The outcome is the mirror: closed until there is something to say. */
+.clear-swap.outcome {
+  grid-template-rows: minmax(0, 0fr);
+}
+.clear-data.cleared .clear-swap.outcome {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* The words arrive after the space is made, and they arrive by MOVING.
+   A fade would leave them invisible for as long as a throttled tab holds the
+   first frame, and this line is the only confirmation that the data is gone.
+   See the vault note "An Entrance Must Not Gate Visibility". */
+.clear-data.cleared .clear-done {
+  animation: clearDoneIn 240ms var(--ease-out) 120ms both;
+}
+@keyframes clearDoneIn {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: none;
+  }
+}
+/* A delay survives `animation-duration: 1ms`, so it has to be zeroed by name. */
+.reduce-motion .clear-data.cleared .clear-done {
+  animation-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .clear-data.cleared .clear-done {
+    animation-delay: 0ms !important;
+  }
+}

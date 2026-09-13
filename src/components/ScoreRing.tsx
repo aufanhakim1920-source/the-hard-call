@@ -36,7 +36,13 @@ export function ScoreRing({ score, size = 132, label = "score", unverified = fal
     c.height = Math.round(size * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const gold = token(c, "--gold");
+    // --gold-2, not --gold. The lit ticks ARE the value, and WCAG 1.4.11 asks
+    // 3:1 of a graphic that carries meaning: plain --gold measured 2.18:1 on
+    // the light ground and 1.79:1 once the lead's plate sat behind it on a
+    // phone. --gold-2 reads 4.91:1 on cream and 6.79:1 on the dark plate. Same
+    // rule the rest of this card already follows, stated at the top of
+    // report-visuals.css: a mark that must be seen uses --gold-2.
+    const gold = token(c, "--gold-2");
     const slate = token(c, "--slate");
     const centre = size / 2;
     const r = centre - LIT_LEN - 2;
@@ -86,15 +92,21 @@ export function ScoreRing({ score, size = 132, label = "score", unverified = fal
   }, [target, size, unverified]);
 
   return (
-    <div className="rv-ring" style={{ width: size, height: size }} role="img" aria-label={unverified ? "score not verified" : `${label} ${target} out of 100`}>
-      <canvas ref={canvas} className="rv-ring-canvas" style={{ width: size, height: size }} aria-hidden="true" />
-      <div className="rv-ring-read">
-        <div className="rv-ring-value" style={{ fontSize: Math.round(size * 0.27) }}>
-          <span ref={num}>—</span>
-          <span className="rv-unit">/100</span>
+    <div className="rv-ring" role="img" aria-label={unverified ? "score not verified" : `${label} ${target} out of 100`}>
+      <div className="rv-ring-face" style={{ width: size, height: size }}>
+        <canvas ref={canvas} className="rv-ring-canvas" style={{ width: size, height: size }} aria-hidden="true" />
+        <div className="rv-ring-read">
+          <div className="rv-ring-value" style={{ fontSize: Math.round(size * 0.27) }}>
+            <span ref={num}>—</span>
+            <span className="rv-unit">/100</span>
+          </div>
+          {!unverified && <div className="rv-label">{label}</div>}
         </div>
-        <div className="rv-label">{unverified ? "not verified" : label}</div>
       </div>
+      {/* "not verified" is twelve characters and the ring's clear middle is
+          about seventy pixels wide — inside, it crosses the ticks at every
+          size. It sits under the dial instead. */}
+      {unverified && <div className="rv-label rv-ring-under">not verified</div>}
     </div>
   );
 }

@@ -5,9 +5,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { announce, coachingOn, getA11y } from "./a11y";
 import { postFlags, postReport } from "./api";
+import { localSigns } from "./detectorBridge";
 import { maskSensitive } from "./mask";
 import { play, playSigns } from "./sfx";
-import { actions, getStore, lessonTexts } from "./store";
+import { actions, getStore, getStoreScope, lessonTexts } from "./store";
 import type { AssistantState, Customer, Line, Mode, Report, Session, Sign, Speaker } from "./types";
 import { uid } from "./types";
 
@@ -19,6 +20,7 @@ export interface EngineOptions {
 }
 
 export function useCallEngine(opts: EngineOptions) {
+  const [startedScope] = useState(() => getStoreScope());
   const [session, setSession] = useState<Session>(() => newSession(opts));
   const [interim, setInterim] = useState("");
   const [assistant, setAssistant] = useState<AssistantState>("idle");
@@ -35,40 +37,82 @@ export function useCallEngine(opts: EngineOptions) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.mode, opts.customer.name, opts.scenarioId]);
 
+  // One place that puts a sign on the session, whichever pass found it, so the
+  // sound and the announcement cannot drift apart between the two.
+  //
+  // ⚠️ The sound and the announcement MUST NOT live inside the setSession
+  // updater. React is allowed to run an updater more than once for a single
+  // update, and it does — measured, a demo call produced 8 play calls for 4
+  // sign events, in pairs 0-1ms apart. The sound layer only hid it because
+  // both calls land on one cached audio element and you hear a restart; the
+  // screen reader announcement beside it doubled with nothing to hide it, and
+  // every count ever taken here was twice the truth.
+  //
+  // So the new signs are worked out from the ref FIRST, side effects run once
+  // against that answer, and the updater stays pure. The ref is patched in the
+  // same breath, the way addLine already does it, so two commits landing in
+  // one tick cannot both think a key is fresh.
+  const commitSigns = useCallback((fresh: Sign[]) => {
+    if (!fresh.length) return;
+    const have = new Set(sessionRef.current.signs.map((g) => g.key));
+    const add: Sign[] = [];
+    for (const g of fresh) {
+      if (have.has(g.key)) continue;
+      have.add(g.key);
+      add.push(g);
+    }
+    if (!add.length) return;
+    sessionRef.current = { ...sessionRef.current, signs: [...sessionRef.current.signs, ...add] };
+    setSession((cur) => {
+      const seen = new Set(cur.signs.map((g) => g.key));
+      const missing = add.filter((g) => !seen.has(g.key));
+      return missing.length ? { ...cur, signs: [...cur.signs, ...missing] } : cur;
+    });
+    // Coaching off silences the call, not the engine: the signs are still on
+    // the session, so the report card, the deadlines and the timeline all see
+    // them. Only the card, the sound and the announcement — the three things
+    // the worker would notice — stop.
+    if (!coachingOn()) return;
+    playSigns(add);
+    for (const g of add) {
+      // A legal sign starts a clock, so it interrupts; a tip waits its turn.
+      const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
+      announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
+    }
+  }, []);
+
   const runFlags = useCallback(async (lineId: string) => {
     const s = sessionRef.current;
     const lines = s.lines.slice(-14);
     if (!lines.some((l) => l.id === lineId)) return;
     const existingKeys = s.signs.map((g) => g.key);
     const lessons = lessonTexts(getStore());
+
+    // The deterministic pass runs FIRST and needs no network, so a sign its
+    // rules can reach appears on the turn it was said instead of after a round
+    // trip — and it still appears when the model call is throttled or fails
+    // outright. Its keys are added to existingKeys so the model pass that
+    // follows cannot draw a second card for the same obligation.
+    const local = await localSigns(lines, lineId, existingKeys);
+    if (local.length) {
+      commitSigns(local);
+      for (const g of local) existingKeys.push(g.key);
+    }
+
     let attempt = 0;
     while (attempt < 3) {
       try {
         const res = await postFlags({ lines, newLineId: lineId, existingKeys, lessons, direction: s.customer.direction });
         setLastModel(res.model);
         const now = Date.now();
-        setSession((cur) => {
-          const have = new Set(cur.signs.map((g) => g.key));
-          const fresh: Sign[] = res.signs
-            .filter((g) => !have.has(g.key))
-            .map((g) => ({ ...g, id: uid("sg"), t: now, lineId, handled: false }));
-          const linesNext = cur.lines.map((l) =>
-            l.id === lineId && l.speaker === "unknown" && res.speaker !== "unknown" ? { ...l, speaker: res.speaker } : l,
-          );
-          // Coaching off silences the call, not the engine: the signs above are
-          // already on the session, so the report card, the deadlines and the
-          // timeline all see them. Only the card, the sound and the
-          // announcement — the three things the worker would notice — stop.
-          if (fresh.length && coachingOn()) {
-            playSigns(fresh);
-            for (const g of fresh) {
-              // A legal sign starts a clock, so it interrupts; a tip waits its turn.
-              const due = g.dueDate ? `. ${g.dueLabel ?? "Reply due"} ${g.dueDate}` : "";
-              announce(`${g.kind === "legal" ? "Legal sign" : "Tip"}. ${g.title}${due}. Ask next: ${g.askNext}`, g.kind === "legal");
-            }
-          }
-          return { ...cur, lines: linesNext, signs: [...cur.signs, ...fresh] };
-        });
+        const fresh: Sign[] = res.signs.map((g) => ({ ...g, id: uid("sg"), t: now, lineId, handled: false }));
+        setSession((cur) => ({
+          ...cur,
+          lines: cur.lines.map((l) =>
+            l.id === lineId && l.speaker === "unknown" ? { ...l, speaker: res.speaker, speakerConfidence: res.speakerConfidence ?? (res.speaker === "unknown" ? "unknown" : "inferred") } : l,
+          ),
+        }));
+        commitSigns(fresh);
         return;
       } catch (err) {
         attempt += 1;
@@ -77,7 +121,7 @@ export function useCallEngine(opts: EngineOptions) {
         if (attempt >= 3) console.warn("flags failed", err);
       }
     }
-  }, []);
+  }, [commitSigns]);
 
   const addLine = useCallback(
     (text: string, speaker: Speaker = "unknown") => {
@@ -126,10 +170,13 @@ export function useCallEngine(opts: EngineOptions) {
       // mode the call was run in, not the switch's position an hour later.
       coaching: finalSession.coaching,
     };
+    if (getStoreScope().epoch !== startedScope.epoch) {
+      throw new Error("Account changed during the call. Start a new call in the current account.");
+    }
     actions.addReport(report);
     play("report");
     return report;
-  }, []);
+  }, [startedScope]);
 
   const elapsed = useElapsed(session.startedAt, session.endedAt);
   const newestOpen = useMemo(() => [...session.signs].reverse().find((g) => !g.handled), [session.signs]);

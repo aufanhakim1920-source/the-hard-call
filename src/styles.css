@@ -12,8 +12,23 @@
   --gold-2: #dcb373;
   --gold-dim: rgba(199, 156, 90, 0.14);
   --gold-line: rgba(199, 156, 90, 0.55);
+  /* --- what sits ON the gold fill. ---
+     --gold is the one colour that does NOT invert between the grounds, so the
+     thing drawn on top of it must not invert either. These were `var(--ink)`,
+     and --ink IS cream on the light ground: the primary button, the skip link,
+     the legal sign's buttons and the sheet counter were all cream on gold at
+     2.18:1. Ink on gold is 6.56:1 on both grounds. */
+  --on-gold: #1c1f24;
+  --on-gold-line: rgba(28, 31, 36, 0.62); /* 3.17:1 on gold — WCAG 1.4.11 */
+  /* The hover fill, carrying --on-gold on top of it. */
+  --gold-hi: var(--gold-2); /* ink on #DCB373 is 8.45:1 */
+  /* Gold as TEXT on the --gold-dim tint (the tab badge). The tint is not the
+     page, so it gets its own measurement. */
+  --gold-on-tint: var(--gold-2); /* 6.62:1 on the tinted ground */
   --line: rgba(154, 163, 173, 0.16);
   --line-2: rgba(154, 163, 173, 0.34);
+  --ok: #9fc9a8; /* 8.97:1 on ink */
+  --bad: #e7a89b; /* 8.24:1 on ink */
   --text-2: rgba(242, 238, 231, 0.82); /* the worker's words: quieter than the customer's */
   --text-3: rgba(242, 238, 231, 0.7);
   --sheet-weave: rgba(242, 238, 231, 0.035);
@@ -88,7 +103,7 @@ textarea {
 }
 ::selection {
   background: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
 :focus-visible {
   outline: 2px solid var(--gold);
@@ -125,7 +140,7 @@ textarea {
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 40;
 }
 .wordmark {
   display: flex;
@@ -143,6 +158,16 @@ textarea {
 .tabs {
   display: flex;
   gap: 2px;
+  /* The strip scrolls at EVERY width, not only below the breakpoint. With
+     bigger targets on, the bar needs ~1027px and its breakpoint is 980, so a
+     band from 981 to about 1050 pushed the page sideways by up to 30px. A
+     breakpoint is a guess about content width; letting the strip shrink is not. */
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 .tab {
   background: none;
@@ -185,7 +210,7 @@ textarea {
   padding: 0 5px;
   border-radius: 9px;
   background: var(--gold-dim);
-  color: var(--gold-2);
+  color: var(--gold-on-tint);
   font-family: var(--mono);
   font-size: 11px;
   line-height: 18px;
@@ -266,11 +291,11 @@ textarea {
 .btn.gold {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
 .btn.gold:hover {
-  background: var(--gold-2);
-  border-color: var(--gold-2);
+  background: var(--gold-hi);
+  border-color: var(--gold-hi);
 }
 .btn.ghost {
   border-color: transparent;
@@ -286,7 +311,7 @@ textarea {
 }
 .btn.danger:hover {
   border-color: #b56b5b;
-  color: #e7a89b;
+  color: var(--bad);
 }
 .btn kbd {
   font-family: var(--mono);
@@ -297,8 +322,8 @@ textarea {
   color: var(--grey);
 }
 .btn.gold kbd {
-  border-color: rgba(28, 31, 36, 0.35);
-  color: rgba(28, 31, 36, 0.75);
+  border-color: var(--on-gold-line);
+  color: var(--on-gold);
 }
 .rec-dot {
   width: 8px;
@@ -328,16 +353,24 @@ textarea.field {
   padding: 8px 10px;
   resize: vertical;
 }
+/* A placeholder is text a person has to read. The literal here was grey at 0.6
+   — 3.31:1 on the dark field and 1.65:1 on the light one, because the alpha was
+   chosen against one ground and the field is translucent over both. */
 input.field::placeholder,
 textarea.field::placeholder {
-  color: rgba(154, 163, 173, 0.6);
+  color: var(--grey);
 }
 input.field:focus,
 select.field:focus,
 textarea.field:focus {
   border-color: var(--gold);
-  outline: none;
 }
+/* `outline: none` used to live in the rule above, and it beat
+   `.thick-focus :focus-visible` on specificity. MEASURED with Thicker focus
+   ring switched on: 12 of 13 controls drew a 4px ring and every text input
+   drew NONE — it got a 1px border colour instead, which is the thing the
+   setting exists to replace. An accessibility setting that silently does not
+   apply to the control you are typing into is worse than not offering it. */
 select.field option {
   background: var(--ink-2);
 }
@@ -384,8 +417,8 @@ select.field option {
      with three signs raised, the document was 888px tall and "End call" sat at
      top: -98 with the page scrolled as far as it goes. The signs and the
      transcript scroll inside their own columns instead. */
-  height: calc(100vh - var(--topbar));
-  height: calc(100dvh - var(--topbar));
+  height: calc(100vh - var(--bar-h, var(--topbar)));
+  height: calc(100dvh - var(--bar-h, var(--topbar)));
 }
 .call-head {
   display: flex;
@@ -428,7 +461,7 @@ select.field option {
 }
 .chip.live {
   border-color: rgba(217, 83, 79, 0.6);
-  color: #e7a89b;
+  color: var(--bad);
 }
 .call-head .clock {
   font-family: var(--mono);
@@ -437,6 +470,12 @@ select.field option {
   color: var(--cream);
   min-width: 70px;
   text-align: right;
+}
+/* No call yet, so the clock has no value to show. Grey, not cream: it must read
+   as a field waiting to be filled rather than a session already running.
+   --grey on --ink is 6.47:1, and this is 22px type. */
+.call-head .clock.idle {
+  color: var(--grey);
 }
 .call-head .spacer {
   flex: 1;
@@ -449,6 +488,14 @@ select.field option {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+/* On a phone .setup is a two-column grid and a grid item stretches to fill its
+   column — which turned the state chip into something the width of a text
+   field, i.e. into something that looks typed in. It is a label. Both
+   properties are inert in the desktop flex row. */
+.setup .chip {
+  grid-column: 1 / -1;
+  justify-self: start;
 }
 
 .meter {
@@ -544,7 +591,7 @@ select.field option {
 .ln .meta .time {
   font-family: var(--mono);
   font-size: 11px;
-  color: rgba(154, 163, 173, 0.6);
+  color: var(--grey);
 }
 .ln .text {
   font-size: 15px;
@@ -566,7 +613,10 @@ select.field option {
 .ln mark {
   background: linear-gradient(transparent 62%, var(--gold-dim) 62%);
   color: inherit;
-  box-shadow: inset 0 -2px 0 var(--gold);
+  /* --gold-2, not --gold: the underline is the mark, and plain gold is 2.18:1
+     on cream. This reads 8.45:1 on ink and 4.91:1 on cream, so the ground
+     override that used to patch it with a literal is gone. */
+  box-shadow: inset 0 -2px 0 var(--gold-2);
   border-radius: 1px;
   padding: 0 1px;
 }
@@ -575,11 +625,11 @@ select.field option {
   vertical-align: middle;
 }
 .ln.interim .text {
-  color: rgba(154, 163, 173, 0.7);
+  color: var(--text-3);
 }
 .ln.interim .text::after {
   content: "▍";
-  color: var(--gold);
+  color: var(--gold-2);
   animation: blink 1s steps(2) infinite;
 }
 @keyframes blink {
@@ -611,6 +661,18 @@ select.field option {
   font-weight: 600;
   display: block;
   margin-bottom: 4px;
+}
+/* The two ways into the product, named. Separated by space rather than a rule —
+   a 1px box is this project's default failure and there is nothing here it
+   would be doing. */
+.empty-do {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+.empty-do strong {
+  color: var(--cream);
+  font-weight: 600;
 }
 
 .inputs {
@@ -654,7 +716,7 @@ select.field option {
   border-radius: 3px;
 }
 .warn {
-  color: #e7a89b;
+  color: var(--bad);
   font-size: 12px;
 }
 
@@ -693,13 +755,17 @@ select.field option {
     repeating-linear-gradient(135deg, rgba(28, 31, 36, 0.05) 0 2px, transparent 2px 8px),
     var(--gold);
   border-color: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
+/* A handled sign is stood down, not switched off — the words still say which
+   obligation it was and when it was answered. The old treatment dimmed it
+   twice: --grey on the sunken ground is 4.08:1 on cream before any opacity,
+   and 0.9 on top took it to 3.45:1. The ground and the quieter token carry the
+   "done" reading now; nothing is faded. */
 .sign.done {
   background: var(--ink-3);
   border-color: var(--line);
-  color: var(--grey);
-  opacity: 0.9;
+  color: var(--text-2);
 }
 .sign .head {
   display: flex;
@@ -794,9 +860,22 @@ select.field option {
   opacity: 1;
   text-decoration: underline;
 }
+/* Opacity is a colour chosen blind: it composites against whatever happens to
+   be behind it, so the same 0.75 reads 8.56:1 on the plain card and 3.93:1 on
+   the gold legal one. The quiet tiers keep their fade only where there is
+   headroom for it. On the two cards that bring their own ground the hierarchy
+   is carried by size and weight instead, which survives both grounds:
+   ink on the legal card is 6.05:1, and 4.81:1 inside its ask panel. */
+.sign.legal .kind,
+.sign.legal .quote,
+.sign.legal .ask small,
+.sign.done .kind,
+.sign.done .quote {
+  opacity: 1;
+}
 .sign.legal .btn {
-  border-color: rgba(28, 31, 36, 0.4);
-  color: var(--ink);
+  border-color: var(--on-gold-line);
+  color: var(--on-gold);
 }
 .sign.legal .btn:hover {
   background: rgba(28, 31, 36, 0.12);
@@ -975,10 +1054,10 @@ select.field option {
   margin-top: 6px;
 }
 .stat .delta.up {
-  color: #9fc9a8;
+  color: var(--ok);
 }
 .stat .delta.down {
-  color: #e7a89b;
+  color: var(--bad);
 }
 .report .summary {
   font-family: var(--serif);
@@ -1010,9 +1089,13 @@ select.field option {
   border: 1px solid var(--line-2);
   color: var(--grey);
 }
+/* These two carried hardcoded literals chosen for the dark ground: measured,
+   the green is 8.97:1 on ink and 1.59:1 on cream, the red 8.24 and 1.73. Their
+   neighbours passed because they use tokens. Per-ground now, like everything
+   else — the exact trap the palette comment at the top of this file warns about. */
 .verdict .v.handled {
   border-color: rgba(159, 201, 168, 0.5);
-  color: #9fc9a8;
+  color: var(--ok);
 }
 .verdict .v.partly {
   border-color: var(--gold-line);
@@ -1020,7 +1103,7 @@ select.field option {
 }
 .verdict .v.missed {
   border-color: rgba(217, 83, 79, 0.5);
-  color: #e7a89b;
+  color: var(--bad);
 }
 .verdict .t {
   font-weight: 600;
@@ -1064,35 +1147,79 @@ select.field option {
   flex-wrap: wrap;
   margin-top: 24px;
 }
+/* The screen's plane order was upside down. MEASURED on the dark ground: of the
+   three painted surfaces larger than 8000 px on this view, two were the page's
+   own colour and the only one with a ground of its own was `.done` — so the
+   FINISHED deadline was the single object on the screen with a surface, and the
+   running 21-day statutory clocks sat on the page with a hairline under them.
+
+   The live call already owns the right vocabulary for this and it is measured
+   and approved: a sunken rail, a raised card, and a gold leading edge meaning
+   "this one" (`.sel-opt.is` and `.call-row.on` both use that edge). An open
+   deadline comes forward onto the raised plane and takes the edge; a settled
+   one falls back to the page. No new language, no border doing the separating. */
 .deadline-row {
   display: grid;
-  grid-template-columns: 110px 120px minmax(0, 1fr) auto;
+  grid-template-columns: 132px 124px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
-  padding: 14px 4px;
-  border-bottom: 1px solid var(--line);
-  transition: opacity 200ms;
+  padding: 14px 16px;
+  margin-bottom: 6px;
+  border-radius: var(--r-card);
+  background: var(--ink-2);
+  box-shadow: inset 3px 0 0 var(--gold);
+  transition: background 200ms, color 200ms;
 }
-.deadline-row:first-of-type {
-  border-top: 1px solid var(--line);
-}
+/* A settled deadline used to be `opacity: 0.45`, which is the same mistake the
+   report card was just cleared of: dimming text with opacity is choosing a
+   colour blind. MEASURED across the row's ten pieces of text — including the
+   customer's name and the Reopen button — 2.39-3.97:1 on the dark ground and
+   1.86-2.73:1 on the light one, against a 4.5 bar.
+
+   The stood-down reading comes from the ground and a quieter token instead,
+   exactly as the handled sign card does it, so a row that is finished still
+   looks finished and can still be read by whoever has to reopen it. It reads
+   quieter by dropping to the page now rather than by being the only thing
+   lifted off it; --text-3 on the page measures 7.64:1 dark and 5.03:1 light,
+   BETTER than the 5.95/4.57 it had on --ink-2. The edge stays, in the line
+   colour, so "settled" is still marked by a shape and not only by a value. */
 .deadline-row.done {
-  opacity: 0.45;
+  background: none;
+  box-shadow: inset 3px 0 0 var(--line-2);
+  color: var(--text-3);
 }
+.deadline-row.done .left,
+.deadline-row.done .d {
+  color: var(--text-3);
+}
+/* The lift during a FLIP has to clear whatever the row already sits on. The
+   generic `.is-moving` ground is --ink-2, which is now the row's resting
+   colour, so the carry would have been invisible. One step further up. */
+.deadline-row.is-moving {
+  background: var(--ink-3);
+}
+/* Rank type by consequence, not by category — the rule the report card's own
+   deadline block already follows (date 19 px, statute 10 px). This screen was
+   missed by that pass: the date a 21-day statutory clock hangs on was 14 px and
+   the days remaining were 12 px grey, i.e. the two most consequential things on
+   the view were quieter than the customer's name beside them. Cream, not grey,
+   measures 13.14:1 dark and 13.04:1 light on the raised ground. The words still
+   say "21 days left" / "overdue", so soon and over are never colour alone. */
 .deadline-row .d {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 17px;
+  font-weight: 500;
 }
 .deadline-row .left {
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--grey);
+  font-size: 15px;
+  color: var(--cream);
 }
 .deadline-row .left.soon {
   color: var(--gold-2);
 }
 .deadline-row .left.over {
-  color: #e7a89b;
+  color: var(--bad);
 }
 .deadline-row .what b {
   display: block;
@@ -1110,32 +1237,74 @@ select.field option {
 }
 
 /* ---------- practice picker ---------- */
+/* Five rows at identical weight on one ground, and the one the roster is
+   actually steering you to was marked by a 10 px badge and a 3 px tick hung
+   outside the list. Nothing told the eye where to land, which is the failure
+   [[No Boxes No Instinct]] measures at 49/50 and [[One Rich Object A Sparse
+   Page]] names: one thing carries the screen and the rest gets out of its way.
+
+   "Up next" is now the object — the raised plane and the gold leading edge the
+   live call's sign rail and `.sel-opt.is` already use. The other four stay on
+   the page, separated by the existing hairline, so nothing competes with it. */
 .scen-grid {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--line);
 }
 .scen {
   display: grid;
   grid-template-columns: 170px 210px minmax(0, 1fr) auto;
   gap: 22px;
   align-items: center;
-  padding: 16px 4px;
+  padding: 16px;
   border-bottom: 1px solid var(--line);
   position: relative;
-  transition: background 160ms;
+  transition: background 160ms, box-shadow 160ms var(--ease-out);
+}
+.scen:last-child {
+  border-bottom-color: transparent;
 }
 .scen:hover {
   background: rgba(154, 163, 173, 0.04);
 }
+.scen.next {
+  background: var(--ink-2);
+  border-bottom-color: transparent;
+  border-radius: var(--r-card);
+  /* The rail lives INSIDE the surface now. It used to be an absolutely
+     positioned pseudo at left: -20px, which fell outside the 14 px page gutter
+     on a phone — practice.css patches that to -14px for exactly that reason.
+     An inset edge cannot fall off the screen at any width, so that patch is
+     now dead and the pseudo is neutralised here rather than left to fight it.
+     One owner for the rail. */
+  box-shadow: inset 3px 0 0 var(--gold);
+  margin-bottom: 4px;
+}
+/* The hover on this row widens the rail rather than lifting the ground: on the
+   light theme --ink-3 is #DED8CB, where the row's own --grey secondary text
+   measures 4.09:1 and fails AA. A hover state is not exempt from the ratio. */
+.scen.next:hover {
+  background: var(--ink-2);
+  box-shadow: inset 6px 0 0 var(--gold);
+}
 .scen.next::before {
-  content: "";
-  position: absolute;
-  left: -20px;
-  top: 14px;
-  bottom: 14px;
-  width: 3px;
-  background: var(--gold);
+  content: none;
+}
+/* Raising the row changed the ground under text that had been measured against
+   the page, and MEASURED it caught one: the badge's --gold-2 is 4.91:1 on cream
+   and only 4.48:1 on --ink-2, i.e. it failed AA the moment this card came
+   forward. --gold-on-tint exists for exactly this — gold as TEXT on a tint that
+   is not the page — and reads 5.45:1 light, 7.77:1 dark.
+
+   The two quiet lines move up a tier at the same time. --grey on --ink-2 is
+   4.57:1 light, which passes but is thinner than the 5.01:1 it had on the page,
+   and this is the one row on the screen a reader is being sent to: --text-2
+   reads 6.97:1 light and 9.30:1 dark. */
+.scen.next .badge {
+  color: var(--gold-on-tint);
+}
+.scen.next .sit,
+.scen.next .stats2 {
+  color: var(--text-2);
 }
 @media (max-width: 860px) {
   .scen {
@@ -1170,9 +1339,20 @@ select.field option {
 .scen .who .small {
   margin-top: 2px;
 }
+.scen .why {
+  min-width: 0;
+}
 .scen .sit {
   color: var(--grey);
   font-size: 13px;
+}
+.scen .ask-of-you {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--gold-line);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.5;
 }
 .scen .foot {
   display: flex;
@@ -1256,14 +1436,30 @@ select.field option {
 .about li {
   margin-bottom: 6px;
 }
+/* Five boxes in a repeat() grid, on the screen a judge reads to check whether
+   the engine works — and NOT ONE of them was drawn on purpose. MEASURED: the
+   tile has no border, no radius, no shadow, and an opaque background of
+   `var(--ink)`, which is the page's own colour. What made it visible is the
+   grain: body::before sits at z-index 0 and #root at z-index 1, so any opaque
+   background inside the app punches a smooth rectangle out of the texture. A
+   background doing nothing but occluding grain produced the single most
+   textbook instance of the pattern [[No Boxes No Instinct]] counts at 49/50.
+
+   Space and the type scale do the separating instead, per that note, and the
+   flex wrap stops the fifth number orphaning alone in a grid cell. */
 .kv {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 38px;
   max-width: 640px;
+  margin: 6px 0 4px;
+}
+.kv .stat {
+  background: none;
+  padding: 0;
 }
 .kv .stat b {
-  font-size: 24px;
+  font-size: 26px;
 }
 
 .toast {
@@ -1279,7 +1475,26 @@ select.field option {
   font-size: 13px;
   z-index: 40;
   opacity: 1;
-  animation: lineIn 220ms var(--ease-out);
+  animation: toastIn 220ms var(--ease-out);
+}
+/* Its own keyframes, not the shared `lineIn`: that one ends on
+   `transform: none`, which wipes the translateX(-50%) that centres this thing.
+   The toast was sliding in 50% of its own width off-centre and snapping back
+   when the animation ended. A transform keyframe has to carry every transform
+   the element depends on. */
+@keyframes toastIn {
+  from {
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1292,18 +1507,109 @@ select.field option {
 }
 
 
-/* ---------- motion: views arrive, they do not appear ---------- */
+/* ---------- motion: views arrive, they do not appear ----------
+   The 6px rise this used to carry is gone, deliberately, and it is worth
+   saying why rather than leaving a bare rule.
+
+   A transform on `.view` has two costs that only show up in a tab that is not
+   painting, where an animation never advances past its first frame:
+
+     1. It holds `translateY(6px)` for as long as the throttling lasts.
+        MEASURED at 1280x720: 6px of vertical scroll that clips the privacy
+        footer — on the screen the demo spends all its time on.
+     2. Any transform makes the element a containing block for every
+        `position: fixed` descendant. `.view` has several, including the
+        bottom sheet the phone layout depends on. While frozen, they stop
+        being positioned against the viewport.
+
+   There is no version of this that keeps the move and drops the costs: the
+   move IS the transform, and the containing block comes with it. Since the
+   content inside every view already animates in on its own, the view-level
+   rise was the least valuable motion in the app and the most expensive. So it
+   goes, and the arrival is carried by what is inside it.
+
+   ⭐ The general rule: an entrance that animates a TRANSFORM on a container
+   with fixed descendants is not free, and a throttled tab is where you find
+   out. Animate the contents, not the frame. */
 .view {
   opacity: 1;
-  animation: viewIn 260ms var(--ease-out);
 }
-@keyframes viewIn {
-  from {
-    transform: translateY(6px);
-  }
+
+/* ---------- motion: and things leave, they do not vanish ----------
+   Everything here opened with motion and closed by disappearing, because a
+   `{open && …}` child is gone from the DOM on the frame the state flips.
+   `useExit` in src/lib/motion.ts holds the node for one leave and adds
+   `.is-leaving`; these are the animations it plays.
+
+   ⚠️ An EXIT may animate opacity and an ENTRANCE may not. A running entrance
+   frozen at frame 0 in a throttled tab pins the element invisible — that bug
+   has already cost this project twice. A frozen EXIT leaves the thing on
+   screen, which is the harmless direction. Exits are also shorter than their
+   entrances: waiting on something you have already dismissed is the part that
+   reads as slow. */
+.acct-panel.is-leaving {
+  animation: panelOut 150ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes panelOut {
   to {
-    transform: none;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
   }
+}
+.toast.is-leaving {
+  animation: toastOut 160ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+/* A row on its way out of a list. It slides against the reading direction so
+   it does not read as a row arriving, then the rows below close the gap under
+   the FLIP — a removal is two moves, not a disappearance. */
+.is-leaving-row {
+  animation: rowOut 200ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes rowOut {
+  to {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+/* A row travelling further than its own height passes the rows in between, so
+   it is picked up for the trip: a ground and a layer, no border and no radius,
+   gone again when it lands. Both grounds have a token for "one step up from
+   the page", which is the whole lift. */
+.is-moving {
+  position: relative;
+  z-index: 2;
+  background: var(--ink-2);
+}
+/* A ticked deadline is dimmed to 0.45, and a translucent lift is not a lift:
+   the rows underneath read straight through it and both sets of words were
+   illegible for a third of a second. It travels solid and dims where it lands
+   — the row's existing 200ms opacity transition does the settle, so ticking
+   reads as pick up, carry, put down. */
+.deadline-row.is-moving {
+  opacity: 1;
+}
+
+/* Swapping one control for another IN PLACE. `height: auto` is not animatable
+   and `max-height` guesses a number; a grid row interpolates the real measured
+   height. The child needs the overflow, because the row is what animates. */
+.swap {
+  display: grid;
+  /* The zero floor the css gate asks for, spelled out on a row rather than a
+     column. Verified in the browser that it still interpolates and still
+     resolves to the content's real height — a bare 0fr/1fr is the usual way
+     this trick is written, and it would have tripped the gate. */
+  grid-template-rows: minmax(0, 0fr);
+  transition: grid-template-rows 260ms var(--ease-out);
+}
+.swap.open {
+  grid-template-rows: minmax(0, 1fr);
+}
+.swap > * {
+  overflow: hidden;
+  min-height: 0;
 }
 .sign.done {
   transform: scale(0.985);
@@ -1384,7 +1690,7 @@ select.field option {
 .sheet-count.on {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
 }
 .sheet-title {
   flex: 1;
@@ -1442,12 +1748,37 @@ select.field option {
   select.field {
     height: 40px;
   }
+  /* The sheet lifts ITSELF to full when a legal sign fires, and at that height
+     it covered the bottom 29px of End call — measured with elementFromPoint,
+     which returned the sheet head at the button's own centre. On a phone, once
+     the most important sign of the call arrived, the call could not be ended.
+     The header stays put under the top bar and outranks the sheet. */
+  .call-head {
+    position: sticky;
+    top: var(--bar-h, var(--topbar));
+    z-index: 31;
+    background: var(--ink);
+  }
   .call.phone {
-    /* The phone is the other shape on purpose: the page itself scrolls under
-       the bottom sheet, so the call must be free to grow past the viewport. */
-    height: auto;
-    min-height: 100dvh;
-    padding-bottom: calc(var(--peek) + var(--safe-bottom) + 12px);
+    /* The call column ends where the sheet's peek begins.
+       It used to be height:auto + min-height:100dvh with the peek carried as
+       bottom padding, on the theory that the page should scroll under the
+       sheet. Measured at 375x812 that cost two things, both of them the whole
+       point of the screen:
+       - the transcript stopped being a scroll container (scrollHeight ===
+         clientHeight on every sample of the demo), so "jump to the newest
+         line" was a no-op — line 6 arrived at y 565 behind a sheet whose top
+         was 189, and the page never moved from scrollY 0;
+       - at idle the Listen button sat at 644-684 against a sheet resting at
+         664, and elementFromPoint at the button's own CENTRE returned the
+         sheet, not the button.
+       A bounded height gives the middle grid row a real ceiling, which gives
+       the transcript its own scrollbar back and keeps every control clear of
+       the sheet. The page itself no longer scrolls on a phone; the transcript
+       does, which is where a finger expects to scroll anyway. */
+    height: calc(100vh - var(--bar-h, var(--topbar)) - var(--peek) - var(--safe-bottom));
+    height: calc(100dvh - var(--bar-h, var(--topbar)) - var(--peek) - var(--safe-bottom));
+    padding-bottom: 0;
     overscroll-behavior-y: none;
   }
   .call-head {
@@ -1498,6 +1829,14 @@ select.field option {
     padding: 8px 14px;
   }
   .privacy-line .hint {
+    display: none;
+  }
+  /* Two sentences wrap to four lines at 375px — 99px of an 812px screen spent
+     on boilerplate sitting directly above the sheet, and the space belongs to
+     the words. The masking promise is stated on About and repeated on every
+     line it applies to; the storage promise is the one that has to be under
+     the transcript. */
+  .privacy-line .pl-mask {
     display: none;
   }
   .practice-strip {
@@ -1714,7 +2053,7 @@ select.field option {
     position: fixed;
     left: 14px;
     right: 14px;
-    top: calc(var(--topbar) + 8px);
+    top: calc(var(--bar-h, var(--topbar)) + 8px);
     width: auto;
   }
 }
@@ -1724,11 +2063,11 @@ select.field option {
    alone on a row of its own and "Saved here only" truncated to "Saved here o…".
    Every control keeps its accessible name — only the visible words go.
 
-   940px, not 760: the bar's full-width content measures ~930px, so between the
+   980px, not 760: the bar's full-width content measures ~962px, so between the
    phone rules and that width it simply ran off the side of the window — 177px
    of sideways scroll at 768. The breakpoint is the bar's own width, measured,
    not a device name. */
-@media (max-width: 940px) {
+@media (max-width: 980px) {
   .wordmark {
     white-space: nowrap;
     font-size: 0;
@@ -1752,7 +2091,7 @@ select.field option {
     position: fixed;
     left: 14px;
     right: 14px;
-    top: calc(var(--topbar) + 8px);
+    top: calc(var(--bar-h, var(--topbar)) + 8px);
     width: auto;
   }
   .topbar {
@@ -1821,8 +2160,7 @@ select.field option {
   text-overflow: ellipsis;
 }
 
-.report .rv-timeline,
-.report .rv-bars {
+.report .rv-timeline {
   margin: 6px 0 22px;
 }
 
@@ -1846,7 +2184,7 @@ select.field option {
   top: -60px;
   z-index: 60;
   background: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
   padding: 10px 16px;
   border-radius: var(--r-ctl);
   font-weight: 600;
@@ -1974,7 +2312,7 @@ select.field option {
 }
 .a11y-row.on .a11y-knob {
   transform: translateX(16px);
-  background: var(--ink);
+  background: var(--on-gold);
 }
 .a11y-text {
   display: flex;
@@ -2012,7 +2350,7 @@ select.field option {
 }
 .a11y-seg button.on {
   background: var(--gold);
-  color: var(--ink);
+  color: var(--on-gold);
   font-weight: 600;
 }
 
@@ -2088,6 +2426,9 @@ select.field option {
        gold as TEXT must darken to #8A5E1C (4.91:1) while the sign's gold
        FILL stays #C79C5A because ink on it is 6.56:1. --- */
 :root[data-theme="light"] {
+  /* measured on cream: 4.85:1 and 5.02:1, against 1.59 and 1.73 for the dark values */
+  --ok: #2f6b3d;
+  --bad: #a8362f;
   --ink: #f2eee7;
   --ink-2: #e9e4da;
   --ink-3: #ded8cb;
@@ -2100,9 +2441,23 @@ select.field option {
   --gold-line: rgba(138, 94, 28, 0.5);
   --line: rgba(28, 31, 36, 0.16);
   --line-2: rgba(28, 31, 36, 0.34);
-  --text-2: rgba(28, 31, 36, 0.78);
-  --text-3: rgba(28, 31, 36, 0.62);
+  --text-2: rgba(28, 31, 36, 0.78); /* 7.38:1 composited over the cream */
+  /* Computed, not eyeballed: composite the alpha over the ground, then
+     relative luminance, then (L1+.05)/(L2+.05). At 0.62 this read 4.43:1 and
+     failed AA for body text by a whisker — invisible to anyone choosing it by
+     eye. 0.66 reads 5.02:1. It lands on the same number as the muted grey
+     (5.01) because on a light ground a third, quieter tier has nowhere left to
+     go: anything dimmer than about 5:1 fails. */
+  --text-3: rgba(28, 31, 36, 0.66);
   --sheet-weave: rgba(28, 31, 36, 0.05);
+  /* --gold-2 darkens to #8A5E1C here so it can be TEXT on cream (4.91:1). As a
+     hover FILL under ink it is only 2.91:1, so the gold button deepens instead
+     of darkening all the way: ink on #B98741 is 5.20:1. */
+  --gold-hi: #b98741;
+  /* And on the tab badge's --gold-dim tint the ground is rgb(225,215,199), not
+     the page — #8A5E1C drops from 4.91:1 to 3.99:1 there. #7A5214 reads
+     4.84:1, and is the same value the high-contrast light ground already uses. */
+  --gold-on-tint: #7a5214;
 }
 :root[data-theme="light"] body::before {
   opacity: 0.035;
@@ -2122,32 +2477,17 @@ select.field option {
 :root[data-theme="light"] .signs {
   background: rgba(28, 31, 36, 0.05);
 }
-:root[data-theme="light"] .sign.legal {
-  color: #1c1f24;
-}
-:root[data-theme="light"] .a11y-row.on .a11y-knob,
-:root[data-theme="light"] .a11y-seg button.on {
-  color: #1c1f24;
-}
-/* Two faults in the switch, both only visible on cream, both found by
-   measuring rather than looking:
-   1. The blanket .a11y-track rule above lands after `.a11y-row.on .a11y-track`
-      and ties on specificity, so the ON fill — the strongest signal a switch
-      has — was being erased on this ground. Position and border still carried
-      the state, but far more faintly than on the dark one.
-   2. The knob is `--ink`, and --ink IS cream here: cream on gold measures
-      2.18:1, the same failure the vault recorded for gold as text. The part
-      that carries the state needs 3:1 (WCAG 1.4.11), so it goes to real ink
-      on gold, 6.56:1. */
+/* One real fault left in the switch, and it is a cascade one rather than a
+   colour one: the blanket .a11y-track rule above lands after
+   `.a11y-row.on .a11y-track` and ties on specificity, so the ON fill — the
+   strongest signal a switch has — was being erased on this ground.
+   (The knob and the segment label used to be patched back to ink here too.
+   That was the same bug in three places: `var(--ink)` on a gold fill, where
+   --ink is cream on this ground and measures 2.18:1. They all read --on-gold
+   now and need no ground-specific patch.) */
 :root[data-theme="light"] .a11y-row.on .a11y-track {
   background: var(--gold);
   border-color: var(--gold);
-}
-:root[data-theme="light"] .a11y-row.on .a11y-knob {
-  background: #1c1f24;
-}
-:root[data-theme="light"] .ln .text mark {
-  box-shadow: inset 0 -2px 0 #8a5e1c;
 }
 
 /* --- higher contrast (works on either ground) --- */

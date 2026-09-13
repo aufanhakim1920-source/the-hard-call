@@ -1,0 +1,239 @@
+/* The signs column's resting state — what it says while nothing has fired.
+ *
+ * MEASURED: the column is 420 x 703 on the demo screen and the legal sign
+ * lands at 26.8s, so this is what a judge reads for the first third of the
+ * time they spend watching. It has two jobs and they pull the same way: say
+ * something true and useful, and be quiet enough that the gold card lands on
+ * top of it as an event.
+ *
+ * ⛔ NO GOLD IN THIS FILE, deliberately. The whole palette spends its one
+ * signal colour on the sign; a gold rule or a gold arrow here would spend it
+ * before the sign arrives. It also happens to be the only safe answer — gold
+ * as TEXT on this column's tinted light ground measures 4.47:1 and fails AA,
+ * and #C79C5A on it is 1.99:1. Ground and type scale do the separating.
+ *
+ * ⛔ NO BORDER IN THIS FILE either. The card is the only thing in this column
+ * with an edge and a ground, so the first solid object of the call is the
+ * flag itself.
+ *
+ * Contrast, computed against the column's real backdrop rather than the page —
+ * alpha composited first, then relative luminance, then (L1+.05)/(L2+.05).
+ * Column ground: rgba(0,0,0,.12) over --ink = #191B20 dark, rgba(28,31,36,.05)
+ * over cream = #E7E4DD light. In the phone sheet it is --ink-2 instead.
+ *   --cream   14.90:1 dark · 13.01:1 light
+ *   --text-2  10.33:1 dark ·  6.98:1 light
+ *   --text-3   7.87:1 dark ·  4.81:1 light   (7.19 / 4.81 on the sheet ground)
+ * Nothing here is dimmed with opacity — an opacity composites against whatever
+ * is behind it, which is how this app previously lost every worker line.
+ */
+
+.signs .watching {
+  padding: 2px 2px 8px;
+  max-width: 380px;
+}
+
+/* Folded by a grid row, not a max-height: the panel's real height changes with
+ * the text-size setting and the hyperlegible face, and a guessed number clips.
+ * The inner div owns the overflow so the row can interpolate a measured height.
+ *
+ * It lives on this wrapper and NOT on .watching, because the FLIP lifts a
+ * travelling row by writing `transition: none` onto the element carrying
+ * data-flip. Keeping the fold one level in means a trip down the column cannot
+ * cancel it. */
+.signs .watch-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  transition: grid-template-rows 320ms var(--ease-out);
+  transition-delay: 0s;
+}
+.signs .watch-body > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.signs .watch-body.met {
+  grid-template-rows: minmax(0, 0fr);
+}
+/* .reduce-motion squashes duration app-wide but never delay, and the OS
+ * setting does not go through that class at all. Both are zeroed explicitly:
+ * a fold that only half-runs would leave the panel clipped at a random height. */
+@media (prefers-reduced-motion: reduce) {
+  .signs .watch-body {
+    transition-duration: 1ms;
+    transition-delay: 0s;
+  }
+}
+.reduce-motion .signs .watch-body {
+  transition-delay: 0s;
+}
+
+.signs .watch-lede {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.signs .watch-lede b {
+  color: var(--cream);
+  font-weight: 600;
+}
+
+/* Two cells: the conjunction hangs in the gutter, the term sits in the column.
+ * The gutter is 34px so the terms line up with the sign card's own 28px icon
+ * gutter plus its padding — the panel and the card that replaces it share one
+ * spine, which is most of why the swap reads as one column rather than two
+ * designs. */
+.signs .watch-row {
+  display: flex;
+  align-items: baseline;
+  margin: 0 0 12px;
+}
+.signs .watch-op {
+  flex: 0 0 34px;
+  padding-right: 9px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+.signs .watch-txt {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.signs .watch-cond,
+.signs .watch-out {
+  display: block;
+  font-size: 15px;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+.signs .watch-cond {
+  font-weight: 600;
+  color: var(--cream);
+}
+.signs .watch-out {
+  font-weight: 500;
+  color: var(--text-2);
+}
+/* The examples are the customer's words, so they are set in the page's serif —
+ * the same voice the transcript gives her. They are quoted phrasing, not
+ * decoration, and they are the part that tells a reader what to listen for. */
+.signs .watch-ex {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+/* The lead-in stays in the page's own voice while the quotes stay in hers, so
+ * the line reads as a sentence about the phrases rather than a row of them. */
+.signs .watch-like {
+  font-family: var(--sans);
+  font-style: normal;
+}
+/* The statute. It used to be 10px mono with tracking, alone on a line under a
+ * legal claim — which is the citation-LINK shape, and a cold reader pressed it
+ * and got nothing. Nothing about it was clickable in CSS: no pointer, no
+ * underline, no fill. The affordance was entirely typographic — an isolated
+ * identifier in the one face that differs from its neighbours. So it gives up
+ * the mono and the tracking and is written as prose ("under the …, s 72(4)"),
+ * which is what it always was: the source of the line above it.
+ *
+ * 11px sans, --text-3: 7.87:1 on the dark column, 4.81:1 on the light one.
+ * Unchanged by this — the token did not move, only the face. */
+.signs .watch-src {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+.signs .watch-note {
+  margin: 0;
+  padding-left: 34px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+/* What replaces the test once the test has been met. One line, because by then
+ * the gold card is the thing on this screen and nothing else should ask. */
+.signs .watch-after {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Same fault as the statute, in the coaching-off state: "Settings → The
+ * assistant" was mono with tracking and an arrow in it, which is a breadcrumb,
+ * and a breadcrumb is a link. Nothing in this app navigates from here. The
+ * words now say it as a sentence and the face follows them.
+ *
+ * Scoped through .signs so it outranks the base rule without editing the
+ * global sheet, which another hand holds. */
+.signs .silent-where {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: normal;
+}
+
+/* In the phone sheet the column is narrower and the panel sits under the
+ * cards, so it gives up the top margin and the width cap. */
+.sheet .signs .watching {
+  max-width: none;
+  padding-bottom: 4px;
+}
+
+/* --- the accessibility settings this has to survive --- */
+
+/* The two conditions are the thing to read, so they scale with the card titles
+ * rather than staying at 15px while everything around them grows. */
+:root[data-text="1"] .signs .watch-cond,
+:root[data-text="2"] .signs .watch-cond,
+:root[data-text="3"] .signs .watch-cond,
+:root[data-text="1"] .signs .watch-out,
+:root[data-text="2"] .signs .watch-out,
+:root[data-text="3"] .signs .watch-out {
+  font-size: var(--t-title);
+}
+:root[data-text="1"] .signs .watch-lede,
+:root[data-text="2"] .signs .watch-lede,
+:root[data-text="3"] .signs .watch-lede,
+:root[data-text="1"] .signs .watch-ex,
+:root[data-text="2"] .signs .watch-ex,
+:root[data-text="3"] .signs .watch-ex,
+:root[data-text="1"] .signs .watch-note,
+:root[data-text="2"] .signs .watch-note,
+:root[data-text="3"] .signs .watch-note,
+:root[data-text="1"] .signs .watch-after,
+:root[data-text="2"] .signs .watch-after,
+:root[data-text="3"] .signs .watch-after {
+  font-size: 15px;
+}
+:root[data-text="2"] .signs .watch-op,
+:root[data-text="3"] .signs .watch-op,
+:root[data-text="2"] .signs .watch-src,
+:root[data-text="3"] .signs .watch-src {
+  font-size: 12px;
+}
+/* The gutter has to grow with the word in it, or "then" wraps onto two lines
+ * and the terms stop lining up. */
+:root[data-text="2"] .signs .watch-op,
+:root[data-text="3"] .signs .watch-op {
+  flex-basis: 42px;
+}
+:root[data-text="2"] .signs .watch-note,
+:root[data-text="3"] .signs .watch-note {
+  padding-left: 42px;
+}
+
+.line-spacing .signs .watch-lede,
+.line-spacing .signs .watch-ex,
+.line-spacing .signs .watch-note,
+.line-spacing .signs .watch-after {
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+  word-spacing: 0.1em;
+}

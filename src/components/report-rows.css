@@ -1,0 +1,53 @@
+/* The verdict list — the card's biggest region, and the one place the house
+   failure mode was still alive.
+
+   MEASURED on the finished card: the list is 554px of a 1956px card, 28% of
+   it, and the least important reading on the screen — it restates in prose the
+   same five signs the answer-time chart has already drawn as durations. Inside
+   it, the verdict word sat in a 1px rounded outline. Those chips were the only
+   true boxes left on the card: of 25 bordered elements in the report, 21 are
+   instrument rails (channels, axes, the row rules) and 4 were these.
+
+   "49 of 50 builds used a 1px border" is the measured reflex the vault names,
+   and a bordered chip is that reflex at component scale. The word is what
+   carries the verdict — HANDLED, PARTLY, MISSED are legible in greyscale, on a
+   printed page and to anyone who cannot separate the three hues — so the
+   outline was saying nothing the word was not already saying, four times per
+   card, in the densest part of it.
+
+   Overridden here rather than edited in styles.css: that file is held by
+   another lane this hour, and a scoped override says what it is for.
+
+   Related: `Aufan Portfolio\No Boxes No Instinct.md` — use ground, space and
+   weight; never a container. */
+
+.report .verdict .v,
+.report .verdict .v.handled,
+.report .verdict .v.partly,
+.report .verdict .v.missed {
+  border: none;
+  border-radius: 0;
+  /* The right edge of the word now lands on the column boundary, so the four
+     verdicts read as one spine against the titles instead of four boxes of
+     different widths floating in a 92px gutter. */
+  padding: 4px 0 0;
+  text-align: right;
+}
+
+/* The row was 14px of padding against 554px of content — the tightest rhythm
+   on the card in its largest region, which is what made it read as a table.
+   Space is doing the separating now that the outlines are not. */
+.report .verdict {
+  padding: 17px 2px 19px;
+}
+
+/* Eleven regions separated by 18–26px was a scale with no hierarchy in it.
+   The write-up is the model's voice and the list is the evidence behind it —
+   they are one reading, so the seam between them closes and the seam before
+   them opens. */
+.report .summary {
+  margin: 4px 0 14px;
+}
+.report .verdicts {
+  margin-bottom: 6px;
+}

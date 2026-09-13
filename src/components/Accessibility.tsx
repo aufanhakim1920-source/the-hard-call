@@ -4,7 +4,10 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TEXT_SIZE_LABELS, announce, changedCount, resetA11y, setA11y, stopSpeaking, useA11y, type TextSize } from "../lib/a11y";
+import { useExit } from "../lib/motion";
 import { play } from "../lib/sfx";
+// The only stylesheet this agent owns; the panel's own controls live there.
+import "./settings.css";
 
 function Switch({ on, onChange, label, hint }: { on: boolean; onChange: (v: boolean) => void; label: string; hint: string }) {
   return (
@@ -75,7 +78,20 @@ function Segmented({
         <b>{label}</b>
         <span className="small muted">{hint}</span>
       </div>
-      <div className="a11y-seg" role="radiogroup" aria-label={label} ref={group} onKeyDown={onKey}>
+      <div
+        className="a11y-seg"
+        role="radiogroup"
+        aria-label={label}
+        ref={group}
+        onKeyDown={onKey}
+        // The travelling block is placed from these two numbers alone, so it is
+        // right on the first paint. Measuring the selected button instead would
+        // put it at zero until an effect ran, which in a throttled tab is a
+        // gold bar parked under the wrong word for as long as the throttling
+        // lasts. See settings.css.
+        style={{ ["--i" as string]: value, ["--n" as string]: options.length }}
+      >
+        <span className="a11y-seg-thumb" aria-hidden="true" />
         {options.map((o, i) => (
           <button
             key={o}
@@ -96,7 +112,7 @@ function Segmented({
   );
 }
 
-export function AccessibilityPanel() {
+export function AccessibilityPanel({ view }: { view?: string }) {
   const a = useA11y();
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
@@ -104,6 +120,31 @@ export function AccessibilityPanel() {
   const scroll = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const changed = changedCount();
+  // Focus goes back on the same frame the switch flips; only the node waits
+  // behind to animate out, and it is inert while it does.
+  const panel = useExit(open);
+  // Reset exists only while something is changed, so it is created by using
+  // any control and destroyed by pressing it. It did both by blinking.
+  const reset = useExit(changed > 0, 140);
+
+  // The panel is deliberately non-modal, because a worker may need it during a
+  // live call — which means nothing outside it was closing it. Measured on the
+  // deployed site: open Settings, click "Live call", and the tab correctly
+  // takes aria-current while the panel stays open ON TOP of the call. At 375
+  // it covers the whole screen, so the app looks like it stopped responding.
+  //
+  // ⭐ A non-modal panel still has to answer to navigation. "Modeless" means it
+  // does not trap you, not that it survives you leaving. Focus is not given
+  // back here: the click that changed the view has already put focus where the
+  // user aimed it, and stealing it back would be the second surprise.
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setOpen(false);
+  }, [view]);
 
   const close = useCallback((giveFocusBack: boolean) => {
     setOpen(false);
@@ -179,16 +220,32 @@ export function AccessibilityPanel() {
         <span className="a11y-chip-label">Settings</span>
         {changed > 0 && <span className="count">{changed}</span>}
       </button>
-      {open && (
-        <div className="acct-panel a11y-panel" id="settings-panel" role="dialog" aria-modal="false" aria-labelledby="settings-title" tabIndex={-1} ref={dialog}>
+      {panel.mounted && (
+        <div
+          className={"acct-panel a11y-panel" + (panel.leaving ? " is-leaving" : "")}
+          id="settings-panel"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="settings-title"
+          tabIndex={-1}
+          ref={dialog}
+          inert={panel.leaving}
+        >
           <div className="a11y-head">
             <div className="label" id="settings-title">
               Settings
             </div>
-            {changed > 0 && (
+            {reset.mounted && (
               <button
-                className="btn ghost sm"
+                className={"btn ghost sm a11y-reset" + (reset.leaving ? " is-leaving" : "")}
+                inert={reset.leaving || undefined}
                 onClick={() => {
+                  // Focus first, and synchronously. This button is about to
+                  // stop existing, and a focused element that unmounts drops
+                  // the keyboard at the top of the document — out of the panel
+                  // it was working in. The dialog is already the place focus
+                  // arrives when the panel opens.
+                  dialog.current?.focus();
                   resetA11y();
                   stopSpeaking();
                   play("tap");
