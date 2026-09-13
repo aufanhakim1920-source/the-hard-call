@@ -1139,3 +1139,48 @@ on the screen a judge reads to check the engine.
 put its badge on a new ground, where the gold drops from 4.91:1 to **4.48:1**
 and fails AA. ⭐ **Changing a ground re-opens every contrast question that
 ground had already answered.** A raise is not a cosmetic change.
+
+## The error path of the failure you most expect
+
+The practice voice's quota failure is the single most likely thing to happen
+in front of a judge, and it was the one path with no friendly message on it.
+
+The reason is worth keeping: a token failure **rejects `startSession()`**
+rather than reaching `onError`, so the whole translation layer — written and
+tested against `onError` — was simply not on that path. The SDK's raw
+developer string went on screen instead, **including the agent id.**
+
+⭐ **Check the error path of the failure you most expect, not the one your code
+was written around.** A handler that covers the failures you imagined is not
+the same as covering the failure that actually happens.
+
+A second, smaller instance in the same file: the concurrency refusal contains
+both "limit" and "capacity", so it matched the quota branch, and four people
+practising at once were told the month's allowance had run out. **Matching an
+error by substring is matching it by accident.**
+
+## De-identification, tested against something worth testing
+
+The demo call is a weak test of a privacy claim — no dollar figure, no suburb,
+no date of birth, no account number in it. So a transcript was built carrying
+**29 identifiers**: a double-barrelled name, an account number, a street
+address, a suburb and postcode, a date of birth, a mobile number, an employer,
+five dollar amounts, a spouse's name, a child's name, and a named private
+school.
+
+**Zero leaked.** The generated persona contained **no digits at all**. The
+employer became "her clinic", the spouse "her ex-partner", the school "private
+school", and the account number was stripped out of the product string it had
+been embedded in. Verbatim overlap with the source: **0 shared 3-grams**, and
+0 at 4, 5 and 6.
+
+⭐ **A privacy claim tested against benign input is not tested.** The demo
+transcript would have passed no matter how leaky the generator was, because it
+contains nothing to leak.
+
+**And the nuance that changes what may be said out loud.** The approved
+customer stores `from_call_id`, and the report row for that call stores the
+real customer's name. The *content* is de-identified; the *link* is not
+removed. So the sentence is "carries none of their details, and keeps a
+reference to which call it came from" — never "unlinkable". Overclaiming a
+privacy property is worse than the property being narrower than you hoped.
